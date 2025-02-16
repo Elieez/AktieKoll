@@ -34,6 +34,10 @@ public class InsiderTradeService : IInsiderTradeService
             {
                 _context.InsiderTrades.Add(trade);
             }
+            else
+            {
+                return "Data already exists.";
+            }
         }
 
         await _context.SaveChangesAsync();

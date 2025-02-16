@@ -1,4 +1,6 @@
-﻿namespace AktieKoll.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace AktieKoll.Models;
 
 public class InsiderTrade
 {
@@ -9,5 +11,7 @@ public class InsiderTrade
     public string TransactionType { get; set; }
     public int Shares { get; set; }
     public decimal Price { get; set; }
+
+    [Column(TypeName = "date")]
     public DateTime Date { get; set; }
 }
