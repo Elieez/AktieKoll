@@ -21,28 +21,48 @@ public class InsiderTradeService : IInsiderTradeService
             return "No data provided.";
         }
 
+        // Get distinct dates from the incoming trades.
+        var dates = insiderTrades.Select(t => t.Date).Distinct().ToList();
+
+        // Fetch existing trades from the DB for those dates.
+        var existingTrades = await _context.InsiderTrades
+            .Where(t => dates.Contains(t.Date))
+            .ToListAsync();
+
+        int newTradesCount = 0;
         foreach (var trade in insiderTrades)
         {
-            var exists = await _context.InsiderTrades.AnyAsync(t =>
+            // Check if a trade with the same composite key exists.
+            bool exists = existingTrades.Any(t =>
                 t.CompanyName == trade.CompanyName &&
                 t.InsiderName == trade.InsiderName &&
                 t.Position == trade.Position &&
                 t.TransactionType == trade.TransactionType &&
                 t.Date == trade.Date);
 
-            if (!exists)
+            if (exists)
             {
-                _context.InsiderTrades.Add(trade);
+                // Assuming that once a duplicate is found, the remaining trades are duplicates.
+                break;
             }
             else
             {
-                return "Data already exists.";
+                _context.InsiderTrades.Add(trade);
+                newTradesCount++;
             }
         }
 
-        await _context.SaveChangesAsync();
-        return "Data stored successfully!";
+        if (newTradesCount > 0)
+        {
+            await _context.SaveChangesAsync();
+            return $"{newTradesCount} new trades added.";
+        }
+        else
+        {
+            return "No new data was added.";
+        }
     }
+
 
     public async Task<IEnumerable<InsiderTrade>> GetInsiderTrades()
     {
