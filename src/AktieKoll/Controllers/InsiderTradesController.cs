@@ -24,9 +24,9 @@ public class InsiderTradesController : ControllerBase
         }
 
         var result = await _tradeService.AddInsiderTrades(insiderTrades);
-        if (result != "Data stored successfully!")
+        if (result == null)
         {
-            return BadRequest(result);
+           return BadRequest("No new trades added.");
         }
 
         return Ok(result);
