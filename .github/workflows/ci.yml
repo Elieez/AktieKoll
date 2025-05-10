@@ -25,7 +25,7 @@ jobs:
 
       - name: Restore dependencies
         working-directory: src
-        run: dotnet restore AktieKoll.sln
+        run: dotnet restore AktieKoll.slnx
 
       - name: Build
         working-directory: src
