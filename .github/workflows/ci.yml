@@ -19,20 +19,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Install the .NET SDK (adjust version as needed)
+      # 2. Install the .NET SDK
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '9.0.x'
 
-      # 3. Restore dependencies
+      # 3. Restore dependencies by pointing at your .slnx
       - name: Restore dependencies
-        run: dotnet restore ./AktieKoll.slnx
+        run: dotnet restore src/AktieKoll.slnx
 
       # 4. Build the solution
       - name: Build
-        run: dotnet build ./AktieKoll.slnx --no-restore --configuration Release
+        run: dotnet build src/AktieKoll.slnx --no-restore --configuration Release
 
       # 5. Run all tests
       - name: Test
-        run: dotnet test ./AktieKoll.slnx --no-build --verbosity normal
+        run: dotnet test src/AktieKoll.slnx --no-build --verbosity normal
