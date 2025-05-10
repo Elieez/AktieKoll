@@ -27,12 +27,12 @@ jobs:
 
       - name: Restore dependencies
         working-directory: src
-        run: dotnet restore
+        run: dotnet restore AktieKoll.slnx   # still restores via your .slnx
 
       - name: Build
         working-directory: src
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build AktieKoll.slnx --no-restore --configuration Release
 
       - name: Test
         working-directory: src
-        run: dotnet test --no-build --verbosity normal
+        run: dotnet test AktieKoll.Tests/AktieKoll.Tests.csproj --no-build --verbosity normal
