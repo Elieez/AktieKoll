@@ -4,5 +4,6 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Project Path="AktieKoll.Tests/AktieKoll.Tests.csproj" Id="d4182378-e7f5-4b2f-8f5a-31fc8d86fc0a" />
   <Project Path="AktieKoll/AktieKoll.csproj" />
 </Solution>
