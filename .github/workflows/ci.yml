@@ -27,12 +27,12 @@ jobs:
 
       # 3. Restore dependencies
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore AktieKoll.slnx
 
       # 4. Build the solution
       - name: Build
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build AktieKoll.slnx --no-restore --configuration Release
 
       # 5. Run all tests
       - name: Test
-        run: dotnet test --no-build --verbosity normal
+        run: dotnet test AktieKoll.slnx --no-build --verbosity normal
