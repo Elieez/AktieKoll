@@ -25,14 +25,14 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      # 3. Restore dependencies by pointing at your .slnx
       - name: Restore dependencies
-        run: dotnet restore src/AktieKoll.slnx
+        working-directory: src
+        run: dotnet restore
 
-      # 4. Build the solution
       - name: Build
-        run: dotnet build src/AktieKoll.slnx --no-restore --configuration Release
+        working-directory: src
+        run: dotnet build --no-restore --configuration Release
 
-      # 5. Run all tests
       - name: Test
-        run: dotnet test src/AktieKoll.slnx --no-build --verbosity normal
+        working-directory: src
+        run: dotnet test --no-build --verbosity normal
