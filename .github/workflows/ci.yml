@@ -23,19 +23,15 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      # ← New step: make a .sln wrapper for CI
-      - name: Prepare solution file
-        run: cp src/AktieKoll.slnx src/AktieKoll.sln
-
       - name: Restore dependencies
         working-directory: src
         run: dotnet restore AktieKoll.sln
 
       - name: Build
         working-directory: src
-        run: dotnet build AktieKoll.sln --no-restore --configuration Release
+        run: dotnet build AktieKoll.slnx --no-restore --configuration Release
 
       - name: Test
         working-directory: src
-        run: dotnet test  AktieKoll.sln --no-build --configuration Release --verbosity normal
+        run: dotnet test  AktieKoll.slnx --no-build --configuration Release --verbosity normal
 
