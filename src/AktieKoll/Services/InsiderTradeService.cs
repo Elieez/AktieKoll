@@ -66,6 +66,8 @@ public class InsiderTradeService : IInsiderTradeService
 
     public async Task<IEnumerable<InsiderTrade>> GetInsiderTrades()
     {
-        return await _context.InsiderTrades.ToListAsync();
+        return await _context.InsiderTrades
+            .OrderByDescending(id => id)
+            .ToListAsync();
     }
 }
