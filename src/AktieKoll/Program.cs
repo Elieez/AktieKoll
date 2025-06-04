@@ -1,7 +1,10 @@
 using AktieKoll.Data;
 using AktieKoll.Interfaces;
 using AktieKoll.Services;
+using CsvHelper;
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
+using AktieKoll.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +12,19 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection")));
+
+builder.Services.AddSingleton<Func<TextReader, CsvReader>>(provider => reader =>
+{
+    var config = new CsvHelper.Configuration.CsvConfiguration(new CultureInfo("sv-SE"))
+    {
+        Delimiter = ";"
+    };
+    var csv = new CsvReader(reader, config);
+    csv.Context.RegisterClassMap<CsvDTOMap>(); // This is correct!
+    return csv;
+});
+
+builder.Services.AddHttpClient<CsvFetchService>();
 
 // Register the service for dependency injection.
 builder.Services.AddScoped<IInsiderTradeService, InsiderTradeService>();
