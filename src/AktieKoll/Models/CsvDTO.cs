@@ -28,7 +28,7 @@ public class CsvDTO
     public required DateTime Transaktionsdatum { get; set; }
     [TypeConverter(typeof(VolumeIntConverter))]
     public required int Volym { get; set; }
-    public required string Volymenhet { get; set; }
+    public required string Volymsenhet { get; set; }
     public required decimal Pris { get; set; }
     public required string Valuta { get; set; }
     public required string Handelsplats { get; set; }

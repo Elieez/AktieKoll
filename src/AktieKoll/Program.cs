@@ -4,7 +4,6 @@ using AktieKoll.Services;
 using CsvHelper;
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
-using AktieKoll.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +27,32 @@ builder.Services.AddHttpClient<CsvFetchService>();
 builder.Services.AddScoped<IInsiderTradeService, InsiderTradeService>();
 
 var app = builder.Build();
+
+// Create HttpClient
+var httpClient = new HttpClient();
+
+// CsvReader factory for semicolon-delimited Swedish CSVs
+CsvReader csvReaderFactory(TextReader reader)
+{
+    var config = new CsvHelper.Configuration.CsvConfiguration(new CultureInfo("sv-SE"))
+    {
+        Delimiter = ";"
+    };
+    return new CsvReader(reader, config);
+}
+
+// Create the service
+var csvService = new CsvFetchService(httpClient, csvReaderFactory);
+
+// Call the service and print results (for testing)
+app.Lifetime.ApplicationStarted.Register(async () =>
+{
+    var trades = await csvService.FetchInsiderTradesAsync();
+    foreach (var trade in trades)
+    {
+        Console.WriteLine($"{trade.Publiceringsdatum}: {trade.Emittent} - {trade.Befattning} - {trade.Volym} @ {trade.Pris}");
+    }
+});
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
