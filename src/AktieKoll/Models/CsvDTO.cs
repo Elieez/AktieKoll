@@ -5,7 +5,7 @@ namespace AktieKoll.Models;
 
 public class CsvDTO
 {
-    public DateTime? Publiceringsdatum { get; set; }
+    public required DateTime Publiceringsdatum { get; set; }
     public required string Emittent { get; set; }
     [Name("LEI-kod")]
     public required string LEI { get; set; }
@@ -25,22 +25,11 @@ public class CsvDTO
     public required string Instrumenttyp { get; set; }
     public required string Instrumentnamn { get; set; }
     public string? ISIN { get; set; }
-    public DateTime? Transaktionsdatum { get; set; }
+    public required DateTime Transaktionsdatum { get; set; }
     public required int Volym { get; set; }
     public required string Volymenhet { get; set; }
     public required decimal Pris { get; set; }
     public required string Valuta { get; set; }
     public required string Handelsplats { get; set; }
     public required string Status { get; set; } // Could be bool/enum
-}
-
-public class CsvDTOMap : ClassMap<CsvDTO>
-{
-    public CsvDTOMap()
-    {
-        Map(m => m.Publiceringsdatum).Name("Publiceringsdatum")
-            .TypeConverterOption.Format("yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd");
-        Map(m => m.Transaktionsdatum).Name("Transaktionsdatum")
-            .TypeConverterOption.Format("yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd");
-    }
 }

@@ -19,9 +19,7 @@ builder.Services.AddSingleton<Func<TextReader, CsvReader>>(provider => reader =>
     {
         Delimiter = ";"
     };
-    var csv = new CsvReader(reader, config);
-    csv.Context.RegisterClassMap<CsvDTOMap>(); // This is correct!
-    return csv;
+    return new CsvReader(reader, config);
 });
 
 builder.Services.AddHttpClient<CsvFetchService>();
