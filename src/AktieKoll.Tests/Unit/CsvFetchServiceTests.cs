@@ -4,6 +4,7 @@ using Moq;
 using Moq.Protected;
 using System.Globalization;
 using System.Net;
+using System.Text;
 
 namespace AktieKoll.Tests.Unit;
 
@@ -28,7 +29,7 @@ public class CsvFetchServiceTests
             .ReturnsAsync(new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(csv),
+                Content = new StringContent(csv, Encoding.Unicode), 
             });
 
         var httpClient = new HttpClient(handlerMock.Object);
