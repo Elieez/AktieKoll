@@ -4,6 +4,9 @@
     "config:recommended"
   ],
   "dependencyDashboard": true,
+  "recreateClosed": true,
+  "prHourlyLimit": 0,
+  "prConcurrentLimit": 0,
   "labels": [
     "dependencies"
   ],
