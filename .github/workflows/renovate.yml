@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 jobs:
   renovate:
@@ -15,11 +16,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
       - name: Run Renovate
         uses: renovatebot/github-action@v40.1.10
         with:
           token: ${{ secrets.RENOVATE_TOKEN }}
-
         env:
+          RENOVATE_TOKEN: ${{ secrets.RENOVATE_TOKEN }} 
           RENOVATE_PLATFORM: github
-          RENOVATE_REPOSITORIES: ${{ secrets.RENOVATE_TOKEN }}
+          RENOVATE_REPOSITORIES: ${{ github.repository }}
