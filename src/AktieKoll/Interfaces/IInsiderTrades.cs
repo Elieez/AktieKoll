@@ -6,5 +6,6 @@ namespace AktieKoll.Interfaces
     {
         Task<string> AddInsiderTrades(List<InsiderTrade> insiderTrades);
         Task<IEnumerable<InsiderTrade>> GetInsiderTrades();
+        Task<IEnumerable<InsiderTrade>> GetInsiderTradesTop();
     }
 }
