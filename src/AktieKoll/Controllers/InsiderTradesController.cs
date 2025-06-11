@@ -6,14 +6,8 @@ namespace AktieKoll.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class InsiderTradesController : ControllerBase
+public class InsiderTradesController(IInsiderTradeService tradeService) : ControllerBase
 {
-    private readonly IInsiderTradeService _tradeService;
-
-    public InsiderTradesController(IInsiderTradeService tradeService)
-    {
-        _tradeService = tradeService;
-    }
 
     [HttpPost]
     public async Task<IActionResult> PostInsiderTrades([FromBody] List<InsiderTrade> insiderTrades)
@@ -23,7 +17,7 @@ public class InsiderTradesController : ControllerBase
             return BadRequest("No data provided.");
         }
 
-        var result = await _tradeService.AddInsiderTrades(insiderTrades);
+        var result = await tradeService.AddInsiderTrades(insiderTrades);
         if (result == null)
         {
            return BadRequest("No new trades added.");
@@ -35,7 +29,14 @@ public class InsiderTradesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<InsiderTrade>>> GetInsiderTrades()
     {
-        var trades = await _tradeService.GetInsiderTrades();
+        var trades = await tradeService.GetInsiderTrades();
+        return Ok(trades);
+    }
+
+    [HttpGet("top")]
+    public async Task<ActionResult<IEnumerable<InsiderTrade>>> GetInsiderTradesTop()
+    {
+        var trades = await tradeService.GetInsiderTradesTop();
         return Ok(trades);
     }
 }

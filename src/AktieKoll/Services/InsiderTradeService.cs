@@ -1,18 +1,14 @@
 ﻿using AktieKoll.Data;
 using AktieKoll.Interfaces;
 using AktieKoll.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AktieKoll.Services;
 
-public class InsiderTradeService : IInsiderTradeService
+public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeService
 {
-    private readonly ApplicationDbContext _context;
-
-    public InsiderTradeService(ApplicationDbContext context)
-    {
-        _context = context;
-    }
 
     public async Task<string> AddInsiderTrades(List<InsiderTrade> insiderTrades)
     {
@@ -25,7 +21,7 @@ public class InsiderTradeService : IInsiderTradeService
         var dates = insiderTrades.Select(t => t.Date).Distinct().ToList();
 
         // Fetch existing trades from the DB for those dates.
-        var existingTrades = await _context.InsiderTrades
+        var existingTrades = await context.InsiderTrades
             .Where(t => dates.Contains(t.Date))
             .ToListAsync();
 
@@ -47,14 +43,14 @@ public class InsiderTradeService : IInsiderTradeService
             }
             else
             {
-                _context.InsiderTrades.Add(trade);
+                context.InsiderTrades.Add(trade);
                 newTradesCount++;
             }
         }
 
         if (newTradesCount > 0)
         {
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return $"{newTradesCount} new trades added.";
         }
         else
@@ -66,6 +62,21 @@ public class InsiderTradeService : IInsiderTradeService
 
     public async Task<IEnumerable<InsiderTrade>> GetInsiderTrades()
     {
-        return await _context.InsiderTrades.ToListAsync();
+        return await context.InsiderTrades
+            .OrderByDescending(t => t.Date)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<InsiderTrade>> GetInsiderTradesTop()
+    {
+        var today = DateTime.Now.Date;
+        var yesterday = today.AddDays(-1);
+        var tomorrow = today.AddDays(1);
+
+        return await context.InsiderTrades
+            //.Where(t => t.Date >= yesterday && t.Date < tomorrow)
+            .OrderByDescending(t => t.Price * t.Shares)
+            .Take(10)
+            .ToListAsync();
     }
 }
