@@ -1,15 +1,12 @@
 ﻿using AktieKoll.Data;
 using AktieKoll.Interfaces;
 using AktieKoll.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AktieKoll.Services;
 
 public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeService
 {
-
     public async Task<string> AddInsiderTrades(List<InsiderTrade> insiderTrades)
     {
         if (insiderTrades == null || insiderTrades.Count == 0)
@@ -17,10 +14,8 @@ public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeSe
             return "No data provided.";
         }
 
-        // Get distinct dates from the incoming trades.
         var dates = insiderTrades.Select(t => t.Date).Distinct().ToList();
 
-        // Fetch existing trades from the DB for those dates.
         var existingTrades = await context.InsiderTrades
             .Where(t => dates.Contains(t.Date))
             .ToListAsync();
@@ -28,7 +23,6 @@ public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeSe
         int newTradesCount = 0;
         foreach (var trade in insiderTrades)
         {
-            // Check if a trade with the same composite key exists.
             bool exists = existingTrades.Any(t =>
                 t.CompanyName == trade.CompanyName &&
                 t.InsiderName == trade.InsiderName &&
@@ -38,7 +32,6 @@ public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeSe
 
             if (exists)
             {
-                // Assuming that once a duplicate is found, the remaining trades are duplicates.
                 break;
             }
             else
@@ -58,7 +51,6 @@ public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeSe
             return "No new data was added.";
         }
     }
-
 
     public async Task<IEnumerable<InsiderTrade>> GetInsiderTrades()
     {
