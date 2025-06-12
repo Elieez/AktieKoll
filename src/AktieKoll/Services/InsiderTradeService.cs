@@ -14,10 +14,10 @@ public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeSe
             return "No data provided.";
         }
 
-        var dates = insiderTrades.Select(t => t.Date).Distinct().ToList();
+        var dates = insiderTrades.Select(t => t.PublishingDate).Distinct().ToList();
 
         var existingTrades = await context.InsiderTrades
-            .Where(t => dates.Contains(t.Date))
+            .Where(t => dates.Contains(t.PublishingDate))
             .ToListAsync();
 
         int newTradesCount = 0;
@@ -28,7 +28,7 @@ public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeSe
                 t.InsiderName == trade.InsiderName &&
                 t.Position == trade.Position &&
                 t.TransactionType == trade.TransactionType &&
-                t.Date == trade.Date);
+                t.PublishingDate == trade.PublishingDate);
 
             if (exists)
             {
@@ -55,7 +55,7 @@ public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeSe
     public async Task<IEnumerable<InsiderTrade>> GetInsiderTrades()
     {
         return await context.InsiderTrades
-            .OrderByDescending(t => t.Date)
+            .OrderByDescending(t => t.PublishingDate)
             .ToListAsync();
     }
 
