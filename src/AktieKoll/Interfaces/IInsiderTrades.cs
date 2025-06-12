@@ -1,11 +1,10 @@
 ﻿using AktieKoll.Models;
 
-namespace AktieKoll.Interfaces
+namespace AktieKoll.Interfaces;
+
+public interface IInsiderTradeService
 {
-    public interface IInsiderTradeService
-    {
-        Task<string> AddInsiderTrades(List<InsiderTrade> insiderTrades);
-        Task<IEnumerable<InsiderTrade>> GetInsiderTrades();
-        Task<IEnumerable<InsiderTrade>> GetInsiderTradesTop();
-    }
+    Task<string> AddInsiderTrades(List<InsiderTrade> insiderTrades);
+    Task<IEnumerable<InsiderTrade>> GetInsiderTrades();
+    Task<IEnumerable<InsiderTrade>> GetInsiderTradesTop();
 }

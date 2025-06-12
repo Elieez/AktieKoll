@@ -12,14 +12,12 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowNextApp", policy =>
     {
         policy
-          .WithOrigins("http://localhost:3000")    // your Next.js dev URL
+          .WithOrigins("http://localhost:3000")
           .AllowAnyMethod()
           .AllowAnyHeader();
     });
 });
 
-
-// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection")));
@@ -35,15 +33,12 @@ builder.Services.AddSingleton<Func<TextReader, CsvReader>>(provider => reader =>
 
 builder.Services.AddHttpClient<CsvFetchService>();
 
-// Register the service for dependency injection.
 builder.Services.AddScoped<IInsiderTradeService, InsiderTradeService>();
 
 var app = builder.Build();
 
-// Create HttpClient
 var httpClient = new HttpClient();
 
-// CsvReader factory for semicolon-delimited Swedish CSVs
 CsvReader csvReaderFactory(TextReader reader)
 {
     var config = new CsvHelper.Configuration.CsvConfiguration(new CultureInfo("sv-SE"))
@@ -53,7 +48,6 @@ CsvReader csvReaderFactory(TextReader reader)
     return new CsvReader(reader, config);
 }
 
-// Create the service
 var csvService = new CsvFetchService(httpClient, csvReaderFactory);
 
 // Call the service and print results (for testing)
@@ -66,7 +60,6 @@ app.Lifetime.ApplicationStarted.Register(async () =>
     }
 });
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 { 
     app.UseExceptionHandler("/Home/Error");
