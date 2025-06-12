@@ -28,7 +28,12 @@ public class InsiderTradeServiceTests
                 InsiderName = "Alice",
                 Position = "CFO",
                 TransactionType = "Buy",
-                Date = DateTime.Today
+                Shares = 100,
+                Price = 10.5m,
+                Currency = "SEK",
+                Status = "Aktuell",
+                PublishingDate = DateTime.Today,
+                TransactionDate = DateTime.Today
             }
         };
 
@@ -52,7 +57,12 @@ public class InsiderTradeServiceTests
             InsiderName = "Alice",
             Position = "CFO",
             TransactionType = "Buy",
-            Date = DateTime.Today
+            Shares = 100,
+            Price = 10.5m,
+            Currency = "SEK",
+            Status = "Aktuell",
+            PublishingDate = DateTime.Today,
+            TransactionDate = DateTime.Today
         };
         ctx.InsiderTrades.Add(trade);
         await ctx.SaveChangesAsync();
@@ -76,7 +86,12 @@ public class InsiderTradeServiceTests
             InsiderName = "Alice",
             Position = "CFO",
             TransactionType = "Buy",
-            Date = DateTime.Today
+            Shares = 100,
+            Price = 10.5m,
+            Currency = "SEK",
+            Status = "Aktuell",
+            PublishingDate = DateTime.Today,
+            TransactionDate = DateTime.Today
         };
         ctx.InsiderTrades.Add(existing);
         await ctx.SaveChangesAsync();
@@ -87,7 +102,12 @@ public class InsiderTradeServiceTests
             InsiderName = "Bob",
             Position = "CEO",
             TransactionType = "Sell",
-            Date = DateTime.Today
+            Shares = 200,
+            Price = 20.0m,
+            Currency = "SEK",
+            Status = "Aktuell",
+            PublishingDate = DateTime.Today,
+            TransactionDate = DateTime.Today
         };
 
         var laterTrade = new InsiderTrade
@@ -96,7 +116,12 @@ public class InsiderTradeServiceTests
             InsiderName = "Cara",
             Position = "CIO",
             TransactionType = "Buy",
-            Date = DateTime.Today
+            Shares = 300,
+            Price = 30.0m,
+            Currency = "SEK",
+            Status = "Aktuell",
+            PublishingDate = DateTime.Today,
+            TransactionDate = DateTime.Today
         };
 
         var trades = new List<InsiderTrade> { newTrade, existing, laterTrade };
@@ -115,8 +140,32 @@ public class InsiderTradeServiceTests
     {
         var ctx = CreateContext();
         ctx.InsiderTrades.AddRange(
-            new InsiderTrade { CompanyName = "FooCorp", InsiderName = "Alice", Position = "CFO", TransactionType = "Buy", Date = DateTime.Today },
-            new InsiderTrade { CompanyName = "BarCorp", InsiderName = "Bob", Position = "CEO", TransactionType = "Sell", Date = DateTime.Today }
+            new InsiderTrade
+            {
+                CompanyName = "FooCorp",
+                InsiderName = "Alice",
+                Position = "CFO",
+                TransactionType = "Buy",
+                Shares = 100,
+                Price = 10.5m,
+                Currency = "SEK",
+                Status = "Aktuell",
+                PublishingDate = DateTime.Today,
+                TransactionDate = DateTime.Today
+            },
+            new InsiderTrade
+            {
+                CompanyName = "BarCorp",
+                InsiderName = "Bob",
+                Position = "CEO",
+                TransactionType = "Sell",
+                Shares = 200,
+                Price = 20.0m,
+                Currency = "SEK",
+                Status = "Aktuell",
+                PublishingDate = DateTime.Today,
+                TransactionDate = DateTime.Today
+            }
         );
         await ctx.SaveChangesAsync();
         var service = new InsiderTradeService(ctx);
