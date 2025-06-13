@@ -1,0 +1,25 @@
+name: Fetch Insider Trades
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore
+        run: dotnet restore src/FetchTrades/FetchTrades.csproj
+
+      - name: Run fetcher
+        env:
+          PostgresConnection: ${{ secrets.POSTGRES_CONNECTION }}
+        run: dotnet run --project src/FetchTrades/FetchTrades.csproj --no-build
