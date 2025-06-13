@@ -3,6 +3,8 @@ using AktieKoll.Interfaces;
 using AktieKoll.Services;
 using CsvHelper;
 using System.Globalization;
+using System.Linq;
+using AktieKoll.Models;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -50,14 +52,15 @@ CsvReader csvReaderFactory(TextReader reader)
 
 var csvService = new CsvFetchService(httpClient, csvReaderFactory);
 
-// Call the service and print results (for testing)
+// Fetch new insider trades at startup and persist them
 app.Lifetime.ApplicationStarted.Register(async () =>
 {
-    var trades = await csvService.FetchInsiderTradesAsync();
-    foreach (var trade in trades)
-    {
-        Console.WriteLine($"{trade.Publiceringsdatum}: {trade.Emittent} - {trade.Befattning} - {trade.Volym} @ {trade.Pris}");
-    }
+    var csvResults = await csvService.FetchInsiderTradesAsync();
+    var trades = csvResults.Select(dto => dto.ToInsiderTrade()).ToList();
+
+    var tradeService = app.Services.GetRequiredService<IInsiderTradeService>();
+    var message = await tradeService.AddInsiderTrades(trades);
+    Console.WriteLine(message);
 });
 
 if (!app.Environment.IsDevelopment())
