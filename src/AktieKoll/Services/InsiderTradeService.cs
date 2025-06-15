@@ -66,7 +66,7 @@ public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeSe
         var tomorrow = today.AddDays(1);
 
         return await context.InsiderTrades
-            //.Where(t => t.Date >= yesterday && t.Date < tomorrow)
+            .Where(t => t.PublishingDate >= yesterday && t.PublishingDate < tomorrow)
             .OrderByDescending(t => t.Price * t.Shares)
             .Take(10)
             .ToListAsync();

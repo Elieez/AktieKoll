@@ -1,4 +1,6 @@
-﻿namespace AktieKoll.Models;
+﻿using AktieKoll.Extensions;
+
+namespace AktieKoll.Models;
 
 public static class CsvDtoExtensions
 {
@@ -6,7 +8,7 @@ public static class CsvDtoExtensions
     {
         return new InsiderTrade
         {
-            CompanyName = csvDto.Emittent,
+            CompanyName = csvDto.Emittent.RemovePubl(),
             InsiderName = csvDto.PersonNamn,
             Position = csvDto.Befattning,
             TransactionType = csvDto.Karaktär,
