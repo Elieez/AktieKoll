@@ -4,9 +4,8 @@ using AktieKoll.Services;
 using Microsoft.EntityFrameworkCore;
 using CsvHelper;
 using System.Globalization;
-using System.Linq;
 
-var connectionString = Environment.GetEnvironmentVariable("PostgresConnection");
+var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__PostgresConnection");
 if (string.IsNullOrWhiteSpace(connectionString))
 {
     Console.Error.WriteLine("PostgresConnection environment variable not set");
