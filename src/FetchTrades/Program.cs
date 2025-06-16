@@ -34,4 +34,3 @@ var trades = csvResults.Select(dto => dto.ToInsiderTrade()).ToList();
 var tradeService = new InsiderTradeService(context);
 var message = await tradeService.AddInsiderTrades(trades);
 Console.WriteLine(message);
-
