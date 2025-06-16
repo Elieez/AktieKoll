@@ -405,3 +405,7 @@ FodyWeavers.xsd
 appsettings.Development.json
 appsettings.Local.json
 appsettings.json
+
+# Verify
+*.received.*
+*.received/
