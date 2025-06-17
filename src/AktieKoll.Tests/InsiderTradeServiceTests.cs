@@ -42,7 +42,7 @@ public class InsiderTradeServiceTests
 
         // Assert
         Assert.Equal("1 new trades added.", result);
-        var saved = await ctx.InsiderTrades.ToListAsync();
+        var saved = await ctx.InsiderTrades.ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
         Assert.Single(saved);
     }
 
@@ -65,12 +65,12 @@ public class InsiderTradeServiceTests
             TransactionDate = DateTime.Today
         };
         ctx.InsiderTrades.Add(trade);
-        await ctx.SaveChangesAsync();
+        await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var result = await service.AddInsiderTrades(new List<InsiderTrade> { trade });
 
         Assert.Equal("No new data was added.", result);
-        var count = await ctx.InsiderTrades.CountAsync();
+        var count = await ctx.InsiderTrades.CountAsync(cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(1, count);
     }
 
@@ -129,7 +129,7 @@ public class InsiderTradeServiceTests
         var result = await service.AddInsiderTrades(trades);
 
         Assert.Equal("1 new trades added.", result);
-        var saved = await ctx.InsiderTrades.ToListAsync();
+        var saved = await ctx.InsiderTrades.ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(2, saved.Count);
         Assert.Contains(saved, t => t.CompanyName == "BarCorp");
         Assert.DoesNotContain(saved, t => t.CompanyName == "BazCorp");
@@ -167,7 +167,7 @@ public class InsiderTradeServiceTests
                 TransactionDate = DateTime.Today
             }
         );
-        await ctx.SaveChangesAsync();
+        await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
         var service = new InsiderTradeService(ctx);
 
         var result = await service.GetInsiderTrades();

@@ -1,9 +1,9 @@
 using AktieKoll.Data;
-using AktieKoll.Models;
 using AktieKoll.Services;
-using Microsoft.EntityFrameworkCore;
 using CsvHelper;
+using Microsoft.EntityFrameworkCore;
 using System.Globalization;
+using static AktieKoll.Models.CsvDtoExtensions;
 
 var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__PostgresConnection");
 if (string.IsNullOrWhiteSpace(connectionString))
@@ -29,7 +29,7 @@ CsvReader csvReaderFactory(TextReader reader)
 
 var csvService = new CsvFetchService(httpClient, csvReaderFactory);
 var csvResults = await csvService.FetchInsiderTradesAsync();
-var trades = csvResults.Select(dto => dto.ToInsiderTrade()).ToList();
+var trades = InsiderTradeMapper.MapDtosToTrades(csvResults);
 
 var tradeService = new InsiderTradeService(context);
 var message = await tradeService.AddInsiderTrades(trades);
