@@ -8,7 +8,7 @@ public static class CsvDtoExtensions
     {
         return new InsiderTrade
         {
-            CompanyName = csvDto.Emittent.RemovePubl(),
+            CompanyName = csvDto.Emittent.FilterCompanyName(),
             InsiderName = csvDto.PersonNamn,
             Position = csvDto.Befattning,
             TransactionType = csvDto.Karaktär,
@@ -19,5 +19,10 @@ public static class CsvDtoExtensions
             TransactionDate = csvDto.Transaktionsdatum,
             PublishingDate = csvDto.Publiceringsdatum,
         };
+    }
+    public static class InsiderTradeMapper
+    {
+        public static List<InsiderTrade> MapDtosToTrades(IEnumerable<CsvDTO> dtos)
+            => dtos.Select(dto => dto.ToInsiderTrade()).ToList();
     }
 }

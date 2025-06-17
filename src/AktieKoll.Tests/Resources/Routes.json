@@ -6,7 +6,7 @@
           "Method": "GET"
         }
       ],
-      "AbsoluteUri": "https://marknadssok.fi.se/Publiceringsklient/sv-SE/Search/Search?SearchFunctionType=Insyn&Utgivare=&PersonILedandeSt%C3%A4llningNamn=&Transaktionsdatum.From=&Transaktionsdatum.To=&Publiceringsdatum.From=2025-06-15&Publiceringsdatum.To=2025-06-16&button=export&Page=1"
+      "AbsoluteUri": "https://marknadssok.fi.se/Publiceringsklient/sv-SE/Search/Search?SearchFunctionType=Insyn&Utgivare=&PersonILedandeSt%C3%A4llningNamn=&Transaktionsdatum.From=&Transaktionsdatum.To=&Publiceringsdatum.From=2025-01-01&Publiceringsdatum.To=2025-01-02&button=export&Page=1"
     },
     "Responses": [
       {
