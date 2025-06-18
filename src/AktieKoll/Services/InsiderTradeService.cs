@@ -21,6 +21,7 @@ public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeSe
             .ToListAsync();
 
         int newTradesCount = 0;
+        int removedTradesCount = 0;
         foreach (var trade in insiderTrades)
         {
             bool exists = existingTrades.Any(t =>
@@ -28,7 +29,27 @@ public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeSe
                 t.InsiderName == trade.InsiderName &&
                 t.Position == trade.Position &&
                 t.TransactionType == trade.TransactionType &&
-                t.PublishingDate == trade.PublishingDate);
+                t.PublishingDate == trade.PublishingDate
+                );
+
+            bool isRevised = string.Equals(trade.Status, "Reviderad", StringComparison.OrdinalIgnoreCase);
+            if (isRevised)
+            {
+                var toRemove = existingTrades.FirstOrDefault(t => 
+                    t.CompanyName == trade.CompanyName &&
+                    t.InsiderName == trade.InsiderName &&
+                    t.Position == trade.Position &&
+                    t.TransactionType == trade.TransactionType &&
+                    t.PublishingDate == trade.PublishingDate);
+
+                if (toRemove != null)
+                {
+                    context.InsiderTrades.Remove(toRemove);
+                    existingTrades.Remove(toRemove);
+                    removedTradesCount++;
+                }
+                continue;
+            }
 
             if (exists)
             {
@@ -37,19 +58,27 @@ public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeSe
             else
             {
                 context.InsiderTrades.Add(trade);
+                existingTrades.Add(trade);
                 newTradesCount++;
             }
         }
 
-        if (newTradesCount > 0)
+        if (newTradesCount > 0 || removedTradesCount > 0)
         {
             await context.SaveChangesAsync();
-            return $"{newTradesCount} new trades added.";
+            
+            if (newTradesCount > 0 && removedTradesCount > 0)
+            {
+                return $"{newTradesCount} new trades added. {removedTradesCount} trades removed.";
+            }
+            if (newTradesCount > 0)
+            {
+                return $"{newTradesCount} new trades added.";
+            }
+            return $"{removedTradesCount} trades removed.";
         }
-        else
-        {
-            return "No new data was added.";
-        }
+        return "No new data was added.";
+               
     }
 
     public async Task<IEnumerable<InsiderTrade>> GetInsiderTrades()

@@ -5,7 +5,6 @@ using Devlead.Testing.MockHttp;
 using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 
-
 public static partial class ServiceProviderFixture
 {
     static partial void InitServiceProvider(IServiceCollection services)
