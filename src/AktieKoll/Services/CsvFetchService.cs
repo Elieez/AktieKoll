@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Text;
 using CsvHelper;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AktieKoll.Services;
 
