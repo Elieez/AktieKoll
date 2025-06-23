@@ -1,0 +1,28 @@
+﻿[
+  {
+    Id: 1,
+    CompanyName: FooCorp,
+    InsiderName: Alice,
+    Position: CFO,
+    TransactionType: Buy,
+    Shares: 100,
+    Price: 10.5,
+    Currency: SEK,
+    Status: Aktuell,
+    PublishingDate: DateTime_1,
+    TransactionDate: DateTime_1
+  },
+  {
+    Id: 2,
+    CompanyName: BarCorp,
+    InsiderName: Bob,
+    Position: CEO,
+    TransactionType: Sell,
+    Shares: 200,
+    Price: 20.0,
+    Currency: SEK,
+    Status: Aktuell,
+    PublishingDate: DateTime_2,
+    TransactionDate: DateTime_2
+  }
+]

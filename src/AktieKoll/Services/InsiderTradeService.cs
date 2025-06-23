@@ -40,7 +40,7 @@ public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeSe
 
             if (duplicate != null)
             {
-                break;
+                continue;
             }
 
             context.InsiderTrades.Add(trade);
