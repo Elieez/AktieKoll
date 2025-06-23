@@ -1,4 +1,5 @@
 ﻿using AktieKoll.Data;
+using AktieKoll.Extensions;
 using AktieKoll.Interfaces;
 using AktieKoll.Models;
 using Microsoft.EntityFrameworkCore;
@@ -24,43 +25,27 @@ public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeSe
         int removedTradesCount = 0;
         foreach (var trade in insiderTrades)
         {
-            bool exists = existingTrades.Any(t =>
-                t.CompanyName == trade.CompanyName &&
-                t.InsiderName == trade.InsiderName &&
-                t.Position == trade.Position &&
-                t.TransactionType == trade.TransactionType &&
-                t.PublishingDate == trade.PublishingDate
-                );
 
-            bool isRevised = string.Equals(trade.Status, "Reviderad", StringComparison.OrdinalIgnoreCase);
-            if (isRevised)
+            var duplicate = existingTrades.FindDuplicate(trade);
+            if (trade.IsRevised())
             {
-                var toRemove = existingTrades.FirstOrDefault(t => 
-                    t.CompanyName == trade.CompanyName &&
-                    t.InsiderName == trade.InsiderName &&
-                    t.Position == trade.Position &&
-                    t.TransactionType == trade.TransactionType &&
-                    t.PublishingDate == trade.PublishingDate);
-
-                if (toRemove != null)
+                if (duplicate != null)
                 {
-                    context.InsiderTrades.Remove(toRemove);
-                    existingTrades.Remove(toRemove);
+                    context.InsiderTrades.Remove(duplicate);
+                    existingTrades.Remove(duplicate);
                     removedTradesCount++;
                 }
                 continue;
             }
 
-            if (exists)
+            if (duplicate != null)
             {
                 break;
             }
-            else
-            {
-                context.InsiderTrades.Add(trade);
-                existingTrades.Add(trade);
-                newTradesCount++;
-            }
+
+            context.InsiderTrades.Add(trade);
+            existingTrades.Add(trade);
+            newTradesCount++;
         }
 
         if (newTradesCount > 0 || removedTradesCount > 0)
