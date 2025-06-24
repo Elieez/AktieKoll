@@ -10,6 +10,7 @@ public static partial class ServiceProviderFixture
     static partial void InitServiceProvider(IServiceCollection services)
     {
         services
+            .AddLogging()
             .AddMockHttpClient<Constants>()
             .AddSingleton<CsvFetchService>()
             .AddSingleton<Func<TextReader, CsvReader>>(reader =>
@@ -20,8 +21,6 @@ public static partial class ServiceProviderFixture
                 };
                 return new CsvReader(reader, config);
             });
-
-
     }
     public static IServiceCollection AuthorizedClient(this IServiceCollection services)
     {

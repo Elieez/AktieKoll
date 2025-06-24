@@ -2,7 +2,6 @@
 using AktieKoll.Models;
 using AktieKoll.Services;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
 
 namespace AktieKoll.Tests;
 
