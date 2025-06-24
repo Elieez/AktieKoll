@@ -2,7 +2,7 @@ using AktieKoll.Data;
 using AktieKoll.Services;
 using CsvHelper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using System.Globalization;
 using static AktieKoll.Models.CsvDtoExtensions;
 
@@ -28,7 +28,8 @@ CsvReader csvReaderFactory(TextReader reader)
     return new CsvReader(reader, config);
 }
 
-var logger = NullLogger<CsvFetchService>.Instance;
+using var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<CsvFetchService>();
 var csvService = new CsvFetchService(httpClient, csvReaderFactory, logger);
 
 var csvResults = await csvService.FetchInsiderTradesAsync();
