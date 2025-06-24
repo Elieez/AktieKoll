@@ -160,4 +160,99 @@ public class TransactionsDbTests
 
         await Verify(result);
     }
+
+    [Fact]
+    public async Task AddInsiderTrades_ExcludedTransactionsFiltered()
+    {
+        var ctx = CreateContext();
+        var service = new InsiderTradeService(ctx);
+
+        var csvDtos = new List<CsvDTO>
+        {
+            new()
+            {
+                Publiceringsdatum = DateTime.Today,
+                Emittent = "FooCorp",
+                LEI = string.Empty,
+                Anmälningsskyldig = string.Empty,
+                PersonNamn = "Alice",
+                Befattning = "CFO",
+                Karaktär = "Lån mottaget",
+                Instrumenttyp = string.Empty,
+                Instrumentnamn = string.Empty,
+                Transaktionsdatum = DateTime.Today,
+                Volym = 100,
+                Volymsenhet = string.Empty,
+                Pris = 10.5m,
+                Valuta = "SEK",
+                Handelsplats = string.Empty,
+                Status = "Aktuell"
+            },
+            new()
+            {
+                Publiceringsdatum = DateTime.Today,
+                Emittent = "FooCorp",
+                LEI = string.Empty,
+                Anmälningsskyldig = string.Empty,
+                PersonNamn = "Alice",
+                Befattning = "CFO",
+                Karaktär = "Utdelning lämnad",
+                Instrumenttyp = string.Empty,
+                Instrumentnamn = string.Empty,
+                Transaktionsdatum = DateTime.Today,
+                Volym = 150,
+                Volymsenhet = string.Empty,
+                Pris = 15.5m,
+                Valuta = "SEK",
+                Handelsplats = string.Empty,
+                Status = "Aktuell"
+            },
+            new()
+            {
+                Publiceringsdatum = DateTime.Today.AddDays(-1),
+                Emittent = "BarCorp",
+                LEI = string.Empty,
+                Anmälningsskyldig = string.Empty,
+                PersonNamn = "Bob",
+                Befattning = "CEO",
+                Karaktär = "Utdelning mottagen",
+                Instrumenttyp = string.Empty,
+                Instrumentnamn = string.Empty,
+                Transaktionsdatum = DateTime.Today.AddDays(-1),
+                Volym = 200,
+                Volymsenhet = string.Empty,
+                Pris = 20.0m,
+                Valuta = "SEK",
+                Handelsplats = string.Empty,
+                Status = "Aktuell"
+            },
+            new()
+            {
+                Publiceringsdatum = DateTime.Today.AddDays(-1),
+                Emittent = "BarCorp",
+                LEI = string.Empty,
+                Anmälningsskyldig = string.Empty,
+                PersonNamn = "Bob",
+                Befattning = "CEO",
+                Karaktär = "Förvärv",
+                Instrumenttyp = string.Empty,
+                Instrumentnamn = string.Empty,
+                Transaktionsdatum = DateTime.Today.AddDays(-1),
+                Volym = 400,
+                Volymsenhet = string.Empty,
+                Pris = 40.0m,
+                Valuta = "SEK",
+                Handelsplats = string.Empty,
+                Status = "Aktuell"
+            }
+        };
+
+        var trades = InsiderTradeMapper.MapDtosToTrades(csvDtos);
+
+        await service.AddInsiderTrades(trades);
+
+        var result = await service.GetInsiderTrades();
+
+        await Verify(result);
+    }
 }

@@ -22,7 +22,18 @@ public static class CsvDtoExtensions
     }
     public static class InsiderTradeMapper
     {
+        private static readonly HashSet<string> ExcludedTransactionsTypes = new(
+            StringComparer.OrdinalIgnoreCase)
+        {
+            "Lån mottaget",
+            "Utdelning lämnad",
+            "Utdelning mottagen"
+        };
+
         public static List<InsiderTrade> MapDtosToTrades(IEnumerable<CsvDTO> dtos)
-            => dtos.Select(dto => dto.ToInsiderTrade()).ToList();
+            => dtos
+            .Where(dto => !ExcludedTransactionsTypes.Contains(dto.Karaktär))
+            .Select(dto => dto.ToInsiderTrade())
+            .ToList();
     }
 }

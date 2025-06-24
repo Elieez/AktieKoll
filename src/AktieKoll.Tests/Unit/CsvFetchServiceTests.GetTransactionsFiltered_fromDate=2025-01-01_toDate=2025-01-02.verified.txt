@@ -1,11 +1,11 @@
 ﻿[
   {
-    CompanyName: Logistea,
-    InsiderName: Mia Arnhult,
-    Position: Styrelseledamot,
-    TransactionType: Utdelning lämnad,
-    Shares: 100000,
-    Price: 14.64,
+    CompanyName: Balco Group,
+    InsiderName: Ingalill Berglund,
+    Position: Styrelseordförande,
+    TransactionType: Förvärv,
+    Shares: 32,
+    Price: 25.9,
     Currency: SEK,
     Status: Aktuell,
     PublishingDate: DateTime_1,
@@ -16,24 +16,12 @@
     InsiderName: Ingalill Berglund,
     Position: Styrelseordförande,
     TransactionType: Förvärv,
-    Shares: 32,
-    Price: 25.9,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_3,
-    TransactionDate: DateTime_4
-  },
-  {
-    CompanyName: Balco Group,
-    InsiderName: Ingalill Berglund,
-    Position: Styrelseordförande,
-    TransactionType: Förvärv,
     Shares: 9968,
     Price: 26.0,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_3,
-    TransactionDate: DateTime_4
+    PublishingDate: DateTime_1,
+    TransactionDate: DateTime_2
   },
   {
     CompanyName: Logistea,
@@ -44,8 +32,8 @@
     Price: 1.41,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_5,
-    TransactionDate: DateTime_2
+    PublishingDate: DateTime_3,
+    TransactionDate: DateTime_4
   },
   {
     CompanyName: Pricer.,
@@ -56,8 +44,8 @@
     Price: 1.2853,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_6,
-    TransactionDate: DateTime_7
+    PublishingDate: DateTime_5,
+    TransactionDate: DateTime_6
   },
   {
     CompanyName: Dynavox Group,
@@ -67,8 +55,8 @@
     Shares: 29829,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_8,
-    TransactionDate: DateTime_4
+    PublishingDate: DateTime_7,
+    TransactionDate: DateTime_2
   },
   {
     CompanyName: Dynavox Group,
@@ -79,8 +67,8 @@
     Price: 107.29,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_8,
-    TransactionDate: DateTime_4
+    PublishingDate: DateTime_7,
+    TransactionDate: DateTime_2
   },
   {
     CompanyName: Pricer,
@@ -91,8 +79,8 @@
     Price: 1.2853,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_9,
-    TransactionDate: DateTime_4
+    PublishingDate: DateTime_8,
+    TransactionDate: DateTime_2
   },
   {
     CompanyName: Envar Holding,
@@ -103,8 +91,8 @@
     Price: 23.20,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_10,
-    TransactionDate: DateTime_2
+    PublishingDate: DateTime_9,
+    TransactionDate: DateTime_4
   },
   {
     CompanyName: Pricer,
@@ -115,8 +103,8 @@
     Price: 1.2853,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_11,
-    TransactionDate: DateTime_4
+    PublishingDate: DateTime_10,
+    TransactionDate: DateTime_2
   },
   {
     CompanyName: Dynavox Group,
@@ -126,18 +114,7 @@
     Shares: 17461,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_12,
-    TransactionDate: DateTime_4
-  },
-  {
-    CompanyName: I-Tech,
-    InsiderName: Magnus Henell,
-    Position: Ekonomichef/finanschef/finansdirektör,
-    TransactionType: Lån mottaget,
-    Shares: 1757,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_13,
+    PublishingDate: DateTime_11,
     TransactionDate: DateTime_2
   },
   {
@@ -149,19 +126,8 @@
     Price: 105.06,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_13,
-    TransactionDate: DateTime_2
-  },
-  {
-    CompanyName: I-Tech,
-    InsiderName: Magnus Henell,
-    Position: Ekonomichef/finanschef/finansdirektör,
-    TransactionType: Lån mottaget,
-    Shares: 4827,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_13,
-    TransactionDate: DateTime_14
+    PublishingDate: DateTime_12,
+    TransactionDate: DateTime_4
   },
   {
     CompanyName: I-Tech,
@@ -172,19 +138,8 @@
     Price: 100.23,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_13,
-    TransactionDate: DateTime_14
-  },
-  {
-    CompanyName: I-Tech,
-    InsiderName: Magnus Henell,
-    Position: Ekonomichef/finanschef/finansdirektör,
-    TransactionType: Lån mottaget,
-    Shares: 5736,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_13,
-    TransactionDate: DateTime_4
+    PublishingDate: DateTime_12,
+    TransactionDate: DateTime_13
   },
   {
     CompanyName: I-Tech,
@@ -195,8 +150,8 @@
     Price: 97.07,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_13,
-    TransactionDate: DateTime_4
+    PublishingDate: DateTime_12,
+    TransactionDate: DateTime_2
   },
   {
     CompanyName: Pricer,
@@ -207,19 +162,8 @@
     Price: 1.2853,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_15,
-    TransactionDate: DateTime_7
-  },
-  {
-    CompanyName: I-Tech,
-    InsiderName: Cecilia Ohlauson,
-    Position: Annan ledande befattningshavare,
-    TransactionType: Lån mottaget,
-    Shares: 1757,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_15,
-    TransactionDate: DateTime_2
+    PublishingDate: DateTime_14,
+    TransactionDate: DateTime_6
   },
   {
     CompanyName: I-Tech,
@@ -230,19 +174,8 @@
     Price: 105.06,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_15,
-    TransactionDate: DateTime_2
-  },
-  {
-    CompanyName: I-Tech,
-    InsiderName: Cecilia Ohlauson,
-    Position: Annan ledande befattningshavare,
-    TransactionType: Lån mottaget,
-    Shares: 4827,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_15,
-    TransactionDate: DateTime_2
+    PublishingDate: DateTime_14,
+    TransactionDate: DateTime_4
   },
   {
     CompanyName: I-Tech,
@@ -253,19 +186,8 @@
     Price: 100.28,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_15,
-    TransactionDate: DateTime_2
-  },
-  {
-    CompanyName: I-Tech,
-    InsiderName: Cecilia Ohlauson,
-    Position: Annan ledande befattningshavare,
-    TransactionType: Lån mottaget,
-    Shares: 5736,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_15,
-    TransactionDate: DateTime_2
+    PublishingDate: DateTime_14,
+    TransactionDate: DateTime_4
   },
   {
     CompanyName: I-Tech,
@@ -276,8 +198,8 @@
     Price: 97.07,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_15,
-    TransactionDate: DateTime_2
+    PublishingDate: DateTime_14,
+    TransactionDate: DateTime_4
   },
   {
     CompanyName: Fortnox,
@@ -288,8 +210,8 @@
     Price: 89.75,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_16,
-    TransactionDate: DateTime_7
+    PublishingDate: DateTime_15,
+    TransactionDate: DateTime_6
   },
   {
     CompanyName: Fortnox,
@@ -300,8 +222,8 @@
     Price: 89.75,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_17,
-    TransactionDate: DateTime_7
+    PublishingDate: DateTime_16,
+    TransactionDate: DateTime_6
   },
   {
     CompanyName: Swedish Orphan Biovitrum,
@@ -311,19 +233,8 @@
     Shares: 12222,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_18,
-    TransactionDate: DateTime_14
-  },
-  {
-    CompanyName: I-Tech,
-    InsiderName: Philip Wigren Chaabane,
-    Position: Styrelseordförande,
-    TransactionType: Lån mottaget,
-    Shares: 1757,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_19,
-    TransactionDate: DateTime_2
+    PublishingDate: DateTime_17,
+    TransactionDate: DateTime_13
   },
   {
     CompanyName: I-Tech,
@@ -334,19 +245,8 @@
     Price: 105.06,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_19,
-    TransactionDate: DateTime_2
-  },
-  {
-    CompanyName: I-Tech,
-    InsiderName: Philip Wigren Chaabane,
-    Position: Styrelseordförande,
-    TransactionType: Lån mottaget,
-    Shares: 4827,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_19,
-    TransactionDate: DateTime_14
+    PublishingDate: DateTime_18,
+    TransactionDate: DateTime_4
   },
   {
     CompanyName: I-Tech,
@@ -357,19 +257,8 @@
     Price: 100.23,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_19,
-    TransactionDate: DateTime_14
-  },
-  {
-    CompanyName: I-Tech,
-    InsiderName: Philip Wigren Chaabane,
-    Position: Styrelseordförande,
-    TransactionType: Lån mottaget,
-    Shares: 5736,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_19,
-    TransactionDate: DateTime_4
+    PublishingDate: DateTime_18,
+    TransactionDate: DateTime_13
   },
   {
     CompanyName: I-Tech,
@@ -380,8 +269,8 @@
     Price: 97.07,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_19,
-    TransactionDate: DateTime_4
+    PublishingDate: DateTime_18,
+    TransactionDate: DateTime_2
   },
   {
     CompanyName: Pricer,
@@ -392,8 +281,8 @@
     Price: 1.2853,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_20,
-    TransactionDate: DateTime_7
+    PublishingDate: DateTime_19,
+    TransactionDate: DateTime_6
   },
   {
     CompanyName: Telia Company,
@@ -404,8 +293,8 @@
     Price: 35.50,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_21,
-    TransactionDate: DateTime_7
+    PublishingDate: DateTime_20,
+    TransactionDate: DateTime_6
   },
   {
     CompanyName: Nelly Group,
@@ -416,8 +305,8 @@
     Price: 1.0,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_22,
-    TransactionDate: DateTime_14
+    PublishingDate: DateTime_21,
+    TransactionDate: DateTime_13
   },
   {
     CompanyName: Swedencare,
@@ -428,8 +317,8 @@
     Price: 43.86,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_23,
-    TransactionDate: DateTime_7
+    PublishingDate: DateTime_22,
+    TransactionDate: DateTime_6
   },
   {
     CompanyName: Swedencare,
@@ -440,8 +329,8 @@
     Price: 43.96,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_23,
-    TransactionDate: DateTime_7
+    PublishingDate: DateTime_22,
+    TransactionDate: DateTime_6
   },
   {
     CompanyName: AstraZeneca PLC,
@@ -451,8 +340,8 @@
     Shares: 200,
     Currency: USD,
     Status: Aktuell,
-    PublishingDate: DateTime_24,
-    TransactionDate: DateTime_14
+    PublishingDate: DateTime_23,
+    TransactionDate: DateTime_13
   },
   {
     CompanyName: Pricer,
@@ -463,8 +352,8 @@
     Price: 1.2853,
     Currency: SEK,
     Status: Reviderad,
-    PublishingDate: DateTime_25,
-    TransactionDate: DateTime_7
+    PublishingDate: DateTime_24,
+    TransactionDate: DateTime_6
   },
   {
     CompanyName: Logistri Fastighets,
@@ -475,8 +364,8 @@
     Price: 9.75,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_26,
-    TransactionDate: DateTime_14
+    PublishingDate: DateTime_25,
+    TransactionDate: DateTime_13
   },
   {
     CompanyName: Pricer,
@@ -487,8 +376,8 @@
     Price: 1.2853,
     Currency: SEK,
     Status: Reviderad,
-    PublishingDate: DateTime_27,
-    TransactionDate: DateTime_7
+    PublishingDate: DateTime_26,
+    TransactionDate: DateTime_6
   },
   {
     CompanyName: Swedish Orphan Biovitrum,
@@ -498,8 +387,8 @@
     Shares: 17330,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_28,
-    TransactionDate: DateTime_14
+    PublishingDate: DateTime_27,
+    TransactionDate: DateTime_13
   },
   {
     CompanyName: Swedish Orphan Biovitrum,
@@ -510,8 +399,8 @@
     Price: 296.517162,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_28,
-    TransactionDate: DateTime_14
+    PublishingDate: DateTime_27,
+    TransactionDate: DateTime_13
   },
   {
     CompanyName: Attana,
@@ -522,8 +411,8 @@
     Price: 0.018,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_29,
-    TransactionDate: DateTime_14
+    PublishingDate: DateTime_28,
+    TransactionDate: DateTime_13
   },
   {
     CompanyName: Coor Service Management Holding,
@@ -534,8 +423,8 @@
     Price: 37.91,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_30,
-    TransactionDate: DateTime_14
+    PublishingDate: DateTime_29,
+    TransactionDate: DateTime_13
   },
   {
     CompanyName: Swedish Orphan Biovitrum,
@@ -545,8 +434,8 @@
     Shares: 27129,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_31,
-    TransactionDate: DateTime_14
+    PublishingDate: DateTime_30,
+    TransactionDate: DateTime_13
   },
   {
     CompanyName: Swedish Orphan Biovitrum,
@@ -557,8 +446,8 @@
     Price: 296.52,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_31,
-    TransactionDate: DateTime_14
+    PublishingDate: DateTime_30,
+    TransactionDate: DateTime_13
   },
   {
     CompanyName: AUTOLIV, INC.,
@@ -569,8 +458,8 @@
     Price: 108.32,
     Currency: USD,
     Status: Aktuell,
-    PublishingDate: DateTime_32,
-    TransactionDate: DateTime_4
+    PublishingDate: DateTime_31,
+    TransactionDate: DateTime_2
   },
   {
     CompanyName: Epiroc,
@@ -581,7 +470,7 @@
     Price: 211.90,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_33,
-    TransactionDate: DateTime_34
+    PublishingDate: DateTime_32,
+    TransactionDate: DateTime_33
   }
 ]
