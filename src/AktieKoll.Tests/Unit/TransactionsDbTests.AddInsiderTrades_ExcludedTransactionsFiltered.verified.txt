@@ -1,0 +1,15 @@
+﻿[
+  {
+    Id: 1,
+    CompanyName: BarCorp,
+    InsiderName: Bob,
+    Position: CEO,
+    TransactionType: Förvärv,
+    Shares: 400,
+    Price: 40.0,
+    Currency: SEK,
+    Status: Aktuell,
+    PublishingDate: DateTime_1,
+    TransactionDate: DateTime_1
+  }
+]
