@@ -9,10 +9,12 @@
 
   <ItemGroup>
     <None Remove="Resources\Authorized\Insyn2025-06-12.csv" />
+    <None Remove="Resources\Authorized\Insyn2025-06-24.csv" />
     <None Remove="Resources\Routes.json" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Resources\Authorized\Insyn2025-06-24.csv" />
     <EmbeddedResource Include="Resources\Routes.json" />
   </ItemGroup>
 

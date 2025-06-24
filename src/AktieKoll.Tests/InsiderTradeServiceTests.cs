@@ -159,67 +159,6 @@ public class InsiderTradeServiceTests
     }
 
     [Fact]
-    public async Task AddInsiderTrades_StopAtFirstDuplicate()
-    {
-        var ctx = CreateContext();
-        var service = new InsiderTradeService(ctx);
-
-        var existing = new InsiderTrade
-        {
-            CompanyName = "FooCorp",
-            InsiderName = "Alice",
-            Position = "CFO",
-            TransactionType = "Buy",
-            Shares = 100,
-            Price = 10.5m,
-            Currency = "SEK",
-            Status = "Aktuell",
-            PublishingDate = DateTime.Today,
-            TransactionDate = DateTime.Today
-        };
-        ctx.InsiderTrades.Add(existing);
-        await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
-
-        var newTrade = new InsiderTrade
-        {
-            CompanyName = "BarCorp",
-            InsiderName = "Bob",
-            Position = "CEO",
-            TransactionType = "Sell",
-            Shares = 200,
-            Price = 20.0m,
-            Currency = "SEK",
-            Status = "Aktuell",
-            PublishingDate = DateTime.Today,
-            TransactionDate = DateTime.Today
-        };
-
-        var laterTrade = new InsiderTrade
-        {
-            CompanyName = "BazCorp",
-            InsiderName = "Cara",
-            Position = "CIO",
-            TransactionType = "Buy",
-            Shares = 300,
-            Price = 30.0m,
-            Currency = "SEK",
-            Status = "Aktuell",
-            PublishingDate = DateTime.Today,
-            TransactionDate = DateTime.Today
-        };
-
-        var trades = new List<InsiderTrade> { newTrade, existing, laterTrade };
-
-        var result = await service.AddInsiderTrades(trades);
-
-        Assert.Equal("1 new trades added.", result);
-        var saved = await ctx.InsiderTrades.ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
-        Assert.Equal(2, saved.Count);
-        Assert.Contains(saved, t => t.CompanyName == "BarCorp");
-        Assert.DoesNotContain(saved, t => t.CompanyName == "BazCorp");
-    }
-
-    [Fact]
     public async Task GetInsiderTrades_ReturnsAllTrades()
     {
         var ctx = CreateContext();

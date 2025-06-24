@@ -1,0 +1,41 @@
+﻿[
+  {
+    Id: 3,
+    CompanyName: Corp2,
+    InsiderName: Name2,
+    Position: Exec,
+    TransactionType: Buy,
+    Shares: 300,
+    Price: 30.0,
+    Currency: SEK,
+    Status: Aktuell,
+    PublishingDate: DateTime_1,
+    TransactionDate: DateTime_1
+  },
+  {
+    Id: 2,
+    CompanyName: Corp1,
+    InsiderName: Name1,
+    Position: Exec,
+    TransactionType: Buy,
+    Shares: 200,
+    Price: 20.0,
+    Currency: SEK,
+    Status: Aktuell,
+    PublishingDate: DateTime_1,
+    TransactionDate: DateTime_1
+  },
+  {
+    Id: 1,
+    CompanyName: Corp0,
+    InsiderName: Name0,
+    Position: Exec,
+    TransactionType: Buy,
+    Shares: 100,
+    Price: 10.0,
+    Currency: SEK,
+    Status: Aktuell,
+    PublishingDate: DateTime_1,
+    TransactionDate: DateTime_1
+  }
+]
