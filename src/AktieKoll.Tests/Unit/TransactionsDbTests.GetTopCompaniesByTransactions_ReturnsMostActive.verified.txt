@@ -1,0 +1,14 @@
+﻿[
+  {
+    CompanyName: BarCorp,
+    TransactionCount: 2
+  },
+  {
+    CompanyName: FooCorp,
+    TransactionCount: 2
+  },
+  {
+    CompanyName: BazCorp,
+    TransactionCount: 1
+  }
+]
