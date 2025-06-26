@@ -255,4 +255,23 @@ public class TransactionsDbTests
 
         await Verify(result);
     }
+
+    [Theory]
+    [InlineData("2025-06-23", "2025-06-24")]
+    public async Task GetTopCompaniesByTransactions_ReturnsMostActive(DateTime fromDate, DateTime toDate)
+    {
+        var ctx = CreateContext();
+        var csvFetchService = ServiceProviderFixture
+                                   .GetRequiredService<CsvFetchService>(services => services.AuthorizedClient());
+
+        var csvDto = await csvFetchService.FetchInsiderTradesAsync(fromDate, toDate);
+        var trades = InsiderTradeMapper.MapDtosToTrades(csvDto);
+
+        var service = new InsiderTradeService(ctx);
+        await service.AddInsiderTrades(trades);
+
+        var result = await service.GetTopCompaniesByTransactions();
+
+        await Verify(result);
+    }
 }
