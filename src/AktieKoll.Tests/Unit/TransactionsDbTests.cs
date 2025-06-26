@@ -256,81 +256,18 @@ public class TransactionsDbTests
         await Verify(result);
     }
 
-    [Fact]
-    public async Task GetTopCompaniesByTransactions_ReturnsMostActive()
+    [Theory]
+    [InlineData("2025-06-23", "2025-06-24")]
+    public async Task GetTopCompaniesByTransactions_ReturnsMostActive(DateTime fromDate, DateTime toDate)
     {
         var ctx = CreateContext();
+        var csvFetchService = ServiceProviderFixture
+                                   .GetRequiredService<CsvFetchService>(services => services.AuthorizedClient());
+
+        var csvDto = await csvFetchService.FetchInsiderTradesAsync(fromDate, toDate);
+        var trades = InsiderTradeMapper.MapDtosToTrades(csvDto);
+
         var service = new InsiderTradeService(ctx);
-
-        var trades = new List<InsiderTrade>
-        {
-            new()
-            {
-                CompanyName = "FooCorp",
-                InsiderName = "Alice",
-                Position = "CFO",
-                TransactionType = "Buy",
-                Shares = 100,
-                Price = 10m,
-                Currency = "SEK",
-                Status = "Aktuell",
-                PublishingDate = DateTime.Today,
-                TransactionDate = DateTime.Today
-            },
-            new()
-            {
-                CompanyName = "FooCorp",
-                InsiderName = "Alice",
-                Position = "CFO",
-                TransactionType = "Sell",
-                Shares = 50,
-                Price = 9m,
-                Currency = "SEK",
-                Status = "Aktuell",
-                PublishingDate = DateTime.Today.AddDays(-1),
-                TransactionDate = DateTime.Today.AddDays(-1)
-            },
-            new()
-            {
-                CompanyName = "BarCorp",
-                InsiderName = "Bob",
-                Position = "CEO",
-                TransactionType = "Buy",
-                Shares = 150,
-                Price = 20m,
-                Currency = "SEK",
-                Status = "Aktuell",
-                PublishingDate = DateTime.Today,
-                TransactionDate = DateTime.Today
-            },
-            new()
-            {
-                CompanyName = "BarCorp",
-                InsiderName = "Bob",
-                Position = "CEO",
-                TransactionType = "Sell",
-                Shares = 80,
-                Price = 18m,
-                Currency = "SEK",
-                Status = "Aktuell",
-                PublishingDate = DateTime.Today.AddDays(-5),
-                TransactionDate = DateTime.Today.AddDays(-5)
-            },
-            new()
-            {
-                CompanyName = "BazCorp",
-                InsiderName = "Charlie",
-                Position = "CTO",
-                TransactionType = "Buy",
-                Shares = 60,
-                Price = 15m,
-                Currency = "SEK",
-                Status = "Aktuell",
-                PublishingDate = DateTime.Today,
-                TransactionDate = DateTime.Today
-            }
-        };
-
         await service.AddInsiderTrades(trades);
 
         var result = await service.GetTopCompaniesByTransactions();
