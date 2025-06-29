@@ -27,45 +27,8 @@ src/
   AktieKoll.Tests/      # Unit tests for services and database
 ```
 
-## Getting Started
-
-### Prerequisites
+## Prerequisites
 
 - .NET 9 SDK
 - PostgreSQL database
 - [CsvHelper](https://joshclose.github.io/CsvHelper/) NuGet package
-
-### Configuration
-
-Set the PostgreSQL connection string in your environment variables:
-
-```
-ConnectionStrings__PostgresConnection="Host=localhost;Username=youruser;Password=yourpass;Database=aktiekoll"
-```
-
-### Running the Application
-
-```bash
-cd src/AktieKoll
-dotnet run
-```
-The API will be available at `https://localhost:5001` (default).
-
-### Running the FetchTrades CLI
-
-```bash
-cd src/FetchTrades
-dotnet run
-```
-
-### Running Tests
-
-```bash
-cd src/AktieKoll.Tests
-dotnet test
-```
-
-## Usage
-
-- **API**: Use the exposed controllers to fetch, add, and analyze insider trades.
-- **FetchTrades**: Command-line tool to pull and process trades into the database.
