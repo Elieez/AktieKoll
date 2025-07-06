@@ -210,6 +210,44 @@ public class TransactionsDbTests
             new()
             {
                 Publiceringsdatum = DateTime.Today.AddDays(-1),
+                Emittent = "Google",
+                LEI = string.Empty,
+                Anmälningsskyldig = string.Empty,
+                PersonNamn = "Sundar",
+                Befattning = "CEO",
+                Karaktär = "Lösen ökning",
+                Instrumenttyp = string.Empty,
+                Instrumentnamn = string.Empty,
+                Transaktionsdatum = DateTime.Today.AddDays(-1),
+                Volym = 220,
+                Volymsenhet = string.Empty,
+                Pris = 300.0m,
+                Valuta = "SEK",
+                Handelsplats = string.Empty,
+                Status = "Aktuell"
+            },
+            new()
+            {
+                Publiceringsdatum = DateTime.Today.AddDays(-1),
+                Emittent = "Apple",
+                LEI = string.Empty,
+                Anmälningsskyldig = string.Empty,
+                PersonNamn = "Tim Cook",
+                Befattning = "CEO",
+                Karaktär = "Lösen minskning",
+                Instrumenttyp = string.Empty,
+                Instrumentnamn = string.Empty,
+                Transaktionsdatum = DateTime.Today.AddDays(-1),
+                Volym = 2000,
+                Volymsenhet = string.Empty,
+                Pris = 10.0m,
+                Valuta = "SEK",
+                Handelsplats = string.Empty,
+                Status = "Aktuell"
+            },
+            new()
+            {
+                Publiceringsdatum = DateTime.Today.AddDays(-1),
                 Emittent = "BarCorp",
                 LEI = string.Empty,
                 Anmälningsskyldig = string.Empty,
