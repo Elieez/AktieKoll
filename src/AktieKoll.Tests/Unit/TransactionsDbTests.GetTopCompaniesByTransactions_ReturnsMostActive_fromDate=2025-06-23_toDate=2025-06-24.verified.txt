@@ -4,19 +4,19 @@
     TransactionCount: 8
   },
   {
-    CompanyName: Cheffelo,
-    TransactionCount: 4
-  },
-  {
-    CompanyName: VEF,
-    TransactionCount: 4
-  },
-  {
     CompanyName: W5 Solutions,
     TransactionCount: 4
   },
   {
-    CompanyName: Zinzino,
-    TransactionCount: 4
+    CompanyName: Isofol Medical,
+    TransactionCount: 3
+  },
+  {
+    CompanyName: Niutech Group,
+    TransactionCount: 3
+  },
+  {
+    CompanyName: NORDIC LEVEL GROUP,
+    TransactionCount: 3
   }
 ]

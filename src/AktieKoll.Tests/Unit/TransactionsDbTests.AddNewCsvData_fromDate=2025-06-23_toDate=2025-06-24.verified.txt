@@ -209,19 +209,6 @@
   },
   {
     Id: 17,
-    CompanyName: VEF,
-    InsiderName: david nangle,
-    Position: Verkställande direktör (VD),
-    TransactionType: Lösen minskning,
-    Shares: 13300000,
-    Price: 0.010127,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_12,
-    TransactionDate: DateTime_10
-  },
-  {
-    Id: 18,
     CompanyName: Isofol Medical,
     InsiderName: Petter Segelman Lindqvist,
     Position: Verkställande direktör (VD),
@@ -234,7 +221,7 @@
     TransactionDate: DateTime_10
   },
   {
-    Id: 19,
+    Id: 18,
     CompanyName: Isofol Medical,
     InsiderName: Petter Segelman Lindqvist,
     Position: Verkställande direktör (VD),
@@ -247,7 +234,7 @@
     TransactionDate: DateTime_8
   },
   {
-    Id: 20,
+    Id: 19,
     CompanyName: Isofol Medical,
     InsiderName: Petter Segelman Lindqvist,
     Position: Verkställande direktör (VD),
@@ -260,7 +247,7 @@
     TransactionDate: DateTime_10
   },
   {
-    Id: 21,
+    Id: 20,
     CompanyName: NYAB,
     InsiderName: Klas Rewelj,
     Position: Ekonomichef/finanschef/finansdirektör,
@@ -273,7 +260,7 @@
     TransactionDate: DateTime_2
   },
   {
-    Id: 22,
+    Id: 21,
     CompanyName: Terranet,
     InsiderName: Jonas Renander,
     Position: Annan ledande befattningshavare,
@@ -286,7 +273,7 @@
     TransactionDate: DateTime_10
   },
   {
-    Id: 23,
+    Id: 22,
     CompanyName: W5 Solutions, org.nr 556973-2034,
     InsiderName: Gunilla Stomberg,
     Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
@@ -299,7 +286,7 @@
     TransactionDate: DateTime_8
   },
   {
-    Id: 24,
+    Id: 23,
     CompanyName: Terranet,
     InsiderName: Torgny Hellström,
     Position: Styrelseordförande,
@@ -312,7 +299,7 @@
     TransactionDate: DateTime_10
   },
   {
-    Id: 25,
+    Id: 24,
     CompanyName: Qualisys,
     InsiderName: Magnus Berlander,
     Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
@@ -325,20 +312,7 @@
     TransactionDate: DateTime_8
   },
   {
-    Id: 26,
-    CompanyName: Alimak Group,
-    InsiderName: Jose Maria Nevot,
-    Position: Annan ledande befattningshavare,
-    TransactionType: Lösen minskning,
-    Shares: 33750,
-    Price: 22.7,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_19,
-    TransactionDate: DateTime_2
-  },
-  {
-    Id: 27,
+    Id: 25,
     CompanyName: VEF,
     InsiderName: Helena Caan Mattsson,
     Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
@@ -347,24 +321,11 @@
     Price: 0.39,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_20,
+    PublishingDate: DateTime_19,
     TransactionDate: DateTime_10
   },
   {
-    Id: 28,
-    CompanyName: VEF,
-    InsiderName: Helena Caan Mattsson,
-    Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
-    TransactionType: Lösen minskning,
-    Shares: 4322500,
-    Price: 0.010127,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_20,
-    TransactionDate: DateTime_10
-  },
-  {
-    Id: 29,
+    Id: 26,
     CompanyName: Intrum,
     InsiderName: Annette Kumlien,
     Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
@@ -373,11 +334,11 @@
     Price: 46.3121,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_21,
+    PublishingDate: DateTime_20,
     TransactionDate: DateTime_10
   },
   {
-    Id: 30,
+    Id: 27,
     CompanyName: CombinedX,
     InsiderName: Anna Cedgård Hedström,
     Position: Ekonomichef/finanschef/finansdirektör,
@@ -386,11 +347,11 @@
     Price: 4.07,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_22,
-    TransactionDate: DateTime_23
+    PublishingDate: DateTime_21,
+    TransactionDate: DateTime_22
   },
   {
-    Id: 31,
+    Id: 28,
     CompanyName: Scandi Standard,
     InsiderName: Paulo Gaspar,
     Position: Styrelseledamot,
@@ -399,11 +360,11 @@
     Price: 97.94,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_24,
-    TransactionDate: DateTime_25
+    PublishingDate: DateTime_23,
+    TransactionDate: DateTime_24
   },
   {
-    Id: 32,
+    Id: 29,
     CompanyName: Scandi Standard,
     InsiderName: Paulo Gaspar,
     Position: Styrelseledamot,
@@ -412,11 +373,11 @@
     Price: 97.95,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_24,
+    PublishingDate: DateTime_23,
     TransactionDate: DateTime_10
   },
   {
-    Id: 33,
+    Id: 30,
     CompanyName: W5 Solutions,
     InsiderName: Cecilia Driving,
     Position: Ekonomichef/finanschef/finansdirektör,
@@ -425,11 +386,11 @@
     Price: 9.47,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_26,
+    PublishingDate: DateTime_25,
     TransactionDate: DateTime_8
   },
   {
-    Id: 34,
+    Id: 31,
     CompanyName: W5 Solutions,
     InsiderName: Joachim Hammersland,
     Position: Vice VD,
@@ -438,24 +399,11 @@
     Price: 9.47,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_27,
+    PublishingDate: DateTime_26,
     TransactionDate: DateTime_8
   },
   {
-    Id: 35,
-    CompanyName: Katalysen Ventures,
-    InsiderName: Tesarus AB,
-    Position: Styrelseledamot,
-    TransactionType: Lösen ökning,
-    Shares: 70765,
-    Price: 14.90,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_28,
-    TransactionDate: DateTime_10
-  },
-  {
-    Id: 36,
+    Id: 32,
     CompanyName: W5 Solutions,
     InsiderName: Martin Kammenhed,
     Position: Annan ledande befattningshavare,
@@ -464,11 +412,11 @@
     Price: 9.47,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_29,
+    PublishingDate: DateTime_27,
     TransactionDate: DateTime_8
   },
   {
-    Id: 37,
+    Id: 33,
     CompanyName: Zinzino,
     InsiderName: Daniel Vennerstrand,
     Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
@@ -477,36 +425,11 @@
     Price: 201.0558,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_30,
-    TransactionDate: DateTime_31
+    PublishingDate: DateTime_28,
+    TransactionDate: DateTime_29
   },
   {
-    Id: 38,
-    CompanyName: Zinzino,
-    InsiderName: Daniel Vennerstrand,
-    Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
-    TransactionType: Lösen minskning,
-    Shares: 10000,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_30,
-    TransactionDate: DateTime_31
-  },
-  {
-    Id: 39,
-    CompanyName: Zinzino,
-    InsiderName: Daniel Vennerstrand,
-    Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
-    TransactionType: Lösen ökning,
-    Shares: 10000,
-    Price: 56.0,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_30,
-    TransactionDate: DateTime_31
-  },
-  {
-    Id: 40,
+    Id: 34,
     CompanyName: Zinzino,
     InsiderName: Daniel Vennerstrand,
     Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
@@ -515,11 +438,11 @@
     Price: 2.1,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_30,
-    TransactionDate: DateTime_31
+    PublishingDate: DateTime_28,
+    TransactionDate: DateTime_29
   },
   {
-    Id: 41,
+    Id: 35,
     CompanyName: Niutech Group,
     InsiderName: Mattias Leijon,
     Position: Styrelseledamot,
@@ -528,11 +451,11 @@
     Price: 0.06,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_32,
+    PublishingDate: DateTime_30,
     TransactionDate: DateTime_10
   },
   {
-    Id: 42,
+    Id: 36,
     CompanyName: Flat Capital,
     InsiderName: Amaury de Poret,
     Position: Styrelseledamot,
@@ -541,11 +464,11 @@
     Price: 1.60,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_33,
-    TransactionDate: DateTime_25
+    PublishingDate: DateTime_31,
+    TransactionDate: DateTime_24
   },
   {
-    Id: 43,
+    Id: 37,
     CompanyName: Flat Capital,
     InsiderName: Amaury de Poret,
     Position: Styrelseledamot,
@@ -554,11 +477,11 @@
     Price: 16.0,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_33,
+    PublishingDate: DateTime_31,
     TransactionDate: DateTime_10
   },
   {
-    Id: 44,
+    Id: 38,
     CompanyName: Rolling Optics Holding,
     InsiderName: Thomas SAVARE,
     Position: Styrelseordförande,
@@ -567,11 +490,11 @@
     Price: 1.5,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_34,
+    PublishingDate: DateTime_32,
     TransactionDate: DateTime_10
   },
   {
-    Id: 45,
+    Id: 39,
     CompanyName: Niutech Group,
     InsiderName: Klas Zetterman,
     Position: Verkställande direktör (VD),
@@ -580,24 +503,11 @@
     Price: 0.06,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_35,
+    PublishingDate: DateTime_33,
     TransactionDate: DateTime_10
   },
   {
-    Id: 46,
-    CompanyName: Alimak Group,
-    InsiderName: Matilda Wernhoff,
-    Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
-    TransactionType: Lösen minskning,
-    Shares: 10800,
-    Price: 22.7,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_36,
-    TransactionDate: DateTime_8
-  },
-  {
-    Id: 47,
+    Id: 40,
     CompanyName: Lyckegård Group,
     InsiderName: Anders Gösta Holm,
     Position: Styrelseordförande,
@@ -606,11 +516,11 @@
     Price: 1.80,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_37,
+    PublishingDate: DateTime_34,
     TransactionDate: DateTime_8
   },
   {
-    Id: 48,
+    Id: 41,
     CompanyName: Lyckegård Group,
     InsiderName: Anders Gösta Holm,
     Position: Styrelseordförande,
@@ -619,11 +529,11 @@
     Price: 1.73,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_38,
+    PublishingDate: DateTime_35,
     TransactionDate: DateTime_8
   },
   {
-    Id: 49,
+    Id: 42,
     CompanyName: W5 Solutions,
     InsiderName: Sara Evelina Hedskog,
     Position: Verkställande direktör (VD),
@@ -632,11 +542,11 @@
     Price: 9.47,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_39,
+    PublishingDate: DateTime_36,
     TransactionDate: DateTime_8
   },
   {
-    Id: 50,
+    Id: 43,
     CompanyName: Bure Equity,
     InsiderName: Henrik Gustaf Knutsson Blomquist,
     Position: Verkställande direktör (VD),
@@ -645,36 +555,11 @@
     Price: 274.32,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_40,
+    PublishingDate: DateTime_37,
     TransactionDate: DateTime_8
   },
   {
-    Id: 51,
-    CompanyName: Sonetel,
-    InsiderName: Henrik Thome,
-    Position: Verkställande direktör (VD),
-    TransactionType: Lösen ökning,
-    Shares: 50000,
-    Price: 6.0,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_41,
-    TransactionDate: DateTime_8
-  },
-  {
-    Id: 52,
-    CompanyName: Sonetel,
-    InsiderName: Henrik Thome,
-    Position: Verkställande direktör (VD),
-    TransactionType: Lösen minskning,
-    Shares: 50000,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_41,
-    TransactionDate: DateTime_8
-  },
-  {
-    Id: 53,
+    Id: 44,
     CompanyName: SpectraCure,
     InsiderName: Kristina Espemar Holst,
     Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
@@ -683,61 +568,11 @@
     Price: 0.18,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_42,
+    PublishingDate: DateTime_38,
     TransactionDate: DateTime_10
   },
   {
-    Id: 54,
-    CompanyName: Cheffelo,
-    InsiderName: Anton Nytorp,
-    Position: Annan ledande befattningshavare,
-    TransactionType: Lösen minskning,
-    Shares: 25000,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_43,
-    TransactionDate: DateTime_8
-  },
-  {
-    Id: 55,
-    CompanyName: Cheffelo,
-    InsiderName: Anton Nytorp,
-    Position: Annan ledande befattningshavare,
-    TransactionType: Lösen ökning,
-    Shares: 25000,
-    Price: 30.48,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_43,
-    TransactionDate: DateTime_8
-  },
-  {
-    Id: 56,
-    CompanyName: Cheffelo,
-    InsiderName: Anton Nytorp,
-    Position: Annan ledande befattningshavare,
-    TransactionType: Lösen minskning,
-    Shares: 20000,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_43,
-    TransactionDate: DateTime_8
-  },
-  {
-    Id: 57,
-    CompanyName: Cheffelo,
-    InsiderName: Anton Nytorp,
-    Position: Annan ledande befattningshavare,
-    TransactionType: Lösen ökning,
-    Shares: 20000,
-    Price: 19.40,
-    Currency: SEK,
-    Status: Aktuell,
-    PublishingDate: DateTime_43,
-    TransactionDate: DateTime_8
-  },
-  {
-    Id: 58,
+    Id: 45,
     CompanyName: Ambea Abp,
     InsiderName: yrjö närhinen,
     Position: Styrelseordförande,
@@ -746,7 +581,7 @@
     Price: 110.105,
     Currency: SEK,
     Status: Aktuell,
-    PublishingDate: DateTime_44,
-    TransactionDate: DateTime_25
+    PublishingDate: DateTime_39,
+    TransactionDate: DateTime_24
   }
 ]
