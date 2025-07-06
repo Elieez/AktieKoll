@@ -256,6 +256,63 @@ public class TransactionsDbTests
         await Verify(result);
     }
 
+    [Fact]
+    public async Task GetInsiderTrades_FilterTransactionType()
+    {
+        var ctx = CreateContext();
+        var service = new InsiderTradeService(ctx);
+
+        var csvDtos = new List<CsvDTO>
+        {
+            new()
+            {
+                Publiceringsdatum = DateTime.Today,
+                Emittent = "FooCorp",
+                LEI = string.Empty,
+                Anmälningsskyldig = string.Empty,
+                PersonNamn = "Alice",
+                Befattning = "CFO",
+                Karaktär = "Interntransaktion – Förvärv",
+                Instrumenttyp = string.Empty,
+                Instrumentnamn = string.Empty,
+                Transaktionsdatum = DateTime.Today,
+                Volym = 100,
+                Volymsenhet = string.Empty,
+                Pris = 10.5m,
+                Valuta = "SEK",
+                Handelsplats = string.Empty,
+                Status = "Aktuell"
+            },
+            new()
+            {
+                Publiceringsdatum = DateTime.Today,
+                Emittent = "FooCorp",
+                LEI = string.Empty,
+                Anmälningsskyldig = string.Empty,
+                PersonNamn = "Alice",
+                Befattning = "CFO",
+                Karaktär = "Interntransaktion – Avyttring",
+                Instrumenttyp = string.Empty,
+                Instrumentnamn = string.Empty,
+                Transaktionsdatum = DateTime.Today,
+                Volym = 150,
+                Volymsenhet = string.Empty,
+                Pris = 15.5m,
+                Valuta = "SEK",
+                Handelsplats = string.Empty,
+                Status = "Aktuell"
+            },
+        };
+
+        var trades = InsiderTradeMapper.MapDtosToTrades(csvDtos);
+
+        await service.AddInsiderTrades(trades);
+
+        var result = await service.GetInsiderTrades();
+
+        await Verify(result);
+    }
+
     [Theory]
     [InlineData("2025-06-23", "2025-06-24")]
     public async Task GetTopCompaniesByTransactions_ReturnsMostActive(DateTime fromDate, DateTime toDate)

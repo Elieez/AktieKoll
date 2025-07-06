@@ -1,0 +1,28 @@
+﻿[
+  {
+    Id: 1,
+    CompanyName: FooCorp,
+    InsiderName: Alice,
+    Position: CFO,
+    TransactionType: Förvärv,
+    Shares: 100,
+    Price: 10.5,
+    Currency: SEK,
+    Status: Aktuell,
+    PublishingDate: DateTime_1,
+    TransactionDate: DateTime_1
+  },
+  {
+    Id: 2,
+    CompanyName: FooCorp,
+    InsiderName: Alice,
+    Position: CFO,
+    TransactionType: Avyttring,
+    Shares: 150,
+    Price: 15.5,
+    Currency: SEK,
+    Status: Aktuell,
+    PublishingDate: DateTime_1,
+    TransactionDate: DateTime_1
+  }
+]
