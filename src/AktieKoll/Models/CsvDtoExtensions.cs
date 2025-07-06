@@ -11,7 +11,7 @@ public static class CsvDtoExtensions
             CompanyName = csvDto.Emittent.FilterCompanyName(),
             InsiderName = csvDto.PersonNamn,
             Position = csvDto.Befattning,
-            TransactionType = csvDto.Karaktär,
+            TransactionType = csvDto.Karaktär.FilterTransactionType(),
             Shares = csvDto.Volym,
             Price = csvDto.Pris,
             Currency = csvDto.Valuta,
