@@ -21,4 +21,4 @@ jobs:
       - name: Run fetcher
         env:
           PostgresConnection: ${{ secrets.POSTGRES_CONNECTION }}
-        run: dotnet run --project src/FetchTrades/FetchTrades.csproj --no-build
+        run: dotnet run --project src/FetchTrades/FetchTrades.csproj
