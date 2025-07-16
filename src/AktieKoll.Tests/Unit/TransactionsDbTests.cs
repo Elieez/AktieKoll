@@ -369,4 +369,26 @@ public class TransactionsDbTests
 
         await Verify(result);
     }
+
+    [Theory]
+    [InlineData("2025-06-23", "2025-06-24", "eEducation Albert")]
+    [InlineData("2025-06-23", "2025-06-24", "eEducation Albert ab")]
+    [InlineData("2025-06-23", "2025-06-24", "eEducation Albert ab (publ)")]
+
+    public async Task GetTradesByCompany_ReturnTrades(DateTime fromDate, DateTime toDate, string companyName)
+    {
+        var ctx = CreateContext();
+        var csvFetchService = ServiceProviderFixture
+                                   .GetRequiredService<CsvFetchService>(services => services.AuthorizedClient());
+
+        var csvDto = await csvFetchService.FetchInsiderTradesAsync(fromDate, toDate);
+        var trades = InsiderTradeMapper.MapDtosToTrades(csvDto);
+
+        var service = new InsiderTradeService(ctx);
+        await service.AddInsiderTrades(trades);
+
+        var result = await service.GetInsiderTradesByCompany(companyName);
+
+        await Verify(result);
+    }
 }
