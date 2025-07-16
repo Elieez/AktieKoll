@@ -20,7 +20,7 @@ public class InsiderTradesController(IInsiderTradeService tradeService) : Contro
         var result = await tradeService.AddInsiderTrades(insiderTrades);
         if (result == null)
         {
-           return BadRequest("No new trades added.");
+            return BadRequest("No new trades added.");
         }
 
         return Ok(result);
@@ -45,5 +45,12 @@ public class InsiderTradesController(IInsiderTradeService tradeService) : Contro
     {
         var stats = await tradeService.GetTopCompaniesByTransactions();
         return Ok(stats);
+    }
+
+    [HttpGet("company")]
+    public async Task<ActionResult<IEnumerable<InsiderTrade>>> GetByCompanyName([FromQuery] string name)
+    {
+        var trades = await tradeService.GetInsiderTradesByCompany(name);
+        return Ok(trades);
     }
 }

@@ -104,4 +104,19 @@ public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeSe
             .Take(top)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<InsiderTrade>> GetInsiderTradesByCompany(string companyName)
+    {
+        if (string.IsNullOrWhiteSpace(companyName))
+        {
+            return [];
+        }
+
+        var filteredCompanyName = companyName.FilterCompanyName();
+
+        return await context.InsiderTrades
+            .Where(t => t.CompanyName.ToLower() == filteredCompanyName.ToLower())
+            .OrderByDescending(t => t.PublishingDate)
+            .ToListAsync();
+    }
 }
