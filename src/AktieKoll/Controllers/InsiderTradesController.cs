@@ -40,10 +40,17 @@ public class InsiderTradesController(IInsiderTradeService tradeService) : Contro
         return Ok(trades);
     }
 
-    [HttpGet("top-companies")]
+    [HttpGet("count-buy")]
     public async Task<ActionResult<IEnumerable<CompanyTransactionStats>>> GetTopCompanies()
     {
-        var stats = await tradeService.GetTopCompaniesByTransactions();
+        var stats = await tradeService.GetCompaniesCountBuy();
+        return Ok(stats);
+    }
+
+    [HttpGet("count-sell")]
+    public async Task<ActionResult<IEnumerable<CompanyTransactionStats>>> GetTopCompaniesSell()
+    {
+        var stats = await tradeService.GetCompaniesCountSell();
         return Ok(stats);
     }
 

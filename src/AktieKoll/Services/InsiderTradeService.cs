@@ -86,13 +86,32 @@ public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeSe
             .ToListAsync();
     }
     
-    public async Task<IEnumerable<CompanyTransactionStats>> GetTopCompaniesByTransactions(int days = 30, int top = 5)
+    public async Task<IEnumerable<CompanyTransactionStats>> GetCompaniesCountBuy(int days = 30, int top = 3)
     {
         var endDate = DateTime.Now.Date.AddDays(1);
         var startDate = endDate.AddDays(-days);
 
         return await context.InsiderTrades
-            .Where(t => t.PublishingDate >= startDate && t.PublishingDate < endDate)
+            .Where(t => t.PublishingDate >= startDate && t.PublishingDate < endDate && t.TransactionType.Equals("Förvärv", StringComparison.CurrentCultureIgnoreCase))
+            .GroupBy(t => t.CompanyName)
+            .Select(g => new CompanyTransactionStats
+            {
+                CompanyName = g.Key,
+                TransactionCount = g.Count()
+            })
+            .OrderByDescending(c => c.TransactionCount)
+            .ThenBy(c => c.CompanyName)
+            .Take(top)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<CompanyTransactionStats>> GetCompaniesCountSell(int days = 30, int top = 3)
+    {
+        var endDate = DateTime.Now.Date.AddDays(1);
+        var startDate = endDate.AddDays(-days);
+
+        return await context.InsiderTrades
+            .Where(t => t.PublishingDate >= startDate && t.PublishingDate < endDate && t.TransactionType.Equals("Avyttring", StringComparison.CurrentCultureIgnoreCase))
             .GroupBy(t => t.CompanyName)
             .Select(g => new CompanyTransactionStats
             {
