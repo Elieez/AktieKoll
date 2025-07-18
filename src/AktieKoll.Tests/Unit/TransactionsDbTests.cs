@@ -352,8 +352,8 @@ public class TransactionsDbTests
     }
 
     [Theory]
-    [InlineData("2025-06-23", "2025-06-24")]
-    public async Task GetTransactionCountBuy_ReturnsMostActive(DateTime fromDate, DateTime toDate)
+    [InlineData("2025-06-23", "2025-06-24", null, 3, 30)]
+    public async Task GetTransactionCountBuy_ReturnsMostActive(DateTime fromDate, DateTime toDate, string? companyName, int days, int? top)
     {
         var ctx = CreateContext();
         var csvFetchService = ServiceProviderFixture
@@ -365,14 +365,14 @@ public class TransactionsDbTests
         var service = new InsiderTradeService(ctx);
         await service.AddInsiderTrades(trades);
 
-        var result = await service.GetCompaniesCountBuy();
+        var result = await service.GetTransactionCountBuy(companyName, days, top);
 
         await Verify(result);
     }
 
     [Theory]
-    [InlineData("2025-06-23", "2025-06-24")]
-    public async Task GetTransactionCountSell_ReturnsMostActive(DateTime fromDate, DateTime toDate)
+    [InlineData("2025-06-23", "2025-06-24", null, 3, 30)]
+    public async Task GetTransactionCountSell_ReturnsMostActive(DateTime fromDate, DateTime toDate, string? companyName, int days, int? top)
     {
         var ctx = CreateContext();
         var csvFetchService = ServiceProviderFixture
@@ -384,7 +384,7 @@ public class TransactionsDbTests
         var service = new InsiderTradeService(ctx);
         await service.AddInsiderTrades(trades);
 
-        var result = await service.GetCompaniesCountSell();
+        var result = await service.GetTransactionCountSell(companyName, days, top);
 
         await Verify(result);
     }
