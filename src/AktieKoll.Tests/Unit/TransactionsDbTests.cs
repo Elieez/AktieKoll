@@ -352,12 +352,17 @@ public class TransactionsDbTests
     }
 
     [Theory]
-    [InlineData("2025-06-23", "2025-06-24")]
-    public async Task GetTopCompaniesByTransactions_ReturnsMostActive(DateTime fromDate, DateTime toDate)
+    [InlineData(null, 3, 30)]
+    [InlineData("eEducation Albert", null, 365)]
+    [InlineData(null, null, 365)]
+    public async Task GetTransactionCountBuy_ReturnsMostActive(string? companyName, int? top, int days)
     {
         var ctx = CreateContext();
         var csvFetchService = ServiceProviderFixture
                                    .GetRequiredService<CsvFetchService>(services => services.AuthorizedClient());
+
+        var fromDate = new DateTime(2025, 6, 23);
+        var toDate = new DateTime(2025, 6, 24);
 
         var csvDto = await csvFetchService.FetchInsiderTradesAsync(fromDate, toDate);
         var trades = InsiderTradeMapper.MapDtosToTrades(csvDto);
@@ -365,7 +370,31 @@ public class TransactionsDbTests
         var service = new InsiderTradeService(ctx);
         await service.AddInsiderTrades(trades);
 
-        var result = await service.GetTopCompaniesByTransactions();
+        var result = await service.GetTransactionCountBuy(companyName, days, top);
+
+        await Verify(result);
+    }
+
+    [Theory]
+    [InlineData(null, 2, 30)]
+    [InlineData("Isofol Medical", null, 365)]
+    [InlineData(null, null, 365)]
+    public async Task GetTransactionCountSell_ReturnsMostActive(string? companyName, int? top, int days)
+    {
+        var ctx = CreateContext();
+        var csvFetchService = ServiceProviderFixture
+                                   .GetRequiredService<CsvFetchService>(services => services.AuthorizedClient());
+
+        var fromDate = new DateTime(2025, 6, 23);
+        var toDate = new DateTime(2025, 6, 24);
+
+        var csvDto = await csvFetchService.FetchInsiderTradesAsync(fromDate, toDate);
+        var trades = InsiderTradeMapper.MapDtosToTrades(csvDto);
+
+        var service = new InsiderTradeService(ctx);
+        await service.AddInsiderTrades(trades);
+
+        var result = await service.GetTransactionCountSell(companyName, days, top);
 
         await Verify(result);
     }

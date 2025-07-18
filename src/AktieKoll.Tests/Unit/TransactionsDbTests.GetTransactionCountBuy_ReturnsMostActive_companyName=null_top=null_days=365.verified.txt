@@ -1,0 +1,62 @@
+﻿[
+  {
+    CompanyName: eEducation Albert,
+    TransactionCount: 8
+  },
+  {
+    CompanyName: NORDIC LEVEL GROUP,
+    TransactionCount: 3
+  },
+  {
+    CompanyName: Lyckegård Group,
+    TransactionCount: 2
+  },
+  {
+    CompanyName: Scandi Standard,
+    TransactionCount: 2
+  },
+  {
+    CompanyName: Ambea Abp,
+    TransactionCount: 1
+  },
+  {
+    CompanyName: Bure Equity,
+    TransactionCount: 1
+  },
+  {
+    CompanyName: CombinedX,
+    TransactionCount: 1
+  },
+  {
+    CompanyName: Intrum,
+    TransactionCount: 1
+  },
+  {
+    CompanyName: Isofol Medical,
+    TransactionCount: 1
+  },
+  {
+    CompanyName: Mysafety Group,
+    TransactionCount: 1
+  },
+  {
+    CompanyName: NYAB,
+    TransactionCount: 1
+  },
+  {
+    CompanyName: Qualisys,
+    TransactionCount: 1
+  },
+  {
+    CompanyName: Rolling Optics Holding,
+    TransactionCount: 1
+  },
+  {
+    CompanyName: SenzaGen,
+    TransactionCount: 1
+  },
+  {
+    CompanyName: Terranet,
+    TransactionCount: 1
+  }
+]

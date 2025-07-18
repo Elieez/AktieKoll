@@ -3,6 +3,7 @@ using AktieKoll.Extensions;
 using AktieKoll.Interfaces;
 using AktieKoll.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts;
 
 namespace AktieKoll.Services;
 
@@ -85,14 +86,23 @@ public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeSe
             .Take(10)
             .ToListAsync();
     }
-    
-    public async Task<IEnumerable<CompanyTransactionStats>> GetTopCompaniesByTransactions(int days = 30, int top = 5)
+
+    private async Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountByType(string transactionType, string? companyName, int days, int? top)
     {
         var endDate = DateTime.Now.Date.AddDays(1);
         var startDate = endDate.AddDays(-days);
 
-        return await context.InsiderTrades
+        var query = context.InsiderTrades
             .Where(t => t.PublishingDate >= startDate && t.PublishingDate < endDate)
+            .Where(t => t.TransactionType.ToLower() == transactionType.ToLower());
+
+        if (!string.IsNullOrWhiteSpace(companyName))
+        {
+            var filtered = companyName.FilterCompanyName();
+            query = query.Where(t => t.CompanyName.ToLower() == filtered.ToLower());
+        }
+
+        var grouped = query
             .GroupBy(t => t.CompanyName)
             .Select(g => new CompanyTransactionStats
             {
@@ -100,10 +110,20 @@ public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeSe
                 TransactionCount = g.Count()
             })
             .OrderByDescending(c => c.TransactionCount)
-            .ThenBy(c => c.CompanyName)
-            .Take(top)
-            .ToListAsync();
+            .ThenBy(c => c.CompanyName);
+
+        if (top.HasValue)
+        {
+            grouped = (IOrderedQueryable<CompanyTransactionStats>)grouped.Take(top.Value);
+        }
+
+        return await grouped.ToListAsync();
     }
+
+    public Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountBuy(string? companyName, int days = 30, int? top = 5)
+        => GetTransactionCountByType("Förvärv", companyName, days, top);
+    public Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountSell(string? companyName, int days = 30, int? top = 5)
+        => GetTransactionCountByType("Avyttring", companyName, days, top);
 
     public async Task<IEnumerable<InsiderTrade>> GetInsiderTradesByCompany(string companyName)
     {

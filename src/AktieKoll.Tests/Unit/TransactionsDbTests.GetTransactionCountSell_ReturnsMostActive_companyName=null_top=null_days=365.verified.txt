@@ -1,0 +1,14 @@
+﻿[
+  {
+    CompanyName: Isofol Medical,
+    TransactionCount: 2
+  },
+  {
+    CompanyName: Flat Capital,
+    TransactionCount: 1
+  },
+  {
+    CompanyName: Zinzino,
+    TransactionCount: 1
+  }
+]
