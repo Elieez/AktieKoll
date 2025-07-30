@@ -74,6 +74,16 @@ public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeSe
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<InsiderTrade>> GetInsiderTradesPage(int page, int pageSize)
+    {
+        var skip = (page - 1) * pageSize;
+        return await context.InsiderTrades
+            .OrderByDescending(t => t.PublishingDate)
+            .Skip(skip)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<InsiderTrade>> GetInsiderTradesTop()
     {
         var today = DateTime.Now.Date;
@@ -125,7 +135,7 @@ public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeSe
     public Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountSell(string? companyName, int days = 30, int? top = 5)
         => GetTransactionCountByType("Avyttring", companyName, days, top);
 
-    public async Task<IEnumerable<InsiderTrade>> GetInsiderTradesByCompany(string companyName)
+    public async Task<IEnumerable<InsiderTrade>> GetInsiderTradesByCompany(string companyName, int skip = 0, int take = 10)
     {
         if (string.IsNullOrWhiteSpace(companyName))
         {
@@ -137,6 +147,8 @@ public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeSe
         return await context.InsiderTrades
             .Where(t => t.CompanyName.ToLower() == filteredCompanyName.ToLower())
             .OrderByDescending(t => t.PublishingDate)
+            .Skip(skip)
+            .Take(take)
             .ToListAsync();
     }
 }
