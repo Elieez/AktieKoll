@@ -29,7 +29,12 @@ public static class CsvDtoExtensions
             "Utdelning lämnad",
             "Utdelning mottagen",
             "Lösen minskning",
-            "Lösen ökning"
+            "Lösen ökning",
+            "Lån återgång ökning",
+            "Lån återgång minskning",
+            "Utbyte minskning",
+            "Utbyte ökning",
+            "Pantsättning"
         };
 
         public static List<InsiderTrade> MapDtosToTrades(IEnumerable<CsvDTO> dtos)
