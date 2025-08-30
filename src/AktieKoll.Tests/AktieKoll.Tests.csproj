@@ -35,7 +35,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Verify.XunitV3" Version="30.7.3" />
+    <PackageReference Include="Verify.XunitV3" Version="30.8.0" />
     <PackageReference Include="xunit.v3" Version="3.0.1" />
   </ItemGroup>
 
