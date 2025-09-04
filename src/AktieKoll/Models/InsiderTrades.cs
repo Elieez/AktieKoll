@@ -12,6 +12,8 @@ public class InsiderTrade
     public required int Shares { get; set; }
     public required decimal Price { get; set; }
     public required string Currency { get; set; }
+    public string? Isin { get; set; }
+    public string? Symbol { get; set; }
     public required string Status { get; set; }
 
     [Column(TypeName = "timestamp without time zone")]

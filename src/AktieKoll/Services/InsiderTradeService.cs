@@ -3,11 +3,10 @@ using AktieKoll.Extensions;
 using AktieKoll.Interfaces;
 using AktieKoll.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts;
 
 namespace AktieKoll.Services;
 
-public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeService
+public class InsiderTradeService(ApplicationDbContext context, ISymbolService symbolService) : IInsiderTradeService
 {
     public async Task<string> AddInsiderTrades(List<InsiderTrade> insiderTrades)
     {
@@ -22,11 +21,12 @@ public class InsiderTradeService(ApplicationDbContext context) : IInsiderTradeSe
             .Where(t => dates.Contains(t.PublishingDate))
             .ToListAsync();
 
+        await symbolService.ResolveSymbols(insiderTrades, existingTrades);
+
         int newTradesCount = 0;
         int removedTradesCount = 0;
         foreach (var trade in insiderTrades)
         {
-
             var duplicate = existingTrades.FindDuplicate(trade);
             if (trade.IsRevised())
             {

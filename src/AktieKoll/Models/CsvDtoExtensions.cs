@@ -15,6 +15,7 @@ public static class CsvDtoExtensions
             Shares = csvDto.Volym,
             Price = csvDto.Pris,
             Currency = csvDto.Valuta,
+            Isin = csvDto.ISIN,
             Status = csvDto.Status,
             TransactionDate = csvDto.Transaktionsdatum,
             PublishingDate = csvDto.Publiceringsdatum,

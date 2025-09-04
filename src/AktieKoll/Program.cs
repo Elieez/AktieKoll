@@ -21,12 +21,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection")));
 
 builder.Services.AddHttpClient<CsvFetchService>();
+builder.Services.AddHttpClient<IOpenFigiService, IOpenFigiService>(client => 
+    client.BaseAddress = new Uri("https://api.openfigi.com/v3/"));
+builder.Services.AddTransient<ISymbolService, SymbolService>();
 
 builder.Services.AddScoped<IInsiderTradeService, InsiderTradeService>();
 
 var app = builder.Build();
-
-var httpClient = new HttpClient();
 
 if (!app.Environment.IsDevelopment())
 { 
