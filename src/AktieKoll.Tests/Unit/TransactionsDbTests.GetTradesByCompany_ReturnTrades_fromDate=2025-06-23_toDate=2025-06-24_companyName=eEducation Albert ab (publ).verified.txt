@@ -8,6 +8,7 @@
     Shares: 7538,
     Price: 3.12,
     Currency: SEK,
+    Isin: SE0016797989,
     Status: Aktuell,
     PublishingDate: DateTime_1,
     TransactionDate: DateTime_2
@@ -21,6 +22,7 @@
     Shares: 3303,
     Price: 3.13,
     Currency: SEK,
+    Isin: SE0016797989,
     Status: Aktuell,
     PublishingDate: DateTime_1,
     TransactionDate: DateTime_2
@@ -34,6 +36,7 @@
     Shares: 4794,
     Price: 3.15,
     Currency: SEK,
+    Isin: SE0016797989,
     Status: Aktuell,
     PublishingDate: DateTime_1,
     TransactionDate: DateTime_2
@@ -47,6 +50,7 @@
     Shares: 884,
     Price: 3.03,
     Currency: SEK,
+    Isin: SE0016797989,
     Status: Aktuell,
     PublishingDate: DateTime_1,
     TransactionDate: DateTime_2
@@ -60,6 +64,7 @@
     Shares: 1880,
     Price: 3.10,
     Currency: SEK,
+    Isin: SE0016797989,
     Status: Aktuell,
     PublishingDate: DateTime_1,
     TransactionDate: DateTime_2
@@ -73,6 +78,7 @@
     Shares: 1824,
     Price: 3.18,
     Currency: SEK,
+    Isin: SE0016797989,
     Status: Aktuell,
     PublishingDate: DateTime_1,
     TransactionDate: DateTime_2
@@ -86,6 +92,7 @@
     Shares: 4809,
     Price: 3.14,
     Currency: SEK,
+    Isin: SE0016797989,
     Status: Aktuell,
     PublishingDate: DateTime_1,
     TransactionDate: DateTime_2
@@ -99,6 +106,7 @@
     Shares: 4968,
     Price: 3.04,
     Currency: SEK,
+    Isin: SE0016797989,
     Status: Aktuell,
     PublishingDate: DateTime_1,
     TransactionDate: DateTime_2

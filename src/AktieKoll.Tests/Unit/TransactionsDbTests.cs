@@ -1,6 +1,7 @@
 ﻿using AktieKoll.Data;
 using AktieKoll.Models;
 using AktieKoll.Services;
+using AktieKoll.Tests.Fixture;
 using Microsoft.EntityFrameworkCore;
 using static AktieKoll.Models.CsvDtoExtensions;
 
@@ -16,11 +17,18 @@ public class TransactionsDbTests
         return new ApplicationDbContext(options);
     }
 
+    private static InsiderTradeService CreateService(ApplicationDbContext ctx, OpenFigiServiceFake? figi = null)
+    {
+        var fake = figi ?? new OpenFigiServiceFake();
+        var symbolService = new SymbolService(fake);
+        return new InsiderTradeService(ctx, symbolService);
+    }
+
     [Fact]
     public async Task GetInsiderTrades_ReturnsAddedTrades()
     {
         var ctx = CreateContext();
-        var service = new InsiderTradeService(ctx);
+        var service = CreateService(ctx);
 
         var trades = new List<InsiderTrade>
         {
@@ -63,7 +71,7 @@ public class TransactionsDbTests
     public async Task GetInsiderTradesTop_ReturnsTopByValue()
     {
         var ctx = CreateContext();
-        var service = new InsiderTradeService(ctx);
+        var service = CreateService(ctx);
 
         var trades = Enumerable.Range(0, 3).Select(i => new InsiderTrade
         {
@@ -90,7 +98,8 @@ public class TransactionsDbTests
     public async Task AddInsiderTrades_Duplicate()
     {
         var ctx = CreateContext();
-        var service = new InsiderTradeService(ctx);
+        var figi = new OpenFigiServiceFake().Map("SE001", "FOO").Map("SE002", "BAR");
+        var service = CreateService(ctx);
 
         var trades = new List<InsiderTrade>
         {
@@ -104,6 +113,7 @@ public class TransactionsDbTests
                 Price = 10.5m,
                 Currency = "SEK",
                 Status = "Aktuell",
+                Isin = "SE001",
                 PublishingDate = DateTime.Today,
                 TransactionDate = DateTime.Today
             },
@@ -117,6 +127,7 @@ public class TransactionsDbTests
                 Price = 10.5m,
                 Currency = "SEK",
                 Status = "Aktuell",
+                Isin = "SE001",
                 PublishingDate = DateTime.Today,
                 TransactionDate = DateTime.Today
             },
@@ -130,6 +141,7 @@ public class TransactionsDbTests
                 Price = 20.0m,
                 Currency = "SEK",
                 Status = "Aktuell",
+                Isin = "SE002",
                 PublishingDate = DateTime.Today.AddDays(-1),
                 TransactionDate = DateTime.Today.AddDays(-1)
             }
@@ -153,7 +165,7 @@ public class TransactionsDbTests
         var csvDto = await csvFetchService.FetchInsiderTradesAsync(fromDate, toDate);
         var trades = InsiderTradeMapper.MapDtosToTrades(csvDto);
 
-        var service = new InsiderTradeService(ctx);
+        var service = CreateService(ctx);
         await service.AddInsiderTrades(trades);
 
         var result = await service.GetInsiderTrades();
@@ -165,7 +177,7 @@ public class TransactionsDbTests
     public async Task AddInsiderTrades_ExcludedTransactionsFiltered()
     {
         var ctx = CreateContext();
-        var service = new InsiderTradeService(ctx);
+        var service = CreateService(ctx);
 
         var csvDtos = new List<CsvDTO>
         {
@@ -186,6 +198,7 @@ public class TransactionsDbTests
                 Pris = 10.5m,
                 Valuta = "SEK",
                 Handelsplats = string.Empty,
+                ISIN = "SE0001",
                 Status = "Aktuell"
             },
             new()
@@ -205,6 +218,7 @@ public class TransactionsDbTests
                 Pris = 15.5m,
                 Valuta = "SEK",
                 Handelsplats = string.Empty,
+                ISIN = "SE0001",
                 Status = "Aktuell"
             },
             new()
@@ -224,6 +238,7 @@ public class TransactionsDbTests
                 Pris = 300.0m,
                 Valuta = "SEK",
                 Handelsplats = string.Empty,
+                ISIN = "SE0002",
                 Status = "Aktuell"
             },
             new()
@@ -243,6 +258,7 @@ public class TransactionsDbTests
                 Pris = 10.0m,
                 Valuta = "SEK",
                 Handelsplats = string.Empty,
+                ISIN = "SE0003",
                 Status = "Aktuell"
             },
             new()
@@ -262,6 +278,7 @@ public class TransactionsDbTests
                 Pris = 20.0m,
                 Valuta = "SEK",
                 Handelsplats = string.Empty,
+                ISIN = "SE0004",
                 Status = "Aktuell"
             },
             new()
@@ -281,6 +298,7 @@ public class TransactionsDbTests
                 Pris = 20.0m,
                 Valuta = "SEK",
                 Handelsplats = string.Empty,
+                ISIN = "SE0004",
                 Status = "Aktuell"
             },
             new()
@@ -300,6 +318,7 @@ public class TransactionsDbTests
                 Pris = 20.0m,
                 Valuta = "SEK",
                 Handelsplats = string.Empty,
+                ISIN = "SE0004",
                 Status = "Aktuell"
             },
             new()
@@ -319,6 +338,7 @@ public class TransactionsDbTests
                 Pris = 20.0m,
                 Valuta = "SEK",
                 Handelsplats = string.Empty,
+                ISIN = "SE0004",
                 Status = "Aktuell"
             },
             new()
@@ -338,6 +358,7 @@ public class TransactionsDbTests
                 Pris = 20.0m,
                 Valuta = "SEK",
                 Handelsplats = string.Empty,
+                ISIN = "SE0004",
                 Status = "Aktuell"
             },
             new()
@@ -357,6 +378,7 @@ public class TransactionsDbTests
                 Pris = 20.0m,
                 Valuta = "SEK",
                 Handelsplats = string.Empty,
+                ISIN = "SE0004",
                 Status = "Aktuell"
             },
             new()
@@ -376,6 +398,7 @@ public class TransactionsDbTests
                 Pris = 40.0m,
                 Valuta = "SEK",
                 Handelsplats = string.Empty,
+                ISIN = "SE0004",
                 Status = "Aktuell"
             }
         };
@@ -393,7 +416,7 @@ public class TransactionsDbTests
     public async Task GetInsiderTrades_FilterTransactionType()
     {
         var ctx = CreateContext();
-        var service = new InsiderTradeService(ctx);
+        var service = CreateService(ctx);
 
         var csvDtos = new List<CsvDTO>
         {
@@ -414,6 +437,7 @@ public class TransactionsDbTests
                 Pris = 10.5m,
                 Valuta = "SEK",
                 Handelsplats = string.Empty,
+                ISIN = "SE0001",
                 Status = "Aktuell"
             },
             new()
@@ -433,6 +457,7 @@ public class TransactionsDbTests
                 Pris = 15.5m,
                 Valuta = "SEK",
                 Handelsplats = string.Empty,
+                ISIN = "SE0001",
                 Status = "Aktuell"
             },
         };
@@ -462,7 +487,7 @@ public class TransactionsDbTests
         var csvDto = await csvFetchService.FetchInsiderTradesAsync(fromDate, toDate);
         var trades = InsiderTradeMapper.MapDtosToTrades(csvDto);
 
-        var service = new InsiderTradeService(ctx);
+        var service = CreateService(ctx);
         await service.AddInsiderTrades(trades);
 
         var result = await service.GetTransactionCountBuy(companyName, days, top);
@@ -486,7 +511,7 @@ public class TransactionsDbTests
         var csvDto = await csvFetchService.FetchInsiderTradesAsync(fromDate, toDate);
         var trades = InsiderTradeMapper.MapDtosToTrades(csvDto);
 
-        var service = new InsiderTradeService(ctx);
+        var service = CreateService(ctx);
         await service.AddInsiderTrades(trades);
 
         var result = await service.GetTransactionCountSell(companyName, days, top);
@@ -508,7 +533,7 @@ public class TransactionsDbTests
         var csvDto = await csvFetchService.FetchInsiderTradesAsync(fromDate, toDate);
         var trades = InsiderTradeMapper.MapDtosToTrades(csvDto);
 
-        var service = new InsiderTradeService(ctx);
+        var service = CreateService(ctx);
         await service.AddInsiderTrades(trades);
 
         var result = await service.GetInsiderTradesByCompany(companyName);

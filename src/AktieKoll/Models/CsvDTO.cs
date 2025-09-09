@@ -24,6 +24,7 @@ public class CsvDTO
     public required string Instrumenttyp { get; set; }
     public required string Instrumentnamn { get; set; }
     public required string ISIN { get; set; }
+    public string? Symbol { get; set; }
     public required DateTime Transaktionsdatum { get; set; }
     [TypeConverter(typeof(VolumeIntConverter))]
     public required int Volym { get; set; }

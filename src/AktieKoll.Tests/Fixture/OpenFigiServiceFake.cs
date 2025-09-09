@@ -12,6 +12,6 @@ public class OpenFigiServiceFake : IOpenFigiService
         return this;
     }
 
-    public Task<string?> GetTickerByIsinAsync(string isin, CancellationToken ct = default) 
+    public Task<string?> GetTickerByIsinAsync(string isin) 
         => Task.FromResult(_map.TryGetValue(isin, out var ticker) ? ticker : null);
 }
