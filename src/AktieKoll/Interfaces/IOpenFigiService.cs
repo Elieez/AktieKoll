@@ -2,5 +2,5 @@
 
 public interface IOpenFigiService
 {
-    Task<string?> GetTickerByIsinAsync(string isin);
+    Task<string?> GetTickerByIsinAsync(string isin, CancellationToken ct = default);
 }

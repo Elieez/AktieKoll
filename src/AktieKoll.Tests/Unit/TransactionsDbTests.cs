@@ -99,7 +99,7 @@ public class TransactionsDbTests
     {
         var ctx = CreateContext();
         var figi = new OpenFigiServiceFake().Map("SE001", "FOO").Map("SE002", "BAR");
-        var service = CreateService(ctx);
+        var service = CreateService(ctx, figi);
 
         var trades = new List<InsiderTrade>
         {

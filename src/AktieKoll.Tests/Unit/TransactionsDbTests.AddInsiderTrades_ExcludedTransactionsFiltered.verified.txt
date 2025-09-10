@@ -8,6 +8,7 @@
     Shares: 400,
     Price: 40.0,
     Currency: SEK,
+    Isin: SE0004,
     Status: Aktuell,
     PublishingDate: DateTime_1,
     TransactionDate: DateTime_1

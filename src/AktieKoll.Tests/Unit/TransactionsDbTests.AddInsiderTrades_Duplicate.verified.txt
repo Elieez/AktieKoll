@@ -8,6 +8,8 @@
     Shares: 100,
     Price: 10.5,
     Currency: SEK,
+    Isin: SE001,
+    Symbol: FOO,
     Status: Aktuell,
     PublishingDate: DateTime_1,
     TransactionDate: DateTime_1
@@ -21,6 +23,8 @@
     Shares: 200,
     Price: 20.0,
     Currency: SEK,
+    Isin: SE002,
+    Symbol: BAR,
     Status: Aktuell,
     PublishingDate: DateTime_2,
     TransactionDate: DateTime_2
