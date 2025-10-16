@@ -10,7 +10,7 @@ public static class CsvDtoExtensions
         {
             CompanyName = csvDto.Emittent.FilterCompanyName(),
             InsiderName = csvDto.PersonNamn,
-            Position = csvDto.Befattning,
+            Position = csvDto.Befattning.FilterPosition(),
             TransactionType = csvDto.Karaktär.FilterTransactionType(),
             Shares = csvDto.Volym,
             Price = csvDto.Pris,
@@ -44,9 +44,9 @@ public static class CsvDtoExtensions
         };
 
         public static List<InsiderTrade> MapDtosToTrades(IEnumerable<CsvDTO> dtos)
-            => dtos
-            .Where(dto => !ExcludedTransactionsTypes.Contains(dto.Karaktär))
-            .Select(dto => dto.ToInsiderTrade())
-            .ToList();
+        => dtos
+           .Where(dto => !ExcludedTransactionsTypes.Contains(dto.Karaktär.FilterTransactionType()))
+           .Select(dto => dto.ToInsiderTrade())
+           .ToList();
     }
 }

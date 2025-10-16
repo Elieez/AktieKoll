@@ -14,7 +14,7 @@ public static class FakeDTO
             Anmälningsskyldig = string.Empty,
             PersonNamn = "Alice",
             Befattning = "CFO",
-            Karaktär = "Standard transaktion",
+            Karaktär = "Förvärv",
             Instrumenttyp = string.Empty,
             Instrumentnamn = string.Empty,
             Transaktionsdatum = DateTime.Today,
