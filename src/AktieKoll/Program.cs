@@ -21,7 +21,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection")));
 
 builder.Services.AddHttpClient<CsvFetchService>();
-builder.Services.AddHttpClient<IOpenFigiService, IOpenFigiService>(client => 
+builder.Services.AddHttpClient<IOpenFigiService, OpenFigiService>(client => 
     client.BaseAddress = new Uri("https://api.openfigi.com/v3/"));
 builder.Services.AddTransient<ISymbolService, SymbolService>();
 
