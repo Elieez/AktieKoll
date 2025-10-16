@@ -4,6 +4,7 @@ using AktieKoll.Services;
 using AktieKoll.Tests.Fixture;
 using Microsoft.EntityFrameworkCore;
 using static AktieKoll.Models.CsvDtoExtensions;
+using AktieKoll.Tests.Extensions;
 
 namespace AktieKoll.Tests.Unit;
 
@@ -173,234 +174,32 @@ public class TransactionsDbTests
         await Verify(result);
     }
 
-    [Fact]
-    public async Task AddInsiderTrades_ExcludedTransactionsFiltered()
+
+    [Theory]
+    [InlineData("Lån mottaget")]
+    [InlineData("Utdelning lämnad")]
+    [InlineData("Lösen minskning")]
+    [InlineData("Lösen ökning")]
+    [InlineData("Lån återgång ökning")]
+    [InlineData("Lån återgång minskning")]
+    [InlineData("Utbyte minskning")]
+    [InlineData("Utbyte ökning")]
+    [InlineData("Pantsättning")]
+    [InlineData("Bodelning minskning")]
+    [InlineData("Bodelning ökning")]
+    [InlineData("Arv mottagen")]
+    [InlineData("Konvertering ökning")]
+    [InlineData("Lån utlåning")]
+    public async Task AddInsiderTrades_ExcludedTransactionsFiltered(string transactionType)
     {
         var ctx = CreateContext();
         var service = CreateService(ctx);
 
         var csvDtos = new List<CsvDTO>
         {
-            new()
-            {
-                Publiceringsdatum = DateTime.Today,
-                Emittent = "FooCorp",
-                LEI = string.Empty,
-                Anmälningsskyldig = string.Empty,
-                PersonNamn = "Alice",
-                Befattning = "CFO",
-                Karaktär = "Lån mottaget",
-                Instrumenttyp = string.Empty,
-                Instrumentnamn = string.Empty,
-                Transaktionsdatum = DateTime.Today,
-                Volym = 100,
-                Volymsenhet = string.Empty,
-                Pris = 10.5m,
-                Valuta = "SEK",
-                Handelsplats = string.Empty,
-                ISIN = "SE0001",
-                Status = "Aktuell"
-            },
-            new()
-            {
-                Publiceringsdatum = DateTime.Today,
-                Emittent = "FooCorp",
-                LEI = string.Empty,
-                Anmälningsskyldig = string.Empty,
-                PersonNamn = "Alice",
-                Befattning = "CFO",
-                Karaktär = "Utdelning lämnad",
-                Instrumenttyp = string.Empty,
-                Instrumentnamn = string.Empty,
-                Transaktionsdatum = DateTime.Today,
-                Volym = 150,
-                Volymsenhet = string.Empty,
-                Pris = 15.5m,
-                Valuta = "SEK",
-                Handelsplats = string.Empty,
-                ISIN = "SE0001",
-                Status = "Aktuell"
-            },
-            new()
-            {
-                Publiceringsdatum = DateTime.Today.AddDays(-1),
-                Emittent = "Google",
-                LEI = string.Empty,
-                Anmälningsskyldig = string.Empty,
-                PersonNamn = "Sundar",
-                Befattning = "CEO",
-                Karaktär = "Lösen ökning",
-                Instrumenttyp = string.Empty,
-                Instrumentnamn = string.Empty,
-                Transaktionsdatum = DateTime.Today.AddDays(-1),
-                Volym = 220,
-                Volymsenhet = string.Empty,
-                Pris = 300.0m,
-                Valuta = "SEK",
-                Handelsplats = string.Empty,
-                ISIN = "SE0002",
-                Status = "Aktuell"
-            },
-            new()
-            {
-                Publiceringsdatum = DateTime.Today.AddDays(-1),
-                Emittent = "Apple",
-                LEI = string.Empty,
-                Anmälningsskyldig = string.Empty,
-                PersonNamn = "Tim Cook",
-                Befattning = "CEO",
-                Karaktär = "Lösen minskning",
-                Instrumenttyp = string.Empty,
-                Instrumentnamn = string.Empty,
-                Transaktionsdatum = DateTime.Today.AddDays(-1),
-                Volym = 2000,
-                Volymsenhet = string.Empty,
-                Pris = 10.0m,
-                Valuta = "SEK",
-                Handelsplats = string.Empty,
-                ISIN = "SE0003",
-                Status = "Aktuell"
-            },
-            new()
-            {
-                Publiceringsdatum = DateTime.Today.AddDays(-1),
-                Emittent = "BarCorp",
-                LEI = string.Empty,
-                Anmälningsskyldig = string.Empty,
-                PersonNamn = "Bob",
-                Befattning = "CEO",
-                Karaktär = "Utdelning mottagen",
-                Instrumenttyp = string.Empty,
-                Instrumentnamn = string.Empty,
-                Transaktionsdatum = DateTime.Today.AddDays(-1),
-                Volym = 200,
-                Volymsenhet = string.Empty,
-                Pris = 20.0m,
-                Valuta = "SEK",
-                Handelsplats = string.Empty,
-                ISIN = "SE0004",
-                Status = "Aktuell"
-            },
-            new()
-            {
-                Publiceringsdatum = DateTime.Today.AddDays(-1),
-                Emittent = "BarCorp",
-                LEI = string.Empty,
-                Anmälningsskyldig = string.Empty,
-                PersonNamn = "Bob",
-                Befattning = "CEO",
-                Karaktär = "Lån återgång ökning",
-                Instrumenttyp = string.Empty,
-                Instrumentnamn = string.Empty,
-                Transaktionsdatum = DateTime.Today.AddDays(-1),
-                Volym = 200,
-                Volymsenhet = string.Empty,
-                Pris = 20.0m,
-                Valuta = "SEK",
-                Handelsplats = string.Empty,
-                ISIN = "SE0004",
-                Status = "Aktuell"
-            },
-            new()
-            {
-                Publiceringsdatum = DateTime.Today.AddDays(-1),
-                Emittent = "BarCorp",
-                LEI = string.Empty,
-                Anmälningsskyldig = string.Empty,
-                PersonNamn = "Bob",
-                Befattning = "CEO",
-                Karaktär = "Lån återgång minskning",
-                Instrumenttyp = string.Empty,
-                Instrumentnamn = string.Empty,
-                Transaktionsdatum = DateTime.Today.AddDays(-1),
-                Volym = 200,
-                Volymsenhet = string.Empty,
-                Pris = 20.0m,
-                Valuta = "SEK",
-                Handelsplats = string.Empty,
-                ISIN = "SE0004",
-                Status = "Aktuell"
-            },
-            new()
-            {
-                Publiceringsdatum = DateTime.Today.AddDays(-1),
-                Emittent = "BarCorp",
-                LEI = string.Empty,
-                Anmälningsskyldig = string.Empty,
-                PersonNamn = "Bob",
-                Befattning = "CEO",
-                Karaktär = "Pantsättning",
-                Instrumenttyp = string.Empty,
-                Instrumentnamn = string.Empty,
-                Transaktionsdatum = DateTime.Today.AddDays(-1),
-                Volym = 200,
-                Volymsenhet = string.Empty,
-                Pris = 20.0m,
-                Valuta = "SEK",
-                Handelsplats = string.Empty,
-                ISIN = "SE0004",
-                Status = "Aktuell"
-            },
-            new()
-            {
-                Publiceringsdatum = DateTime.Today.AddDays(-1),
-                Emittent = "BarCorp",
-                LEI = string.Empty,
-                Anmälningsskyldig = string.Empty,
-                PersonNamn = "Bob",
-                Befattning = "CEO",
-                Karaktär = "Utbyte ökning",
-                Instrumenttyp = string.Empty,
-                Instrumentnamn = string.Empty,
-                Transaktionsdatum = DateTime.Today.AddDays(-1),
-                Volym = 200,
-                Volymsenhet = string.Empty,
-                Pris = 20.0m,
-                Valuta = "SEK",
-                Handelsplats = string.Empty,
-                ISIN = "SE0004",
-                Status = "Aktuell"
-            },
-            new()
-            {
-                Publiceringsdatum = DateTime.Today.AddDays(-1),
-                Emittent = "BarCorp",
-                LEI = string.Empty,
-                Anmälningsskyldig = string.Empty,
-                PersonNamn = "Bob",
-                Befattning = "CEO",
-                Karaktär = "Utbyte minskning",
-                Instrumenttyp = string.Empty,
-                Instrumentnamn = string.Empty,
-                Transaktionsdatum = DateTime.Today.AddDays(-1),
-                Volym = 200,
-                Volymsenhet = string.Empty,
-                Pris = 20.0m,
-                Valuta = "SEK",
-                Handelsplats = string.Empty,
-                ISIN = "SE0004",
-                Status = "Aktuell"
-            },
-            new()
-            {
-                Publiceringsdatum = DateTime.Today.AddDays(-1),
-                Emittent = "BarCorp",
-                LEI = string.Empty,
-                Anmälningsskyldig = string.Empty,
-                PersonNamn = "Bob",
-                Befattning = "CEO",
-                Karaktär = "Förvärv",
-                Instrumenttyp = string.Empty,
-                Instrumentnamn = string.Empty,
-                Transaktionsdatum = DateTime.Today.AddDays(-1),
-                Volym = 400,
-                Volymsenhet = string.Empty,
-                Pris = 40.0m,
-                Valuta = "SEK",
-                Handelsplats = string.Empty,
-                ISIN = "SE0004",
-                Status = "Aktuell"
-            }
+            FakeDTO.MakeCsvDto(d => { d.Karaktär = transactionType; }),
+
+            FakeDTO.MakeCsvDto(d => { d.Karaktär = "Förvärv"; })
         };
 
         var trades = InsiderTradeMapper.MapDtosToTrades(csvDtos);
