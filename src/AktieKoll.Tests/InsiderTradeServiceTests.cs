@@ -1,6 +1,7 @@
 ﻿using AktieKoll.Data;
 using AktieKoll.Models;
 using AktieKoll.Services;
+using AktieKoll.Tests.Fixture;
 using Microsoft.EntityFrameworkCore;
 
 namespace AktieKoll.Tests;
@@ -15,12 +16,19 @@ public class InsiderTradeServiceTests
         return new ApplicationDbContext(opts);
     }
 
+    private InsiderTradeService CreateService(ApplicationDbContext ctx, OpenFigiServiceFake? figi = null)
+    {
+        var fake = figi ?? new OpenFigiServiceFake();
+        var symbolService = new SymbolService(fake);
+        return new InsiderTradeService(ctx, symbolService);
+    }
+
     [Fact]
     public async Task AddInsiderTrades_NewList_AddsTrades()
     {
         // Arrange
-        var ctx = CreateContext();
-        var service = new InsiderTradeService(ctx);
+        var ctx = CreateContext(); 
+        var service = CreateService(ctx);
         var trades = new List<InsiderTrade>
         {
             new InsiderTrade {
@@ -50,7 +58,7 @@ public class InsiderTradeServiceTests
     public async Task AddInsiderTrades_Duplicate_DoesNotAdd()
     {
         var ctx = CreateContext();
-        var service = new InsiderTradeService(ctx);
+        var service = CreateService(ctx);
         var trade = new InsiderTrade
         {
             CompanyName = "FooCorp",
@@ -94,7 +102,7 @@ public class InsiderTradeServiceTests
         ctx.InsiderTrades.Add(existing);
         await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var service = new InsiderTradeService(ctx);
+        var service = CreateService(ctx);
         var revisedTrade = new InsiderTrade
         {
             CompanyName = existing.CompanyName,
@@ -135,7 +143,7 @@ public class InsiderTradeServiceTests
         });
         await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var service = new InsiderTradeService(ctx);
+        var service = CreateService(ctx);
         var revised = new InsiderTrade
         {
             CompanyName = "BarCorp",
@@ -190,10 +198,40 @@ public class InsiderTradeServiceTests
             }
         );
         await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
-        var service = new InsiderTradeService(ctx);
+        var service = CreateService(ctx);
 
         var result = await service.GetInsiderTrades();
 
         Assert.Equal(2, result.Count());
+    }
+
+    [Fact]
+    public async Task AddInsiderTrades_ResolvesIsinToSymbol()
+    {
+        var ctx = CreateContext();
+        var figi = new OpenFigiServiceFake().Map("ISIN123", "TICK");
+        var service = CreateService(ctx, figi);
+        var trades = new List<InsiderTrade>
+        {
+            new InsiderTrade
+            {
+                CompanyName = "FooCorp",
+                InsiderName = "Alice",
+                Position = "CFO",
+                TransactionType = "Buy",
+                Shares = 10,
+                Price = 10m,
+                Currency = "SEK",
+                Status = "Aktuell",
+                PublishingDate = DateTime.Today,
+                TransactionDate = DateTime.Today,
+                Isin = "ISIN123"
+            }
+        };
+
+        await service.AddInsiderTrades(trades);
+
+        var saved = await ctx.InsiderTrades.FirstAsync(cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal("TICK", saved.Symbol);
     }
 }

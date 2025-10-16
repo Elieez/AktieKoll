@@ -7,6 +7,7 @@
     Shares: 32,
     Price: 25.9,
     Currency: SEK,
+    Isin: SE0010323998,
     Status: Aktuell,
     PublishingDate: DateTime_1,
     TransactionDate: DateTime_2
@@ -19,6 +20,7 @@
     Shares: 9968,
     Price: 26.0,
     Currency: SEK,
+    Isin: SE0010323998,
     Status: Aktuell,
     PublishingDate: DateTime_1,
     TransactionDate: DateTime_2
@@ -31,6 +33,7 @@
     Shares: 98400,
     Price: 1.41,
     Currency: SEK,
+    Isin: ,
     Status: Aktuell,
     PublishingDate: DateTime_3,
     TransactionDate: DateTime_4
@@ -43,6 +46,7 @@
     Shares: 50000,
     Price: 1.2853,
     Currency: SEK,
+    Isin: ,
     Status: Aktuell,
     PublishingDate: DateTime_5,
     TransactionDate: DateTime_6
@@ -54,6 +58,7 @@
     TransactionType: Förvärv,
     Shares: 29829,
     Currency: SEK,
+    Isin: SE0017105620,
     Status: Aktuell,
     PublishingDate: DateTime_7,
     TransactionDate: DateTime_2
@@ -66,6 +71,7 @@
     Shares: 21500,
     Price: 107.29,
     Currency: SEK,
+    Isin: SE0017105620,
     Status: Aktuell,
     PublishingDate: DateTime_7,
     TransactionDate: DateTime_2
@@ -78,6 +84,7 @@
     Shares: 10000,
     Price: 1.2853,
     Currency: SEK,
+    Isin: ,
     Status: Aktuell,
     PublishingDate: DateTime_8,
     TransactionDate: DateTime_2
@@ -90,6 +97,7 @@
     Shares: 653,
     Price: 23.20,
     Currency: SEK,
+    Isin: SE0023134895,
     Status: Aktuell,
     PublishingDate: DateTime_9,
     TransactionDate: DateTime_4
@@ -102,6 +110,7 @@
     Shares: 100000,
     Price: 1.2853,
     Currency: SEK,
+    Isin: ,
     Status: Aktuell,
     PublishingDate: DateTime_10,
     TransactionDate: DateTime_2
@@ -113,6 +122,7 @@
     TransactionType: Förvärv,
     Shares: 17461,
     Currency: SEK,
+    Isin: SE0017105620,
     Status: Aktuell,
     PublishingDate: DateTime_11,
     TransactionDate: DateTime_2
@@ -125,6 +135,7 @@
     Shares: 1757,
     Price: 105.06,
     Currency: SEK,
+    Isin: SE0011167725,
     Status: Aktuell,
     PublishingDate: DateTime_12,
     TransactionDate: DateTime_4
@@ -137,6 +148,7 @@
     Shares: 4827,
     Price: 100.23,
     Currency: SEK,
+    Isin: SE0011167725,
     Status: Aktuell,
     PublishingDate: DateTime_12,
     TransactionDate: DateTime_13
@@ -149,6 +161,7 @@
     Shares: 5736,
     Price: 97.07,
     Currency: SEK,
+    Isin: SE0011167725,
     Status: Aktuell,
     PublishingDate: DateTime_12,
     TransactionDate: DateTime_2
@@ -161,6 +174,7 @@
     Shares: 50000,
     Price: 1.2853,
     Currency: SEK,
+    Isin: ,
     Status: Aktuell,
     PublishingDate: DateTime_14,
     TransactionDate: DateTime_6
@@ -173,6 +187,7 @@
     Shares: 1757,
     Price: 105.06,
     Currency: SEK,
+    Isin: SE0011167725,
     Status: Aktuell,
     PublishingDate: DateTime_14,
     TransactionDate: DateTime_4
@@ -185,6 +200,7 @@
     Shares: 4827,
     Price: 100.28,
     Currency: SEK,
+    Isin: SE0011167725,
     Status: Aktuell,
     PublishingDate: DateTime_14,
     TransactionDate: DateTime_4
@@ -197,6 +213,7 @@
     Shares: 5736,
     Price: 97.07,
     Currency: SEK,
+    Isin: SE0011167725,
     Status: Aktuell,
     PublishingDate: DateTime_14,
     TransactionDate: DateTime_4
@@ -209,6 +226,7 @@
     Shares: 115000,
     Price: 89.75,
     Currency: SEK,
+    Isin: SE0017161243,
     Status: Aktuell,
     PublishingDate: DateTime_15,
     TransactionDate: DateTime_6
@@ -221,6 +239,7 @@
     Shares: 5000,
     Price: 89.75,
     Currency: SEK,
+    Isin: SE0017161243,
     Status: Aktuell,
     PublishingDate: DateTime_16,
     TransactionDate: DateTime_6
@@ -232,6 +251,7 @@
     TransactionType: Tilldelning,
     Shares: 12222,
     Currency: SEK,
+    Isin: SE0000872095,
     Status: Aktuell,
     PublishingDate: DateTime_17,
     TransactionDate: DateTime_13
@@ -244,6 +264,7 @@
     Shares: 1757,
     Price: 105.06,
     Currency: SEK,
+    Isin: SE0011167725,
     Status: Aktuell,
     PublishingDate: DateTime_18,
     TransactionDate: DateTime_4
@@ -256,6 +277,7 @@
     Shares: 4827,
     Price: 100.23,
     Currency: SEK,
+    Isin: SE0011167725,
     Status: Aktuell,
     PublishingDate: DateTime_18,
     TransactionDate: DateTime_13
@@ -268,6 +290,7 @@
     Shares: 5736,
     Price: 97.07,
     Currency: SEK,
+    Isin: SE0011167725,
     Status: Aktuell,
     PublishingDate: DateTime_18,
     TransactionDate: DateTime_2
@@ -280,6 +303,7 @@
     Shares: 50000,
     Price: 1.2853,
     Currency: SEK,
+    Isin: ,
     Status: Aktuell,
     PublishingDate: DateTime_19,
     TransactionDate: DateTime_6
@@ -292,6 +316,7 @@
     Shares: 5600,
     Price: 35.50,
     Currency: SEK,
+    Isin: SE0000667925,
     Status: Aktuell,
     PublishingDate: DateTime_20,
     TransactionDate: DateTime_6
@@ -304,6 +329,7 @@
     Shares: 5651,
     Price: 1.0,
     Currency: SEK,
+    Isin: SE0015245535,
     Status: Aktuell,
     PublishingDate: DateTime_21,
     TransactionDate: DateTime_13
@@ -316,6 +342,7 @@
     Shares: 3000,
     Price: 43.86,
     Currency: SEK,
+    Isin: SE0015988167,
     Status: Aktuell,
     PublishingDate: DateTime_22,
     TransactionDate: DateTime_6
@@ -328,6 +355,7 @@
     Shares: 2500,
     Price: 43.96,
     Currency: SEK,
+    Isin: SE0015988167,
     Status: Aktuell,
     PublishingDate: DateTime_22,
     TransactionDate: DateTime_6
@@ -339,6 +367,7 @@
     TransactionType: Gåva lämnad,
     Shares: 200,
     Currency: USD,
+    Isin: US0463531089,
     Status: Aktuell,
     PublishingDate: DateTime_23,
     TransactionDate: DateTime_13
@@ -351,6 +380,7 @@
     Shares: 50000,
     Price: 1.2853,
     Currency: SEK,
+    Isin: SE0000233934,
     Status: Reviderad,
     PublishingDate: DateTime_24,
     TransactionDate: DateTime_6
@@ -363,6 +393,7 @@
     Shares: 2500,
     Price: 9.75,
     Currency: SEK,
+    Isin: ,
     Status: Aktuell,
     PublishingDate: DateTime_25,
     TransactionDate: DateTime_13
@@ -375,6 +406,7 @@
     Shares: 50000,
     Price: 1.2853,
     Currency: SEK,
+    Isin: SE0000233934,
     Status: Reviderad,
     PublishingDate: DateTime_26,
     TransactionDate: DateTime_6
@@ -386,6 +418,7 @@
     TransactionType: Tilldelning,
     Shares: 17330,
     Currency: SEK,
+    Isin: SE0000872095,
     Status: Aktuell,
     PublishingDate: DateTime_27,
     TransactionDate: DateTime_13
@@ -398,6 +431,7 @@
     Shares: 7314,
     Price: 296.517162,
     Currency: SEK,
+    Isin: SE0000872095,
     Status: Aktuell,
     PublishingDate: DateTime_27,
     TransactionDate: DateTime_13
@@ -410,6 +444,7 @@
     Shares: 7957777,
     Price: 0.018,
     Currency: SEK,
+    Isin: SE0023114400,
     Status: Aktuell,
     PublishingDate: DateTime_28,
     TransactionDate: DateTime_13
@@ -422,6 +457,7 @@
     Shares: 5000,
     Price: 37.91,
     Currency: SEK,
+    Isin: SE0007158829,
     Status: Aktuell,
     PublishingDate: DateTime_29,
     TransactionDate: DateTime_13
@@ -433,6 +469,7 @@
     TransactionType: Tilldelning,
     Shares: 27129,
     Currency: SEK,
+    Isin: SE0000872095,
     Status: Aktuell,
     PublishingDate: DateTime_30,
     TransactionDate: DateTime_13
@@ -445,6 +482,7 @@
     Shares: 11729,
     Price: 296.52,
     Currency: SEK,
+    Isin: SE0000872095,
     Status: Aktuell,
     PublishingDate: DateTime_30,
     TransactionDate: DateTime_13
@@ -457,6 +495,7 @@
     Shares: 1555,
     Price: 108.32,
     Currency: USD,
+    Isin: US0528001094,
     Status: Aktuell,
     PublishingDate: DateTime_31,
     TransactionDate: DateTime_2
@@ -469,6 +508,7 @@
     Shares: 2000,
     Price: 211.90,
     Currency: SEK,
+    Isin: SE0015658109,
     Status: Aktuell,
     PublishingDate: DateTime_32,
     TransactionDate: DateTime_33

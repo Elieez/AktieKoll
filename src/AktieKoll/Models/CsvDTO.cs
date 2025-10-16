@@ -23,7 +23,7 @@ public class CsvDTO
     public required string Karaktär { get; set; }
     public required string Instrumenttyp { get; set; }
     public required string Instrumentnamn { get; set; }
-    public string? ISIN { get; set; } = null;
+    public string? ISIN { get; set; }
     public required DateTime Transaktionsdatum { get; set; }
     [TypeConverter(typeof(VolumeIntConverter))]
     public required int Volym { get; set; }

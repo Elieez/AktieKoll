@@ -19,6 +19,7 @@ optionsBuilder.UseNpgsql(connectionString);
 await using var context = new ApplicationDbContext(optionsBuilder.Options);
 
 var httpClient = new HttpClient();
+var figiClient = new HttpClient { BaseAddress = new Uri("https://api.openfigi.com/v3/") };
 CsvReader csvReaderFactory(TextReader reader)
 {
     var config = new CsvHelper.Configuration.CsvConfiguration(new CultureInfo("sv-SE"))
@@ -31,11 +32,14 @@ CsvReader csvReaderFactory(TextReader reader)
 using var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
 var logger = loggerFactory.CreateLogger<CsvFetchService>();
 var csvService = new CsvFetchService(httpClient, csvReaderFactory, logger);
+var figiLogger = loggerFactory.CreateLogger<OpenFigiService>();
+var figiService = new OpenFigiService(figiClient, figiLogger);
+var symbolService = new SymbolService(figiService);
 
 var csvResults = await csvService.FetchInsiderTradesAsync();
 var trades = InsiderTradeMapper.MapDtosToTrades(csvResults);
 
-var tradeService = new InsiderTradeService(context);
+var tradeService = new InsiderTradeService(context, symbolService);
 var message = await tradeService.AddInsiderTrades(trades);
 
 Console.WriteLine(message);
