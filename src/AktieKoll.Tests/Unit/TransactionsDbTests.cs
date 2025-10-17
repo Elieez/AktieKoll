@@ -212,6 +212,30 @@ public class TransactionsDbTests
     }
 
     [Fact]
+    public async Task AddInsiderTrades_FilterPositionName()
+    {
+        var ctx = CreateContext();
+        var service = CreateService(ctx);
+
+        var csvDtos = new List<CsvDTO>
+        {
+            FakeDTO.MakeCsvDto(d => { d.Befattning = "Verkställande direktör (VD)"; }),
+            FakeDTO.MakeCsvDto(d => { d.Befattning = "Ekonomichef/finanschef/finansdirektör"; }),
+            FakeDTO.MakeCsvDto(d => { d.Befattning = "Annan medlem i bolagets administrations-, lednings- eller kontrollorgan"; }),
+            FakeDTO.MakeCsvDto(d => { d.Befattning = "Arbetstagarrepresentant i styrelsen eller arbetstagarsuppleant"; }),
+            FakeDTO.MakeCsvDto(d => { d.Befattning = "Styrelseledamot"; })
+        };
+
+        var trades = InsiderTradeMapper.MapDtosToTrades(csvDtos);
+
+        await service.AddInsiderTrades(trades);
+
+        var result = await service.GetInsiderTrades();
+
+        await Verify(result);
+    }
+
+    [Fact]
     public async Task GetInsiderTrades_FilterTransactionType()
     {
         var ctx = CreateContext();

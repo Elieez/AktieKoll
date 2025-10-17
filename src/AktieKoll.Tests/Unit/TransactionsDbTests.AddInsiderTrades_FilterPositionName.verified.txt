@@ -1,0 +1,72 @@
+﻿[
+  {
+    Id: 1,
+    CompanyName: FooCorp,
+    InsiderName: Alice,
+    Position: VD,
+    TransactionType: Förvärv,
+    Shares: 100,
+    Price: 10.5,
+    Currency: SEK,
+    Isin: SE0001,
+    Status: Aktuell,
+    PublishingDate: DateTime_1,
+    TransactionDate: DateTime_1
+  },
+  {
+    Id: 2,
+    CompanyName: FooCorp,
+    InsiderName: Alice,
+    Position: CFO,
+    TransactionType: Förvärv,
+    Shares: 100,
+    Price: 10.5,
+    Currency: SEK,
+    Isin: SE0001,
+    Status: Aktuell,
+    PublishingDate: DateTime_1,
+    TransactionDate: DateTime_1
+  },
+  {
+    Id: 3,
+    CompanyName: FooCorp,
+    InsiderName: Alice,
+    Position: Ledningsgrupp,
+    TransactionType: Förvärv,
+    Shares: 100,
+    Price: 10.5,
+    Currency: SEK,
+    Isin: SE0001,
+    Status: Aktuell,
+    PublishingDate: DateTime_1,
+    TransactionDate: DateTime_1
+  },
+  {
+    Id: 4,
+    CompanyName: FooCorp,
+    InsiderName: Alice,
+    Position: Arbetstagarrepresentant,
+    TransactionType: Förvärv,
+    Shares: 100,
+    Price: 10.5,
+    Currency: SEK,
+    Isin: SE0001,
+    Status: Aktuell,
+    PublishingDate: DateTime_1,
+    TransactionDate: DateTime_1
+  },
+  {
+    Id: 5,
+    CompanyName: FooCorp,
+    InsiderName: Alice,
+    Position: Styrelseledamot,
+    TransactionType: Förvärv,
+    Shares: 100,
+    Price: 10.5,
+    Currency: SEK,
+    Isin: SE0001,
+    Status: Aktuell,
+    PublishingDate: DateTime_1,
+    TransactionDate: DateTime_1
+  }
+]

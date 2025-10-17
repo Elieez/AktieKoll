@@ -28,7 +28,7 @@
   {
     CompanyName: Logistea,
     InsiderName: Jonas Kennerhed,
-    Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
+    Position: Ledningsgrupp,
     TransactionType: Tilldelning,
     Shares: 98400,
     Price: 1.41,
@@ -41,7 +41,7 @@
   {
     CompanyName: Pricer.,
     InsiderName: Jörgen Jost Auf Der Stroth,
-    Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
+    Position: Ledningsgrupp,
     TransactionType: Förvärv,
     Shares: 50000,
     Price: 1.2853,
@@ -54,7 +54,7 @@
   {
     CompanyName: Dynavox Group,
     InsiderName: Linda Tybring,
-    Position: Ekonomichef/finanschef/finansdirektör,
+    Position: CFO,
     TransactionType: Förvärv,
     Shares: 29829,
     Currency: SEK,
@@ -66,7 +66,7 @@
   {
     CompanyName: Dynavox Group,
     InsiderName: Linda Tybring,
-    Position: Ekonomichef/finanschef/finansdirektör,
+    Position: CFO,
     TransactionType: Avyttring,
     Shares: 21500,
     Price: 107.29,
@@ -79,7 +79,7 @@
   {
     CompanyName: Pricer,
     InsiderName: Malin Svensson,
-    Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
+    Position: Ledningsgrupp,
     TransactionType: Förvärv,
     Shares: 10000,
     Price: 1.2853,
@@ -105,7 +105,7 @@
   {
     CompanyName: Pricer,
     InsiderName: Olof Magnus Larsson,
-    Position: Verkställande direktör (VD),
+    Position: VD,
     TransactionType: Förvärv,
     Shares: 100000,
     Price: 1.2853,
@@ -118,7 +118,7 @@
   {
     CompanyName: Dynavox Group,
     InsiderName: Tara Ann Rudnicki,
-    Position: Annan ledande befattningshavare,
+    Position: Annan ledande befattningshavare,
     TransactionType: Förvärv,
     Shares: 17461,
     Currency: SEK,
@@ -130,7 +130,7 @@
   {
     CompanyName: I-Tech,
     InsiderName: Magnus Henell,
-    Position: Ekonomichef/finanschef/finansdirektör,
+    Position: CFO,
     TransactionType: Avyttring,
     Shares: 1757,
     Price: 105.06,
@@ -143,7 +143,7 @@
   {
     CompanyName: I-Tech,
     InsiderName: Magnus Henell,
-    Position: Ekonomichef/finanschef/finansdirektör,
+    Position: CFO,
     TransactionType: Avyttring,
     Shares: 4827,
     Price: 100.23,
@@ -156,7 +156,7 @@
   {
     CompanyName: I-Tech,
     InsiderName: Magnus Henell,
-    Position: Ekonomichef/finanschef/finansdirektör,
+    Position: CFO,
     TransactionType: Avyttring,
     Shares: 5736,
     Price: 97.07,
@@ -169,7 +169,7 @@
   {
     CompanyName: Pricer,
     InsiderName: Mats Arnehall,
-    Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
+    Position: Ledningsgrupp,
     TransactionType: Förvärv,
     Shares: 50000,
     Price: 1.2853,
@@ -182,7 +182,7 @@
   {
     CompanyName: I-Tech,
     InsiderName: Cecilia Ohlauson,
-    Position: Annan ledande befattningshavare,
+    Position: Annan ledande befattningshavare,
     TransactionType: Avyttring,
     Shares: 1757,
     Price: 105.06,
@@ -195,7 +195,7 @@
   {
     CompanyName: I-Tech,
     InsiderName: Cecilia Ohlauson,
-    Position: Annan ledande befattningshavare,
+    Position: Annan ledande befattningshavare,
     TransactionType: Avyttring,
     Shares: 4827,
     Price: 100.28,
@@ -208,7 +208,7 @@
   {
     CompanyName: I-Tech,
     InsiderName: Cecilia Ohlauson,
-    Position: Annan ledande befattningshavare,
+    Position: Annan ledande befattningshavare,
     TransactionType: Avyttring,
     Shares: 5736,
     Price: 97.07,
@@ -221,7 +221,7 @@
   {
     CompanyName: Fortnox,
     InsiderName: Håkan Rosén,
-    Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
+    Position: Ledningsgrupp,
     TransactionType: Avyttring,
     Shares: 115000,
     Price: 89.75,
@@ -247,7 +247,7 @@
   {
     CompanyName: Swedish Orphan Biovitrum,
     InsiderName: Lydia Abad-Franch,
-    Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
+    Position: Ledningsgrupp,
     TransactionType: Tilldelning,
     Shares: 12222,
     Currency: SEK,
@@ -298,7 +298,7 @@
   {
     CompanyName: Pricer,
     InsiderName: Claes Wenthzel,
-    Position: Ekonomichef/finanschef/finansdirektör,
+    Position: CFO,
     TransactionType: Förvärv,
     Shares: 50000,
     Price: 1.2853,
@@ -311,7 +311,7 @@
   {
     CompanyName: Telia Company,
     InsiderName: Alexandra Fürst,
-    Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
+    Position: Ledningsgrupp,
     TransactionType: Förvärv,
     Shares: 5600,
     Price: 35.50,
@@ -324,7 +324,7 @@
   {
     CompanyName: Nelly Group,
     InsiderName: Lotta Fermén,
-    Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
+    Position: Ledningsgrupp,
     TransactionType: Tilldelning,
     Shares: 5651,
     Price: 1.0,
@@ -337,7 +337,7 @@
   {
     CompanyName: Swedencare,
     InsiderName: Laszlo Janos Varga,
-    Position: Annan ledande befattningshavare,
+    Position: Annan ledande befattningshavare,
     TransactionType: Förvärv,
     Shares: 3000,
     Price: 43.86,
@@ -350,7 +350,7 @@
   {
     CompanyName: Swedencare,
     InsiderName: Laszlo Janos Varga,
-    Position: Annan ledande befattningshavare,
+    Position: Annan ledande befattningshavare,
     TransactionType: Förvärv,
     Shares: 2500,
     Price: 43.96,
@@ -363,7 +363,7 @@
   {
     CompanyName: AstraZeneca PLC,
     InsiderName: Aradhana Sarin,
-    Position: Ekonomichef/finanschef/finansdirektör,
+    Position: CFO,
     TransactionType: Gåva lämnad,
     Shares: 200,
     Currency: USD,
@@ -375,7 +375,7 @@
   {
     CompanyName: Pricer,
     InsiderName: Mats Arnehall,
-    Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
+    Position: Ledningsgrupp,
     TransactionType: Teckning,
     Shares: 50000,
     Price: 1.2853,
@@ -388,7 +388,7 @@
   {
     CompanyName: Logistri Fastighets,
     InsiderName: Björn Uggla,
-    Position: Annan ledande befattningshavare,
+    Position: Annan ledande befattningshavare,
     TransactionType: Tilldelning,
     Shares: 2500,
     Price: 9.75,
@@ -401,7 +401,7 @@
   {
     CompanyName: Pricer,
     InsiderName: Mats Arnehall,
-    Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
+    Position: Ledningsgrupp,
     TransactionType: Teckning,
     Shares: 50000,
     Price: 1.2853,
@@ -414,7 +414,7 @@
   {
     CompanyName: Swedish Orphan Biovitrum,
     InsiderName: Mahmood Ladha,
-    Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
+    Position: Ledningsgrupp,
     TransactionType: Tilldelning,
     Shares: 17330,
     Currency: SEK,
@@ -426,7 +426,7 @@
   {
     CompanyName: Swedish Orphan Biovitrum,
     InsiderName: Mahmood Ladha,
-    Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
+    Position: Ledningsgrupp,
     TransactionType: Avyttring,
     Shares: 7314,
     Price: 296.517162,
@@ -465,7 +465,7 @@
   {
     CompanyName: Swedish Orphan Biovitrum,
     InsiderName: Duane Barnes,
-    Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
+    Position: Ledningsgrupp,
     TransactionType: Tilldelning,
     Shares: 27129,
     Currency: SEK,
@@ -477,7 +477,7 @@
   {
     CompanyName: Swedish Orphan Biovitrum,
     InsiderName: Duane Barnes,
-    Position: Annan medlem i bolagets administrations-, lednings- eller kontrollorgan,
+    Position: Ledningsgrupp,
     TransactionType: Avyttring,
     Shares: 11729,
     Price: 296.52,
@@ -503,7 +503,7 @@
   {
     CompanyName: Epiroc,
     InsiderName: Martin Hjerpe,
-    Position: Annan ledande befattningshavare,
+    Position: Annan ledande befattningshavare,
     TransactionType: Förvärv,
     Shares: 2000,
     Price: 211.90,
