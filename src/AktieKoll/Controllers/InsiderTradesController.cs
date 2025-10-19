@@ -8,7 +8,6 @@ namespace AktieKoll.Controllers;
 [Route("api/[controller]")]
 public class InsiderTradesController(IInsiderTradeService tradeService) : ControllerBase
 {
-
     [HttpPost]
     public async Task<IActionResult> PostInsiderTrades([FromBody] List<InsiderTrade> insiderTrades)
     {
@@ -52,7 +51,10 @@ public class InsiderTradesController(IInsiderTradeService tradeService) : Contro
     }
 
     [HttpGet("count-buy")]
-    public async Task<ActionResult<IEnumerable<CompanyTransactionStats>>> GetTransactionCountBuy([FromQuery] string? companyName, [FromQuery] int days = 30, [FromQuery] int? top = 5)
+    public async Task<ActionResult<IEnumerable<CompanyTransactionStats>>> GetTransactionCountBuy(
+        [FromQuery] string? companyName,
+        [FromQuery] int days = 30,
+        [FromQuery] int? top = 5)
     {
         var stats = await tradeService.GetTransactionCountBuy(companyName, days, top);
         return Ok(stats);
@@ -60,8 +62,8 @@ public class InsiderTradesController(IInsiderTradeService tradeService) : Contro
 
     [HttpGet("count-sell")]
     public async Task<ActionResult<IEnumerable<CompanyTransactionStats>>> GetTransactionCountSell(
-        [FromQuery] string? companyName, 
-        [FromQuery] int days = 30, 
+        [FromQuery] string? companyName,
+        [FromQuery] int days = 30,
         [FromQuery] int? top = 5)
     {
         var stats = await tradeService.GetTransactionCountSell(companyName, days, top);
@@ -70,7 +72,7 @@ public class InsiderTradesController(IInsiderTradeService tradeService) : Contro
 
     [HttpGet("company")]
     public async Task<ActionResult<IEnumerable<InsiderTrade>>> GetByCompanyName(
-        [FromQuery] string name, 
+        [FromQuery] string name,
         [FromQuery] int skip = 0,
         [FromQuery] int take = 10)
     {

@@ -27,7 +27,7 @@ public class InsiderTradeServiceTests
     public async Task AddInsiderTrades_NewList_AddsTrades()
     {
         // Arrange
-        var ctx = CreateContext(); 
+        var ctx = CreateContext();
         var service = CreateService(ctx);
         var trades = new List<InsiderTrade>
         {

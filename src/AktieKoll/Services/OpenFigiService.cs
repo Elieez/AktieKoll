@@ -48,8 +48,8 @@ public class OpenFigiService(HttpClient httpClient, ILogger<OpenFigiService> log
     private sealed class FigiMappingItem
     {
         [JsonPropertyName("ticker")] public string? ticker { get; set; }
-        [JsonPropertyName("exchCode")] public string? exchCode { get; set; }    
-        [JsonPropertyName("micCode")] public string? micCode { get; set; }   
-        [JsonPropertyName("marketSector")] public string? marketSector { get; set; } 
+        [JsonPropertyName("exchCode")] public string? exchCode { get; set; }
+        [JsonPropertyName("micCode")] public string? micCode { get; set; }
+        [JsonPropertyName("marketSector")] public string? marketSector { get; set; }
     }
 }
