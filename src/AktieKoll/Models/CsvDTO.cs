@@ -10,14 +10,14 @@ public class CsvDTO
     public required string LEI { get; set; }
     public required string Anmälningsskyldig { get; set; }
     [Name("Person i ledande ställning")]
-    public required string PersonNamn{ get; set; }
+    public required string PersonNamn { get; set; }
     public required string Befattning { get; set; }
-    public string? Närstående { get; set; } // Could be bool
-    public string? Korrigering { get; set; } // Could be bool
+    public string? Närstående { get; set; }
+    public string? Korrigering { get; set; }
     [Name("Beskrivning av korrigering")]
     public string? KorrigeringDesc { get; set; }
-    [Name("Är förstagångsrapportering")] 
-    public string? Förstagångsrapportering { get; set; } // Could be bool
+    [Name("Är förstagångsrapportering")]
+    public string? Förstagångsrapportering { get; set; }
     [Name("Är kopplad till aktieprogram")]
     public string? Aktieprogram { get; set; }
     public required string Karaktär { get; set; }
@@ -31,7 +31,7 @@ public class CsvDTO
     public required decimal Pris { get; set; }
     public required string Valuta { get; set; }
     public required string Handelsplats { get; set; }
-    public required string Status { get; set; } // Could be bool/enum
+    public required string Status { get; set; }
 }
 
 public class VolumeIntConverter : CsvHelper.TypeConversion.Int32Converter

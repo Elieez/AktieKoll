@@ -11,14 +11,28 @@ public class SymbolService(IOpenFigiService figiService) : ISymbolService
         CancellationToken ct = default)
     {
         // CompanyName -> Symbol (from existing)
-        var symbolCache = existingTrades
-            .Where(t => !string.IsNullOrWhiteSpace(t.CompanyName) && !string.IsNullOrWhiteSpace(t.Symbol))
-            .ToDictionary(t => t.CompanyName!, t => t.Symbol!, StringComparer.OrdinalIgnoreCase);
+        var symbolCache = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach(var t in existingTrades)
+        {
+            var name = t.CompanyName;
+            var symbol = t.Symbol;
+            if(!string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(symbol))
+            {
+                symbolCache.TryAdd(name, symbol);
+            }
+        }
 
         // ISIN -> Symbol (from existing)
-        var byIsin = existingTrades
-            .Where(t => !string.IsNullOrWhiteSpace(t.Isin) && !string.IsNullOrWhiteSpace(t.Symbol))
-            .ToDictionary(t => t.Isin!, t => t.Symbol!, StringComparer.OrdinalIgnoreCase);
+        var byIsin = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach(var t in existingTrades)
+        {
+            var isin = t.Isin;
+            var symbol = t.Symbol;
+            if(!string.IsNullOrWhiteSpace(isin) && !string.IsNullOrWhiteSpace(symbol))
+            {
+                byIsin.TryAdd(isin, symbol);
+            }
+        }
 
         // Per-run dedupe of FIGI lookups: ISIN -> Symbol
         var runIsin = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -31,10 +45,10 @@ public class SymbolService(IOpenFigiService figiService) : ISymbolService
             if (!string.IsNullOrWhiteSpace(trade.Symbol))
             {
                 if (!string.IsNullOrWhiteSpace(trade.Isin))
-                    byIsin.TryAdd(trade.Isin!, trade.Symbol!); // <-- fixed parentheses & semicolon
+                    byIsin.TryAdd(trade.Isin, trade.Symbol); // <-- fixed parentheses & semicolon
 
                 if (!string.IsNullOrWhiteSpace(trade.CompanyName))
-                    symbolCache.TryAdd(trade.CompanyName!, trade.Symbol!);
+                    symbolCache.TryAdd(trade.CompanyName, trade.Symbol);
 
                 continue;
             }
@@ -42,33 +56,35 @@ public class SymbolService(IOpenFigiService figiService) : ISymbolService
             string? resolved = null;
 
             // Try ISIN-based caches first
-            if (!string.IsNullOrWhiteSpace(trade.Isin))
+            var tradeIsin = trade.Isin;
+            if (!string.IsNullOrWhiteSpace(tradeIsin))
             {
-                if (byIsin.TryGetValue(trade.Isin!, out var s) || runIsin.TryGetValue(trade.Isin!, out s))
+                if (byIsin.TryGetValue(tradeIsin, out var s) || runIsin.TryGetValue(tradeIsin, out s))
                 {
                     resolved = s;
                 }
                 else
                 {
                     // FIGI lookup once per ISIN in this run
-                    resolved = await figiService.GetTickerByIsinAsync(trade.Isin!, ct); // <-- ct now in scope
+                    resolved = await figiService.GetTickerByIsinAsync(tradeIsin, ct); // <-- ct now in scope
                     if (!string.IsNullOrWhiteSpace(resolved))
                     {
-                        runIsin[trade.Isin!] = resolved!;
-                        byIsin[trade.Isin!] = resolved!;
+                        runIsin[tradeIsin] = resolved;
+                        byIsin[tradeIsin] = resolved;
                     }
                 }
             }
 
             // Fallback: name cache
-            if (resolved is null && !string.IsNullOrWhiteSpace(trade.CompanyName))
-                symbolCache.TryGetValue(trade.CompanyName!, out resolved);
+            var tradeName = trade.CompanyName;
+            if (resolved is null && !string.IsNullOrWhiteSpace(tradeName))
+                symbolCache.TryGetValue(tradeName, out resolved);
 
             if (!string.IsNullOrWhiteSpace(resolved))
             {
                 trade.Symbol = resolved!;
-                if (!string.IsNullOrWhiteSpace(trade.CompanyName))
-                    symbolCache.TryAdd(trade.CompanyName!, resolved!);
+                if (!string.IsNullOrWhiteSpace(tradeName))
+                    symbolCache.TryAdd(tradeName, resolved);
             }
         }
     }

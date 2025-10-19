@@ -52,7 +52,7 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
         if (newTradesCount > 0 || removedTradesCount > 0)
         {
             await context.SaveChangesAsync();
-            
+
             if (newTradesCount > 0 && removedTradesCount > 0)
             {
                 return $"{newTradesCount} new trades added. {removedTradesCount} trades removed.";
@@ -64,7 +64,7 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
             return $"{removedTradesCount} trades removed.";
         }
         return "No new data was added.";
-               
+
     }
 
     public async Task<IEnumerable<InsiderTrade>> GetInsiderTrades()
