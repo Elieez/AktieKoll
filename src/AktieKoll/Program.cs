@@ -34,7 +34,7 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
-
+// Rule TEST
 app.UseCors("AllowNextApp");
 
 app.UseHttpsRedirection();
