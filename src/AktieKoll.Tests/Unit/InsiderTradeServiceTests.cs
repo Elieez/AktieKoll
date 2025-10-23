@@ -4,7 +4,7 @@ using AktieKoll.Services;
 using AktieKoll.Tests.Fixture;
 using Microsoft.EntityFrameworkCore;
 
-namespace AktieKoll.Tests;
+namespace AktieKoll.Tests.Unit;
 
 public class InsiderTradeServiceTests
 {

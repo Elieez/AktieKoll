@@ -54,7 +54,7 @@ public class InsiderTradesController(IInsiderTradeService tradeService) : Contro
     public async Task<ActionResult<IEnumerable<CompanyTransactionStats>>> GetTransactionCountBuy(
         [FromQuery] string? companyName,
         [FromQuery] int days = 30,
-        [FromQuery] int? top = 5)
+        [FromQuery] int? top = 3)
     {
         var stats = await tradeService.GetTransactionCountBuy(companyName, days, top);
         return Ok(stats);
@@ -64,7 +64,7 @@ public class InsiderTradesController(IInsiderTradeService tradeService) : Contro
     public async Task<ActionResult<IEnumerable<CompanyTransactionStats>>> GetTransactionCountSell(
         [FromQuery] string? companyName,
         [FromQuery] int days = 30,
-        [FromQuery] int? top = 5)
+        [FromQuery] int? top = 3)
     {
         var stats = await tradeService.GetTransactionCountSell(companyName, days, top);
         return Ok(stats);
