@@ -42,7 +42,6 @@ public class AuthController(UserManager<ApplicationUser> userManager,
         if (!valid) return Unauthorized("Invalid email or password.");
 
         var accessToken = tokenService.GenerateAccessToken(user);
-
         var rawRefresh = tokenService.GenerateRefreshToken();
         var hashed = tokenService.HashToken(rawRefresh);
 
@@ -54,7 +53,6 @@ public class AuthController(UserManager<ApplicationUser> userManager,
             ExpiresAt = DateTime.UtcNow.AddDays(int.Parse(config["Jwt:RefreshTokenDays"] ?? "7")),
             CreatedByIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"
         };
-
         db.RefreshTokens.Add(rt);
         await db.SaveChangesAsync();
 
@@ -62,9 +60,8 @@ public class AuthController(UserManager<ApplicationUser> userManager,
         Response.Cookies.Append("refreshToken", rawRefresh, new CookieOptions
         {
             HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Domain = ".dev.local",
+            Secure = false,
+            SameSite = SameSiteMode.Lax,
             Expires = rt.ExpiresAt
         });
 
@@ -77,7 +74,7 @@ public class AuthController(UserManager<ApplicationUser> userManager,
     {
         if (!Request.Cookies.TryGetValue("refreshToken", out var token))
         {
-            return Unauthorized();
+            return Unauthorized("No Refresh token");
         }
 
         var hashed = tokenService.HashToken(token);
@@ -85,19 +82,25 @@ public class AuthController(UserManager<ApplicationUser> userManager,
 
         if (rt == null || rt.IsRevoked || rt.ExpiresAt < DateTime.UtcNow)
         {
-            return Unauthorized();
+            return Unauthorized("Invalid or expired refresh token");
+        }
+
+        var user = await userManager.FindByIdAsync(rt.UserId);
+        if (user == null)
+        {
+            return Unauthorized("User not found");
         }
 
         rt.IsRevoked = true;
 
-        var newToken = tokenService.GenerateRefreshToken();
-        var newHashToken = tokenService.HashToken(newToken);
+        var newRawToken = tokenService.GenerateRefreshToken();
+        var newHashToken = tokenService.HashToken(newRawToken);
 
-        rt.ReplacedByToken = newToken;
+        rt.ReplacedByToken = newHashToken;
 
         var newRt = new RefreshToken
         {
-            Token = newToken,
+            Token = newHashToken,
             UserId = rt.UserId,
             ExpiresAt = DateTime.UtcNow.AddDays(int.Parse(config["Jwt:RefreshTokenDays"] ?? "7")),
             CreatedByIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"
@@ -106,14 +109,17 @@ public class AuthController(UserManager<ApplicationUser> userManager,
         db.RefreshTokens.Add(newRt);
         await db.SaveChangesAsync();
 
-        var user = await userManager.FindByIdAsync(rt.UserId);
-        if (user == null)
-        {
-            return Unauthorized();
-        }
-
         var accessToken = tokenService.GenerateAccessToken(user);
         var exipresAt = DateTime.UtcNow.AddMinutes(int.Parse(config["Jwt:AccessTokenMinutes"] ?? "15"));
+
+        Response.Cookies.Append("refreshToken", newRawToken, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = false,
+            SameSite = SameSiteMode.Lax,
+            Expires = newRt.ExpiresAt
+        });
+
         return Ok(new AuthResponseDto { AccessToken = accessToken, ExpiresAt = exipresAt });
     }
 
