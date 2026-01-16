@@ -414,3 +414,9 @@ appsettings.json
 # Verify
 *.received.*
 *.received/
+
+# Database backups
+backups/
+*.sql
+*.sql.gz
+*.sql.meta

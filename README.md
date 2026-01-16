@@ -189,6 +189,56 @@ All endpoints require `X-API-Key` header except health checks.
 - `ApiKey` - API authentication key
 - `FrontendUrl` - Allowed CORS origin
 
+## Database Migrations
+
+AktieKoll uses Entity Framework Core migrations to manage database schema changes.
+
+### Quick Migration Commands
+
+```bash
+# Check migration status
+./scripts/check-migrations.sh docker
+
+# Run all pending migrations
+./scripts/migrate.sh docker
+
+# Create backup before migration (automatic in production)
+./scripts/backup-database.sh docker --compress
+```
+
+### Managing Migrations
+
+```bash
+# Create new migration
+cd src/AktieKoll
+dotnet ef migrations add MigrationName
+
+# Apply migrations locally
+dotnet ef database update
+
+# Rollback to specific migration
+dotnet ef database update PreviousMigrationName
+```
+
+### Production Migrations
+
+For production, always use the migration scripts for safety:
+
+```bash
+# Run migrations with automatic backup
+./scripts/migrate.sh production
+
+# Check status
+./scripts/check-migrations.sh production
+```
+
+**See [DATABASE_MIGRATIONS.md](DATABASE_MIGRATIONS.md) for comprehensive migration strategy including:**
+- Migration workflow and best practices
+- Rollback strategies
+- Backup and restore procedures
+- Troubleshooting guide
+- Zero-downtime deployment strategies
+
 ## Running Tests
 
 ```bash
