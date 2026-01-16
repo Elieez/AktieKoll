@@ -31,10 +31,70 @@ src/
 
 ## Prerequisites
 
+### Option 1: Docker (Recommended for deployment)
+- Docker 20.10+
+- Docker Compose 2.0+
+
+### Option 2: Local Development
 - .NET 9 SDK
 - PostgreSQL database
 
 ## Quick Start
+
+### Option A: Using Docker (Recommended)
+
+The easiest way to run the application with all dependencies.
+
+**1. Create environment file**
+
+```bash
+# Copy the example file
+cp .env.example .env
+
+# Edit .env and set your values
+nano .env
+```
+
+**2. Start all services**
+
+```bash
+docker-compose up -d
+```
+
+This will start:
+- PostgreSQL database on port 5432
+- API on port 5000
+
+**3. Run database migrations**
+
+```bash
+# Run migrations inside the container
+docker-compose exec api dotnet ef database update
+```
+
+**4. Check health**
+
+```bash
+curl http://localhost:5000/health/ready
+```
+
+**Docker Commands:**
+
+```bash
+# View logs
+docker-compose logs -f api
+
+# Stop all services
+docker-compose down
+
+# Rebuild after code changes
+docker-compose up -d --build
+
+# Remove volumes (WARNING: deletes database data)
+docker-compose down -v
+```
+
+### Option B: Local Development (Without Docker)
 
 ### 1. Clone and Restore
 
@@ -145,20 +205,90 @@ GitHub Actions workflows are configured for:
 
 ## Deployment
 
+### Docker Deployment (Recommended)
+
+**Production Deployment with Docker:**
+
+1. **Clone repository on production server**
+   ```bash
+   git clone https://github.com/yourusername/AktieKoll.git
+   cd AktieKoll
+   ```
+
+2. **Create production .env file**
+   ```bash
+   nano .env
+   ```
+
+   Add your production values:
+   ```env
+   POSTGRES_PASSWORD=your-secure-db-password
+   API_KEY=your-secure-api-key
+   FRONTEND_URL=https://your-frontend-domain.com
+   ```
+
+3. **Start services**
+   ```bash
+   docker-compose up -d
+   ```
+
+4. **Run migrations**
+   ```bash
+   docker-compose exec api dotnet ef database update
+   ```
+
+5. **Verify deployment**
+   ```bash
+   curl http://localhost:5000/health/ready
+   ```
+
+6. **Set up reverse proxy (Nginx/Caddy) for HTTPS**
+   - Point to `localhost:5000`
+   - Configure SSL/TLS certificates
+   - Add domain routing
+
+**Building for Production (Manual):**
+
+```bash
+# Build API image
+cd src
+docker build -f AktieKoll/Dockerfile -t aktiekoll-api:latest .
+
+# Build FetchTrades image
+docker build -f FetchTrades/Dockerfile -t aktiekoll-fetch:latest .
+
+# Push to registry (Docker Hub, GitHub Container Registry, etc.)
+docker tag aktiekoll-api:latest yourusername/aktiekoll-api:latest
+docker push yourusername/aktiekoll-api:latest
+```
+
+### Platform-Specific Deployment
+
 See [SECURITY.md](SECURITY.md) for production deployment checklist and security best practices.
 
 **Key Steps:**
 1. Set all required environment variables
-2. Configure SSL/TLS certificates
+2. Configure SSL/TLS certificates (via reverse proxy)
 3. Run database migrations
 4. Test health check endpoints
 5. Configure frontend with API URL and key
+6. Set up monitoring for health endpoints
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `ConnectionStrings__PostgresConnection` | Yes | PostgreSQL connection string |
-| `ApiKey` | Yes | API authentication key |
-| `FrontendUrl` | Yes | Frontend domain for CORS |
-| `ASPNETCORE_ENVIRONMENT` | No | Runtime environment (Development/Production) |
+### For Docker Compose (.env file)
+
+| Variable | Required | Description | Example |
+|----------|----------|-------------|---------|
+| `POSTGRES_PASSWORD` | Yes | PostgreSQL database password | `SecurePass123!` |
+| `API_KEY` | Yes | API authentication key | Generated via `openssl rand -base64 32` |
+| `FRONTEND_URL` | Yes | Frontend domain for CORS | `https://aktiekoll.com` |
+
+### For Manual/Native Deployment
+
+| Variable | Required | Description | Example |
+|----------|----------|-------------|---------|
+| `ConnectionStrings__PostgresConnection` | Yes | PostgreSQL connection string | `Host=localhost;Database=aktiekoll;Username=user;Password=pass` |
+| `ApiKey` | Yes | API authentication key | Generated via `openssl rand -base64 32` |
+| `FrontendUrl` | Yes | Frontend domain for CORS | `https://aktiekoll.com` |
+| `ASPNETCORE_ENVIRONMENT` | No | Runtime environment | `Development` or `Production` |

@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:17-alpine
+    container_name: aktiekoll-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: aktiekoll
+      POSTGRES_USER: aktiekoll_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme123}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aktiekoll_user -d aktiekoll"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - aktiekoll-network
+
+  # Main API Service
+  api:
+    build:
+      context: ./src
+      dockerfile: AktieKoll/Dockerfile
+    container_name: aktiekoll-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__PostgresConnection: "Host=postgres;Database=aktiekoll;Username=aktiekoll_user;Password=${POSTGRES_PASSWORD:-changeme123}"
+      ApiKey: ${API_KEY}
+      FrontendUrl: ${FRONTEND_URL:-http://localhost:3000}
+    ports:
+      - "5000:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - aktiekoll-network
+
+  # FetchTrades CLI - runs as a scheduled cron job
+  # Uncomment the section below if you want to run FetchTrades in Docker
+  # Otherwise, use the GitHub Actions cron workflow
+
+  # fetch-trades:
+  #   build:
+  #     context: ./src
+  #     dockerfile: FetchTrades/Dockerfile
+  #   container_name: aktiekoll-fetch-trades
+  #   restart: unless-stopped
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   environment:
+  #     ConnectionStrings__PostgresConnection: "Host=postgres;Database=aktiekoll;Username=aktiekoll_user;Password=${POSTGRES_PASSWORD:-changeme123}"
+  #   # Run every 6 hours using a simple loop
+  #   command: >
+  #     sh -c "while true; do
+  #       dotnet FetchTrades.dll;
+  #       echo 'Fetch completed. Sleeping for 6 hours...';
+  #       sleep 21600;
+  #     done"
+  #   networks:
+  #     - aktiekoll-network
+
+networks:
+  aktiekoll-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
