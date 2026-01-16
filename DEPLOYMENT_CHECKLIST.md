@@ -2,6 +2,11 @@
 
 Use this checklist to ensure your AktieKoll backend is fully ready for production deployment.
 
+> **⚠️ IMPORTANT:** Before deploying, review [PRODUCTION_ISSUES.md](PRODUCTION_ISSUES.md) for known issues that need attention:
+> - 🔴 **Critical:** Retry policies for external APIs, HttpClient timeouts
+> - 🟡 **Important:** GitHub Actions secrets, logging configuration
+> - 🟢 **Nice-to-have:** Structured logging, connection pooling, security improvements
+
 ## 1. Code Quality & CI/CD
 
 ### 1.1 CI Pipeline Status

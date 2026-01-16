@@ -314,6 +314,8 @@ docker push yourusername/aktiekoll-api:latest
 
 ### Platform-Specific Deployment
 
+> **⚠️ Before Production Deployment:** Review [PRODUCTION_ISSUES.md](PRODUCTION_ISSUES.md) for known issues that should be addressed, including retry policies for external APIs and timeout configurations.
+
 See [SECURITY.md](SECURITY.md) for production deployment checklist and security best practices.
 
 **Key Steps:**
