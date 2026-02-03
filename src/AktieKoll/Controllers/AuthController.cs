@@ -29,7 +29,7 @@ public class AuthController(UserManager<ApplicationUser> userManager,
 
         return result.Succeeded
             ? Ok(new { message = "User created successfully." })
-            : BadRequest(result.Errors);
+            : BadRequest(result.Errors.Select(e => e.Description));
     }
 
     [HttpPost("login")]
