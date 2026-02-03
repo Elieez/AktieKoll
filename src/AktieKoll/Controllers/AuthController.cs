@@ -128,7 +128,9 @@ public class AuthController(UserManager<ApplicationUser> userManager,
     {
         if (Request.Cookies.TryGetValue("refreshToken", out var token))
         {
-            var rt = await db.RefreshTokens.SingleOrDefaultAsync(r => r.Token == token);
+            var hashed = tokenService.HashToken(token);
+
+            var rt = await db.RefreshTokens.SingleOrDefaultAsync(r => r.Token == hashed);
             if (rt != null)
             {
                 rt.IsRevoked = true;
@@ -138,7 +140,6 @@ public class AuthController(UserManager<ApplicationUser> userManager,
 
         Response.Cookies.Delete("refreshToken", new CookieOptions
         {
-            Domain = ".dev.local",
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.None
