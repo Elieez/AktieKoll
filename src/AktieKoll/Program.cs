@@ -42,7 +42,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 
 // JWT config
 var jwtKey = builder.Configuration["Jwt:Key"];
-if (string.IsNullOrEmpty(jwtKey) || jwtKey.Contains("your-256-bit"))
+if (string.IsNullOrEmpty(jwtKey))
 {
     throw new InvalidOperationException("JWT Key missing from configuration.");
 }
@@ -87,6 +87,7 @@ builder.Services.AddHttpClient<CsvFetchService>();
 builder.Services.AddHttpClient<IOpenFigiService, OpenFigiService>(client =>
     client.BaseAddress = new Uri("https://api.openfigi.com/v3/"));
 builder.Services.AddTransient<ISymbolService, SymbolService>();
+builder.Services.AddHostedService<RefreshTokenCleanupService>();
 
 builder.Services.AddScoped<IInsiderTradeService, InsiderTradeService>();
 
