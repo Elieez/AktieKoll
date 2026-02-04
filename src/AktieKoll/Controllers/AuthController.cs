@@ -60,12 +60,12 @@ public class AuthController(UserManager<ApplicationUser> userManager,
         Response.Cookies.Append("refreshToken", rawRefresh, new CookieOptions
         {
             HttpOnly = true,
-            Secure = false,
-            SameSite = SameSiteMode.Lax,
+            Secure = bool.Parse(config["CookieSettings:Secure"] ?? "false"),
+            SameSite = Enum.Parse<SameSiteMode>(config["CookieSettings:SameSite"] ?? "Lax"),
             Expires = rt.ExpiresAt
         });
 
-        var expiresAt = DateTime.UtcNow.AddMinutes(int.Parse(config["Jwt:AccessToken"] ?? "15"));
+        var expiresAt = DateTime.UtcNow.AddMinutes(int.Parse(config["Jwt:AccessTokenMinutes"] ?? "15"));
         return Ok(new AuthResponseDto { AccessToken = accessToken, ExpiresAt = expiresAt });
     }
 
@@ -110,17 +110,17 @@ public class AuthController(UserManager<ApplicationUser> userManager,
         await db.SaveChangesAsync();
 
         var accessToken = tokenService.GenerateAccessToken(user);
-        var exipresAt = DateTime.UtcNow.AddMinutes(int.Parse(config["Jwt:AccessTokenMinutes"] ?? "15"));
+        var expiresAt = DateTime.UtcNow.AddMinutes(int.Parse(config["Jwt:AccessTokenMinutes"] ?? "15"));
 
         Response.Cookies.Append("refreshToken", newRawToken, new CookieOptions
         {
             HttpOnly = true,
-            Secure = false,
-            SameSite = SameSiteMode.Lax,
+            Secure = bool.Parse(config["CookieSettings:Secure"] ?? "false"),
+            SameSite = Enum.Parse<SameSiteMode>(config["CookieSettings:SameSite"] ?? "Lax"),
             Expires = newRt.ExpiresAt
         });
 
-        return Ok(new AuthResponseDto { AccessToken = accessToken, ExpiresAt = exipresAt });
+        return Ok(new AuthResponseDto { AccessToken = accessToken, ExpiresAt = expiresAt });
     }
 
     [HttpPost("logout")]
@@ -141,8 +141,8 @@ public class AuthController(UserManager<ApplicationUser> userManager,
         Response.Cookies.Delete("refreshToken", new CookieOptions
         {
             HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None
+            Secure = bool.Parse(config["CookieSettings:Secure"] ?? "false"),
+            SameSite = Enum.Parse<SameSiteMode>(config["CookieSettings:SameSite"] ?? "Lax"),
         });
 
         return Ok();

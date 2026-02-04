@@ -42,7 +42,14 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 
 // JWT config
 var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrEmpty(jwtKey) || jwtKey.Contains("your-256-bit"))
+{
+    throw new InvalidOperationException("JWT Key missing from configuration.");
+}
+var requireHttps = bool.Parse(builder.Configuration["CookieSettings:Secure"] ?? "false");
+
 var keyBytes = Encoding.UTF8.GetBytes(jwtKey ?? throw new Exception("JWT Key missing"));
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -50,7 +57,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    options.RequireHttpsMetadata = true;
+    options.RequireHttpsMetadata = requireHttps;
     options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
