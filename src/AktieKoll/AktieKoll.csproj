@@ -3,9 +3,12 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dd00aba0-5321-4092-aa3c-628bf4afb5ea</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CsvHelper" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
       <PrivateAssets>all</PrivateAssets>
@@ -13,5 +16,6 @@
     </PackageReference>
     <PackageReference Include="Npgsql" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+	<InternalsVisibleTo Include="AktieKoll.Tests" />
   </ItemGroup>
 </Project>
