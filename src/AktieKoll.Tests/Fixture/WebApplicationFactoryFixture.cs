@@ -9,7 +9,7 @@ namespace AktieKoll.Tests.Fixture;
 
 public class WebApplicationFactoryFixture : WebApplicationFactory<Program>
 {
-    private const string DatabaseName = "IntegrationTestDatabase"; // FIXED: Use constant name
+    private const string DatabaseName = "IntegrationTestDatabase";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -41,7 +41,7 @@ public class WebApplicationFactoryFixture : WebApplicationFactory<Program>
             // Add InMemory database - SAME NAME for all scopes
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseInMemoryDatabase(DatabaseName); // FIXED: Use constant
+                options.UseInMemoryDatabase(DatabaseName);
                 options.EnableSensitiveDataLogging();
             });
         });
@@ -60,17 +60,5 @@ public class WebApplicationFactoryFixture : WebApplicationFactory<Program>
         db.Users.RemoveRange(db.Users);
         db.InsiderTrades.RemoveRange(db.InsiderTrades);
         db.SaveChanges();
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            using var scope = Services.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            db.Database.EnsureDeleted();
-        }
-
-        base.Dispose(disposing);
     }
 }
