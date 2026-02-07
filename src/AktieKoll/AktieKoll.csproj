@@ -16,5 +16,6 @@
     </PackageReference>
     <PackageReference Include="Npgsql" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+	<InternalsVisibleTo Include="AktieKoll.Tests" />
   </ItemGroup>
 </Project>
