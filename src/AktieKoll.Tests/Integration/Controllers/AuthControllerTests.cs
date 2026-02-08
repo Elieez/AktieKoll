@@ -34,8 +34,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         return ValueTask.CompletedTask;
     }
 
-    #region Register Tests
-
+    // Register Tests
     [Fact]
     public async Task Register_WithValidData_ReturnsOkAndCreatesUser()
     {
@@ -137,10 +136,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         user!.DisplayName.Should().BeNull();
     }
 
-    #endregion
-
-    #region Login Tests
-
+    // Login Tests
     [Fact]
     public async Task Login_WithValidCredentials_ReturnsAccessTokenAndSetsRefreshTokenCookie()
     {
@@ -279,10 +275,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         }
     }
 
-    #endregion
-
-    #region Refresh Tests
-
+    // Refresh Tests
     [Fact]
     public async Task Refresh_WithValidToken_ReturnsNewAccessTokenAndRevokesOldToken()
     {
@@ -442,10 +435,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         refreshResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    #endregion
-
-    #region Logout Tests
-
+    // Logout Tests
     [Fact]
     public async Task Logout_WithValidToken_RevokesRefreshTokenAndDeletesCookie()
     {
@@ -504,8 +494,6 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
-
-    #endregion
 
     public void Dispose()
     {

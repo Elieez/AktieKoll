@@ -1,4 +1,5 @@
 using AktieKoll.Data;
+using AktieKoll.Extensions;
 using AktieKoll.Interfaces;
 using AktieKoll.Models;
 using AktieKoll.Services;
@@ -24,6 +25,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddControllers();
+builder.Services.AddCustomRateLimiting(builder.Configuration);
 
 var connectionString = builder.Configuration.GetConnectionString("PostgresConnection");
 
