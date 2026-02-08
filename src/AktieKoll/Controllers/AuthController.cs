@@ -4,6 +4,7 @@ using AktieKoll.Interfaces;
 using AktieKoll.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace AktieKoll.Controllers;
@@ -16,6 +17,7 @@ public class AuthController(UserManager<ApplicationUser> userManager,
                             IConfiguration config) : ControllerBase
 {
     [HttpPost("register")]
+    [EnableRateLimiting("auth")]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
         var user = new ApplicationUser
@@ -33,6 +35,7 @@ public class AuthController(UserManager<ApplicationUser> userManager,
     }
 
     [HttpPost("login")]
+    [EnableRateLimiting("auth")]
     public async Task<IActionResult> Login(LoginDto dto)
     {
         var user = await userManager.FindByEmailAsync(dto.Email);
@@ -70,6 +73,7 @@ public class AuthController(UserManager<ApplicationUser> userManager,
     }
 
     [HttpPost("refresh")]
+    [EnableRateLimiting("api")]
     public async Task<IActionResult> Refresh()
     {
         if (!Request.Cookies.TryGetValue("refreshToken", out var token))

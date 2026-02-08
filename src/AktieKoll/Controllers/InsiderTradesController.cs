@@ -1,11 +1,13 @@
 ﻿using AktieKoll.Interfaces;
 using AktieKoll.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace AktieKoll.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[EnableRateLimiting("api")]
 public class InsiderTradesController(IInsiderTradeService tradeService) : ControllerBase
 {
     [HttpPost]
