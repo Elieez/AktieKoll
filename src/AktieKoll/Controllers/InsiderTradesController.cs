@@ -10,22 +10,6 @@ namespace AktieKoll.Controllers;
 [EnableRateLimiting("api")]
 public class InsiderTradesController(IInsiderTradeService tradeService) : ControllerBase
 {
-    [HttpPost]
-    public async Task<IActionResult> PostInsiderTrades([FromBody] List<InsiderTrade> insiderTrades)
-    {
-        if (insiderTrades == null || insiderTrades.Count == 0)
-        {
-            return BadRequest("No data provided.");
-        }
-
-        var result = await tradeService.AddInsiderTrades(insiderTrades);
-        if (result == null)
-        {
-            return BadRequest("No new trades added.");
-        }
-
-        return Ok(result);
-    }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<InsiderTrade>>> GetInsiderTrades()
@@ -79,6 +63,12 @@ public class InsiderTradesController(IInsiderTradeService tradeService) : Contro
         [FromQuery] int take = 10)
     {
         var trades = await tradeService.GetInsiderTradesByCompany(name, skip, take);
+
+        if (!trades.Any())
+        {
+            return NotFound(new { error = $"No trades found for company: {name}" });
+        }
+
         return Ok(trades);
     }
 }
