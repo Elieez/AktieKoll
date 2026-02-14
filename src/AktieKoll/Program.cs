@@ -1,3 +1,4 @@
+using System.Text;
 using AktieKoll.Data;
 using AktieKoll.Extensions;
 using AktieKoll.Interfaces;
@@ -5,10 +6,10 @@ using AktieKoll.Models;
 using AktieKoll.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,6 +90,16 @@ builder.Services.Configure<CookieAuthenticationOptions>(IdentityConstants.Applic
     options.SlidingExpiration = true;
 });
 
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 10485760; // 10 MB limit
+});
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 10485760; // 10 MB
+});
+
 builder.Services.AddScoped<ITokenService, TokenService>();
 
 builder.Services.AddHttpClient<CsvFetchService>();
@@ -98,6 +109,9 @@ builder.Services.AddTransient<ISymbolService, SymbolService>();
 builder.Services.AddHostedService<RefreshTokenCleanupService>();
 
 builder.Services.AddScoped<IInsiderTradeService, InsiderTradeService>();
+
+builder.Services.AddResponseCaching();
+builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 
@@ -113,6 +127,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseResponseCaching();
 
 app.UseAuthentication();
 app.UseAuthorization();
