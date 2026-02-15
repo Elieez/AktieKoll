@@ -17,15 +17,15 @@ public class OpenFigiService(HttpClient httpClient, ILogger<OpenFigiService> log
             response.EnsureSuccessStatusCode();
 
             var result = await response.Content.ReadFromJsonAsync<List<FigiMappingResponse>>(cancellationToken: ct);
-            var items = result?.FirstOrDefault()?.data ?? [];
+            var items = result?.FirstOrDefault()?.Data ?? [];
 
             var best = items
-                .OrderByDescending(i => string.Equals(i.exchCode, "SS", StringComparison.OrdinalIgnoreCase))
-                .ThenByDescending(i => string.Equals(i.micCode, "XSTO", StringComparison.OrdinalIgnoreCase))
-                .ThenByDescending(i => string.Equals(i.marketSector, "Equity", StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(i => string.Equals(i.ExchCode, "SS", StringComparison.OrdinalIgnoreCase))
+                .ThenByDescending(i => string.Equals(i.MicCode, "XSTO", StringComparison.OrdinalIgnoreCase))
+                .ThenByDescending(i => string.Equals(i.MarketSector, "Equity", StringComparison.OrdinalIgnoreCase))
                 .FirstOrDefault();
 
-            return best?.ticker;
+            return best?.Ticker;
         }
         catch (OperationCanceledException)
         {
@@ -34,7 +34,7 @@ public class OpenFigiService(HttpClient httpClient, ILogger<OpenFigiService> log
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to resolve ticker for {isin}", isin);
+            logger.LogError(ex, "Failed to resolve ticker for {Isin}", isin);
             return null;
         }
     }
@@ -42,14 +42,14 @@ public class OpenFigiService(HttpClient httpClient, ILogger<OpenFigiService> log
     private sealed class FigiMappingResponse
     {
         [JsonPropertyName("data")]
-        public List<FigiMappingItem>? data { get; set; }
+        public List<FigiMappingItem>? Data { get; set; }
     }
 
     private sealed class FigiMappingItem
     {
-        [JsonPropertyName("ticker")] public string? ticker { get; set; }
-        [JsonPropertyName("exchCode")] public string? exchCode { get; set; }
-        [JsonPropertyName("micCode")] public string? micCode { get; set; }
-        [JsonPropertyName("marketSector")] public string? marketSector { get; set; }
+        [JsonPropertyName("ticker")] public string? Ticker { get; set; }
+        [JsonPropertyName("exchCode")] public string? ExchCode { get; set; }
+        [JsonPropertyName("micCode")] public string? MicCode { get; set; }
+        [JsonPropertyName("marketSector")] public string? MarketSector { get; set; }
     }
 }

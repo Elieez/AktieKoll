@@ -8,7 +8,7 @@ namespace AktieKoll.Tests.Unit;
 
 public class InsiderTradeServiceTests
 {
-    private ApplicationDbContext CreateContext()
+    private static ApplicationDbContext CreateContext()
     {
         var opts = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
@@ -16,7 +16,7 @@ public class InsiderTradeServiceTests
         return new ApplicationDbContext(opts);
     }
 
-    private InsiderTradeService CreateService(ApplicationDbContext ctx, OpenFigiServiceFake? figi = null)
+    private static InsiderTradeService CreateService(ApplicationDbContext ctx, OpenFigiServiceFake? figi = null)
     {
         var fake = figi ?? new OpenFigiServiceFake();
         var symbolService = new SymbolService(fake);
@@ -31,7 +31,7 @@ public class InsiderTradeServiceTests
         var service = CreateService(ctx);
         var trades = new List<InsiderTrade>
         {
-            new InsiderTrade {
+            new() {
                 CompanyName = "FooCorp",
                 InsiderName = "Alice",
                 Position = "CFO",
@@ -75,7 +75,7 @@ public class InsiderTradeServiceTests
         ctx.InsiderTrades.Add(trade);
         await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var result = await service.AddInsiderTrades(new List<InsiderTrade> { trade });
+        var result = await service.AddInsiderTrades([trade]);
 
         Assert.Equal("No new data was added.", result);
         var count = await ctx.InsiderTrades.CountAsync(cancellationToken: TestContext.Current.CancellationToken);
@@ -213,8 +213,7 @@ public class InsiderTradeServiceTests
         var service = CreateService(ctx, figi);
         var trades = new List<InsiderTrade>
         {
-            new InsiderTrade
-            {
+            new() {
                 CompanyName = "FooCorp",
                 InsiderName = "Alice",
                 Position = "CFO",

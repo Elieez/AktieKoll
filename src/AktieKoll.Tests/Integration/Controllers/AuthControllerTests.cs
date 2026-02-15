@@ -15,7 +15,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
 {
     private readonly WebApplicationFactoryFixture _factory;
     private readonly HttpClient _client;
-    private CancellationToken Token => TestContext.Current.CancellationToken;
+    private static CancellationToken Token => TestContext.Current.CancellationToken;
 
     public AuthControllerTests(WebApplicationFactoryFixture factory)
     {
@@ -31,6 +31,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
 
     public ValueTask DisposeAsync()
     {
+        GC.SuppressFinalize(this);
         return ValueTask.CompletedTask;
     }
 

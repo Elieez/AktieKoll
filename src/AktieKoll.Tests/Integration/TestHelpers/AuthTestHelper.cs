@@ -20,8 +20,7 @@ public class AuthTestHelper(IServiceProvider serviceProvider) : IDisposable
     public async Task<ApplicationUser> CreateTestUserAsync(
         string email = "test@example.com",
         string password = "Test123!@#",
-        string? displayName = "Test User",
-        CancellationToken cancellationToken = default)
+        string? displayName = "Test User")
     {
         var user = new ApplicationUser
         {
@@ -42,7 +41,7 @@ public class AuthTestHelper(IServiceProvider serviceProvider) : IDisposable
         return user;
     }
 
-    public async Task<(HttpResponseMessage response, string refreshTokenCookie)> LoginUserAsync(
+    public static async Task<(HttpResponseMessage response, string refreshTokenCookie)> LoginUserAsync(
         HttpClient client,
         string email,
         string password,
