@@ -46,7 +46,7 @@ builder.Services.AddSingleton<Func<TextReader, CsvReader>>(_ =>
 
 // Services
 builder.Services.AddTransient<CsvFetchService>();
-builder.Services.AddTransient<OpenFigiService>();
+builder.Services.AddTransient<IOpenFigiService, OpenFigiService>();
 builder.Services.AddTransient<ISymbolService, SymbolService>();
 builder.Services.AddTransient<InsiderTradeService>();
 
