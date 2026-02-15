@@ -1,4 +1,5 @@
 using AktieKoll.Data;
+using AktieKoll.Interfaces;
 using AktieKoll.Services;
 using CsvHelper;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +26,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // HttpClients
 builder.Services.AddHttpClient<CsvFetchService>();
-builder.Services.AddHttpClient<OpenFigiService>(client =>
+
+builder.Services.AddHttpClient<IOpenFigiService, OpenFigiService>(client =>
     client.BaseAddress = new Uri("https://api.openfigi.com/v3/"));
 
 // CSV Reader Factory
@@ -45,8 +47,7 @@ builder.Services.AddSingleton<Func<TextReader, CsvReader>>(_ =>
 
 // Services
 builder.Services.AddTransient<CsvFetchService>();
-builder.Services.AddTransient<OpenFigiService>();
-builder.Services.AddTransient<SymbolService>();
+builder.Services.AddTransient<ISymbolService, SymbolService>();
 builder.Services.AddTransient<InsiderTradeService>();
 
 // Build and run 
