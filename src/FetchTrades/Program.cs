@@ -20,7 +20,7 @@ await using var context = new ApplicationDbContext(optionsBuilder.Options);
 
 var httpClient = new HttpClient();
 var figiClient = new HttpClient { BaseAddress = new Uri("https://api.openfigi.com/v3/") };
-CsvReader csvReaderFactory(TextReader reader)
+static CsvReader csvReaderFactory(TextReader reader)
 {
     var config = new CsvHelper.Configuration.CsvConfiguration(new CultureInfo("sv-SE"))
     {

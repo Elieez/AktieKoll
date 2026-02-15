@@ -104,12 +104,12 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
 
         var query = context.InsiderTrades
             .Where(t => t.PublishingDate >= startDate && t.PublishingDate < endDate)
-            .Where(t => t.TransactionType.ToLower() == transactionType.ToLower());
+            .Where(t => t.TransactionType.Equals(transactionType, StringComparison.OrdinalIgnoreCase));
 
         if (!string.IsNullOrWhiteSpace(companyName))
         {
             var filtered = companyName.FilterCompanyName();
-            query = query.Where(t => t.CompanyName.ToLower() == filtered.ToLower());
+            query = query.Where(t => t.CompanyName.Equals(filtered, StringComparison.OrdinalIgnoreCase));
         }
 
         var grouped = query
@@ -145,7 +145,7 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
         var filteredCompanyName = companyName.FilterCompanyName();
 
         return await context.InsiderTrades
-            .Where(t => t.CompanyName.ToLower() == filteredCompanyName.ToLower())
+            .Where(t => t.CompanyName.Equals(filteredCompanyName, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(t => t.PublishingDate)
             .Skip(skip)
             .Take(take)

@@ -44,9 +44,8 @@ public static class CsvDtoExtensions
         };
 
         public static List<InsiderTrade> MapDtosToTrades(IEnumerable<CsvDTO> dtos)
-        => dtos
+        => [.. dtos
            .Where(dto => !ExcludedTransactionsTypes.Contains(dto.Karaktär.FilterTransactionType()))
-           .Select(dto => dto.ToInsiderTrade())
-           .ToList();
+           .Select(dto => dto.ToInsiderTrade())];
     }
 }
