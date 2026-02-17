@@ -20,7 +20,8 @@ public class AuthTestHelper(IServiceProvider serviceProvider) : IDisposable
     public async Task<ApplicationUser> CreateTestUserAsync(
         string email = "test@example.com",
         string password = "Test123!@#",
-        string? displayName = "Test User")
+        string? displayName = "Test User"
+        )
     {
         var user = new ApplicationUser
         {
@@ -39,6 +40,26 @@ public class AuthTestHelper(IServiceProvider serviceProvider) : IDisposable
         }
 
         return user;
+    }
+
+    public async Task<string> GetAccessTokenAsync(
+        HttpClient client,
+        string email = "test@example.com",
+        string password = "Test123!@#",
+        CancellationToken cancellationToken = default)
+    {
+        var existingUser = await UserManager.FindByEmailAsync(email);
+        if (existingUser == null)
+        {
+            await CreateTestUserAsync(email, password);
+        }
+
+        var loginDto = new LoginDto { Email = email, Password = password };
+        var response = await client.PostAsJsonAsync("/api/auth/login", loginDto, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        var authResponse = await response.Content.ReadFromJsonAsync<AuthResponseDto>(cancellationToken: cancellationToken);
+        return authResponse!.AccessToken;
     }
 
     public static async Task<(HttpResponseMessage response, string refreshTokenCookie)> LoginUserAsync(
@@ -113,6 +134,28 @@ public static class HttpClientTestExtensions
     {
         return client.PostAsync(requestUri, content, Token);
     }
+
+    public static Task<HttpResponseMessage> GetTestAsync(
+        this HttpClient client,
+        string requestUri)
+        => client.GetAsync(requestUri, Token);
+
+    public static Task<HttpResponseMessage> DeleteTestAsync(
+        this HttpClient client,
+        string requestUri)
+        => client.DeleteAsync(requestUri, Token);
+
+    public static Task<HttpResponseMessage> PutAsJsonTestAsync<T>(
+        this HttpClient client,
+        string requestUri,
+        T value)
+        => client.PutAsJsonAsync(requestUri, value, Token);
+    
+    public static Task<HttpResponseMessage> PatchAsJsonTestAsync<T>(
+        this HttpClient client,
+        string requestUri,
+        T value)
+        => client.PatchAsJsonAsync(requestUri, value, Token);
 
     public static Task<T?> ReadFromJsonTestAsync<T>(this HttpContent content)
     {

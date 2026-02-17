@@ -11,30 +11,8 @@ using System.Net;
 
 namespace AktieKoll.Tests.Integration.Controllers;
 
-public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, IAsyncLifetime, IDisposable
+public class AuthControllerTests(WebApplicationFactoryFixture factory) : IntegrationTestBase(factory)
 {
-    private readonly WebApplicationFactoryFixture _factory;
-    private readonly HttpClient _client;
-    private static CancellationToken Token => TestContext.Current.CancellationToken;
-
-    public AuthControllerTests(WebApplicationFactoryFixture factory)
-    {
-        _factory = factory;
-        _client = _factory.CreateClient();
-    }
-
-    public ValueTask InitializeAsync()
-    {
-        _factory.ResetDatabase();
-        return ValueTask.CompletedTask;
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        GC.SuppressFinalize(this);
-        return ValueTask.CompletedTask;
-    }
-
     // Register Tests
     [Fact]
     public async Task Register_WithValidData_ReturnsOkAndCreatesUser()
@@ -48,13 +26,13 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         };
 
         // Act
-        var response = await _client.PostAsJsonTestAsync("/api/auth/register", registerDto);
+        var response = await Client.PostAsJsonTestAsync("/api/auth/register", registerDto);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         // FIX: Use fresh scope from factory
-        using var scope = _factory.Services.CreateScope();
+        using var scope = Factory.Services.CreateScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
         var user = await userManager.FindByEmailAsync(registerDto.Email);
@@ -68,7 +46,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
     {
         // Arrange
         // Create user using fresh scope
-        using (var scope = _factory.Services.CreateScope())
+        using (var scope = Factory.Services.CreateScope())
         {
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var user = new ApplicationUser
@@ -88,7 +66,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         };
 
         // Act
-        var response = await _client.PostAsJsonTestAsync("/api/auth/register", registerDto);
+        var response = await Client.PostAsJsonTestAsync("/api/auth/register", registerDto);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -106,7 +84,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         };
 
         // Act
-        var response = await _client.PostAsJsonTestAsync("/api/auth/register", registerDto);
+        var response = await Client.PostAsJsonTestAsync("/api/auth/register", registerDto);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -124,12 +102,12 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         };
 
         // Act
-        var response = await _client.PostAsJsonTestAsync("/api/auth/register", registerDto);
+        var response = await Client.PostAsJsonTestAsync("/api/auth/register", registerDto);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        using var scope = _factory.Services.CreateScope();
+        using var scope = Factory.Services.CreateScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
         var user = await userManager.FindByEmailAsync(registerDto.Email);
@@ -146,7 +124,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         var password = "TestPassword123!@#";
 
         // Create user using fresh scope
-        using (var scope = _factory.Services.CreateScope())
+        using (var scope = Factory.Services.CreateScope())
         {
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var user = new ApplicationUser
@@ -166,7 +144,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         };
 
         // Act
-        var response = await _client.PostAsJsonTestAsync("/api/auth/login", loginDto);
+        var response = await Client.PostAsJsonTestAsync("/api/auth/login", loginDto);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -183,7 +161,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         cookies.Should().Contain(c => c.Contains("httponly", StringComparison.OrdinalIgnoreCase));
 
         // Verify refresh token in database using fresh scope
-        using (var scope = _factory.Services.CreateScope())
+        using (var scope = Factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var refreshToken = await db.RefreshTokens.FirstOrDefaultAsync(Token);
@@ -203,7 +181,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         };
 
         // Act
-        var response = await _client.PostAsJsonTestAsync("/api/auth/login", loginDto);
+        var response = await Client.PostAsJsonTestAsync("/api/auth/login", loginDto);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -215,7 +193,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         // Arrange
         var email = "testuser@example.com";
 
-        using (var scope = _factory.Services.CreateScope())
+        using (var scope = Factory.Services.CreateScope())
         {
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var user = new ApplicationUser
@@ -234,7 +212,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         };
 
         // Act
-        var response = await _client.PostAsJsonTestAsync("/api/auth/login", loginDto);
+        var response = await Client.PostAsJsonTestAsync("/api/auth/login", loginDto);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -247,7 +225,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         var email = "testuser@example.com";
         var password = "TestPassword123!@#";
 
-        using (var scope = _factory.Services.CreateScope())
+        using (var scope = Factory.Services.CreateScope())
         {
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var user = new ApplicationUser
@@ -262,10 +240,10 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         var loginDto = new LoginDto { Email = email, Password = password };
 
         // Act
-        await _client.PostAsJsonTestAsync("/api/auth/login", loginDto);
+        await Client.PostAsJsonTestAsync("/api/auth/login", loginDto);
 
         // Assert
-        using (var scope = _factory.Services.CreateScope())
+        using (var scope = Factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var refreshToken = await db.RefreshTokens.FirstOrDefaultAsync(Token);
@@ -284,7 +262,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         var email = "testuser@example.com";
         var password = "TestPassword123!@#";
 
-        using (var scope = _factory.Services.CreateScope())
+        using (var scope = Factory.Services.CreateScope())
         {
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var user = new ApplicationUser
@@ -298,13 +276,13 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
 
         // Login to get refresh token
         var loginDto = new LoginDto { Email = email, Password = password };
-        var loginResponse = await _client.PostAsJsonTestAsync("/api/auth/login", loginDto);
+        var loginResponse = await Client.PostAsJsonTestAsync("/api/auth/login", loginDto);
         loginResponse.EnsureSuccessStatusCode();
 
         var refreshTokenCookie = loginResponse.Headers.GetValues("Set-Cookie")
             .FirstOrDefault(c => c.Contains("refreshToken"));
 
-        var clientWithCookie = _factory.CreateClient();
+        var clientWithCookie = Factory.CreateClient();
         AuthTestHelper.CreateClientWithCookie(clientWithCookie, refreshTokenCookie!);
 
         // Act
@@ -318,7 +296,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         authResponse!.AccessToken.Should().NotBeNullOrEmpty();
 
         // Check tokens using fresh scope
-        using (var scope = _factory.Services.CreateScope())
+        using (var scope = Factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
@@ -340,7 +318,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
     public async Task Refresh_WithoutCookie_ReturnsUnauthorized()
     {
         // Act
-        var response = await _client.PostTestAsync("/api/auth/refresh");
+        var response = await Client.PostTestAsync("/api/auth/refresh");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -353,7 +331,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         var email = "testuser@example.com";
         var password = "TestPassword123!@#";
 
-        using (var scope = _factory.Services.CreateScope())
+        using (var scope = Factory.Services.CreateScope())
         {
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var user = new ApplicationUser
@@ -366,11 +344,11 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         }
 
         var loginDto = new LoginDto { Email = email, Password = password };
-        var loginResponse = await _client.PostAsJsonTestAsync("/api/auth/login", loginDto);
+        var loginResponse = await Client.PostAsJsonTestAsync("/api/auth/login", loginDto);
         loginResponse.EnsureSuccessStatusCode();
 
         // Revoke the token
-        using (var scope = _factory.Services.CreateScope())
+        using (var scope = Factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var token = await db.RefreshTokens.FirstAsync(Token);
@@ -381,7 +359,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         var refreshTokenCookie = loginResponse.Headers.GetValues("Set-Cookie")
             .FirstOrDefault(c => c.Contains("refreshToken"));
 
-        var clientWithCookie = _factory.CreateClient();
+        var clientWithCookie = Factory.CreateClient();
         AuthTestHelper.CreateClientWithCookie(clientWithCookie, refreshTokenCookie!);
 
         // Act
@@ -398,7 +376,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         var email = "testuser@example.com";
         var password = "TestPassword123!@#";
 
-        using (var scope = _factory.Services.CreateScope())
+        using (var scope = Factory.Services.CreateScope())
         {
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var user = new ApplicationUser
@@ -411,11 +389,11 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         }
 
         var loginDto = new LoginDto { Email = email, Password = password };
-        var loginResponse = await _client.PostAsJsonTestAsync("/api/auth/login", loginDto);
+        var loginResponse = await Client.PostAsJsonTestAsync("/api/auth/login", loginDto);
         loginResponse.EnsureSuccessStatusCode();
 
         // Expire the token
-        using (var scope = _factory.Services.CreateScope())
+        using (var scope = Factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var token = await db.RefreshTokens.FirstAsync(Token);
@@ -426,7 +404,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         var refreshTokenCookie = loginResponse.Headers.GetValues("Set-Cookie")
             .FirstOrDefault(c => c.Contains("refreshToken"));
 
-        var clientWithCookie = _factory.CreateClient();
+        var clientWithCookie = Factory.CreateClient();
         AuthTestHelper.CreateClientWithCookie(clientWithCookie, refreshTokenCookie!);
 
         // Act
@@ -444,7 +422,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         var email = "testuser@example.com";
         var password = "TestPassword123!@#";
 
-        using (var scope = _factory.Services.CreateScope())
+        using (var scope = Factory.Services.CreateScope())
         {
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var user = new ApplicationUser
@@ -457,13 +435,13 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         }
 
         var loginDto = new LoginDto { Email = email, Password = password };
-        var loginResponse = await _client.PostAsJsonTestAsync("/api/auth/login", loginDto);
+        var loginResponse = await Client.PostAsJsonTestAsync("/api/auth/login", loginDto);
         loginResponse.EnsureSuccessStatusCode();
 
         var refreshTokenCookie = loginResponse.Headers.GetValues("Set-Cookie")
             .FirstOrDefault(c => c.Contains("refreshToken"));
 
-        var clientWithCookie = _factory.CreateClient();
+        var clientWithCookie = Factory.CreateClient();
         AuthTestHelper.CreateClientWithCookie(clientWithCookie, refreshTokenCookie!);
 
         // Act
@@ -473,7 +451,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
         logoutResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         // Token should be revoked
-        using (var scope = _factory.Services.CreateScope())
+        using (var scope = Factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var token = await db.RefreshTokens.FirstOrDefaultAsync(Token);
@@ -490,15 +468,9 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>, 
     public async Task Logout_WithoutCookie_ReturnsOkWithoutError()
     {
         // Act
-        var response = await _client.PostTestAsync("/api/auth/logout");
+        var response = await Client.PostTestAsync("/api/auth/logout");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-    }
-
-    public void Dispose()
-    {
-        _client?.Dispose();
-        GC.SuppressFinalize(this);
     }
 }
