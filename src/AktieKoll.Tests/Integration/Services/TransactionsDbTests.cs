@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using static AktieKoll.Models.CsvDtoExtensions;
 using AktieKoll.Tests.Extensions;
 
-namespace AktieKoll.Tests.Unit;
+namespace AktieKoll.Tests.Integration.Services;
 
 public class TransactionsDbTests
 {

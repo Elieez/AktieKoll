@@ -9,7 +9,7 @@ namespace AktieKoll.Tests.Fixture;
 
 public class WebApplicationFactoryFixture : WebApplicationFactory<Program>
 {
-    private const string DatabaseName = "IntegrationTestDatabase";
+    private readonly string _databaseName = $"TestDb_{Guid.NewGuid()}";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -41,7 +41,7 @@ public class WebApplicationFactoryFixture : WebApplicationFactory<Program>
             // Add InMemory database - SAME NAME for all scopes
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseInMemoryDatabase(DatabaseName);
+                options.UseInMemoryDatabase(_databaseName);
                 options.EnableSensitiveDataLogging();
             });
         });
