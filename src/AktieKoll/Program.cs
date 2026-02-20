@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Text;
 using AktieKoll.Data;
 using AktieKoll.Extensions;
@@ -11,6 +10,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +28,37 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddCustomRateLimiting(builder.Configuration);
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo  // ← No need for full namespace now
+    {
+        Title = "AktieKoll API",
+        Version = "v1",
+        Description = "Swedish insider trading data API",
+        Contact = new OpenApiContact
+        {
+            Name = "AktieKoll",
+            Url = new Uri("https://github.com/elieez/aktiekoll")
+        }
+    });
+
+    // Add JWT authentication support in Swagger UI
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token.",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference("bearer", document)] = []
+    });
+});
 
 var connectionString = builder.Configuration.GetConnectionString("PostgresConnection");
 
@@ -115,6 +146,13 @@ builder.Services.AddResponseCaching();
 builder.Services.AddMemoryCache();
 
 var app = builder.Build();
+
+app.UseSwagger();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "AktieKoll API v1");
+    options.RoutePrefix = "swagger";
+});
 
 if (!app.Environment.IsDevelopment())
 {
