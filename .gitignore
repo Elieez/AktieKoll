@@ -409,3 +409,8 @@ appsettings.json
 # Verify
 *.received.*
 *.received/
+
+# env
+.env
+.env.*
+!.env.example
