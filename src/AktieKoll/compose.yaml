@@ -1,0 +1,11 @@
+services:
+  api:
+    build:
+      context: ../../
+      dockerfile: src/AktieKoll/Dockerfile
+    container_name: aktiekoll-api
+    ports:
+      - "8080:8080"
+    env_file:
+      - ../../.env
+    restart: unless-stopped

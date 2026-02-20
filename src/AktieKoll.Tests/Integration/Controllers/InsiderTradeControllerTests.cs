@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using System.Net.Http.Json;
 using AktieKoll.Data;
 using AktieKoll.Models;
 using AktieKoll.Tests.Fixture;
