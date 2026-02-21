@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 var apiToken = Environment.GetEnvironmentVariable("EOD_API_TOKEN")
     ?? throw new Exception("EOD_API_TOKEN environment variable not set");
 
-var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__Postgres")
+var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__PostgresConnection")
     ?? throw new Exception("ConnectionStrings__PostgresConnection not set");
 
 var httpClient = new HttpClient();
