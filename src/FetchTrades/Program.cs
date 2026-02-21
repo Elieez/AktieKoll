@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
-using static AktieKoll.Models.CsvDtoExtensions;
+using static AktieKoll.Extensions.CsvDtoExtensions;
 
 // Get Connection string from environment variable
 var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__PostgresConnection");
@@ -26,9 +26,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // HttpClients
 builder.Services.AddHttpClient<CsvFetchService>();
-
-builder.Services.AddHttpClient<IOpenFigiService, OpenFigiService>(client =>
-    client.BaseAddress = new Uri("https://api.openfigi.com/v3/"));
 
 // CSV Reader Factory
 builder.Services.AddSingleton<Func<TextReader, CsvReader>>(_ =>

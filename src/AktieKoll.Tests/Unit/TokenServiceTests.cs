@@ -1,5 +1,4 @@
-﻿using AktieKoll.Interfaces;
-using AktieKoll.Models;
+﻿using AktieKoll.Models;
 using AktieKoll.Services;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
@@ -9,7 +8,7 @@ namespace AktieKoll.Tests.Unit;
 
 public class TokenServiceTests
 {
-    private readonly ITokenService _tokenService;
+    private readonly TokenService _tokenService;
     private readonly IConfiguration _configuration;
 
     public TokenServiceTests()

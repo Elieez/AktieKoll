@@ -1,6 +1,6 @@
-﻿using AktieKoll.Extensions;
+﻿using AktieKoll.Models;
 
-namespace AktieKoll.Models;
+namespace AktieKoll.Extensions;
 
 public static class CsvDtoExtensions
 {

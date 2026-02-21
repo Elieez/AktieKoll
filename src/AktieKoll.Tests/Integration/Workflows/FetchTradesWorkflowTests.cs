@@ -1,9 +1,11 @@
 ﻿using System.Globalization;
 using AktieKoll.Data;
 using AktieKoll.Services;
+using AktieKoll.Tests.Shared.TestHelpers;
 using CsvHelper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using static AktieKoll.Extensions.CsvDtoExtensions;
 
 namespace AktieKoll.Tests.Integration.Workflows;
 
@@ -22,8 +24,16 @@ public class FetchTradesWorkflowTests : IAsyncDisposable
     [Fact]
     public async Task FetchTrades_CompleteWorkflow_ShouldSucceed()
     {
+        // Arrange
+        await ServiceTestHelpers.SeedCompanies(_context,
+            ("SE0000108656", "ERIC-B"),
+            ("SE0000115446", "SEB-A"),
+            ("SE0000108847", "TEL2-B"),
+            ("SE0011166610", "HM-B"), 
+            ("SE0000115420", "VOLV-B")
+        );
+
         var httpClient = new HttpClient();
-        var figiClient = new HttpClient { BaseAddress = new Uri("https://api.openfigi.com/v3/") };
 
         static CsvReader CsvReaderFactory(TextReader reader)
         {
@@ -38,16 +48,15 @@ public class FetchTradesWorkflowTests : IAsyncDisposable
             builder.AddConsole().SetMinimumLevel(LogLevel.Warning));
 
         var csvLogger = loggerFactory.CreateLogger<CsvFetchService>();
-        var figiLogger = loggerFactory.CreateLogger<OpenFigiService>();
+        var symbolLogger = loggerFactory.CreateLogger<SymbolService>();
 
         var csvService = new CsvFetchService(httpClient, CsvReaderFactory, csvLogger);
-        var figiService = new OpenFigiService(figiClient, figiLogger);
-        var symbolService = new SymbolService(figiService);
+        var symbolService = new SymbolService(_context, symbolLogger);
         var tradeService = new InsiderTradeService(_context, symbolService);
 
         // Act
         var csvResults = await csvService.FetchInsiderTradesAsync();
-        var trades = Models.CsvDtoExtensions.InsiderTradeMapper.MapDtosToTrades(csvResults);
+        var trades = InsiderTradeMapper.MapDtosToTrades(csvResults);
         var message = await tradeService.AddInsiderTrades(trades);
 
         // Assert
@@ -60,6 +69,9 @@ public class FetchTradesWorkflowTests : IAsyncDisposable
 
         // Verify
         Assert.True(trades.Count <= csvResults.Count);
+
+        var tradesWithSymbols = savedTrades.Count(t => !string.IsNullOrEmpty(t.Symbol));
+        Assert.True(tradesWithSymbols >= 0);
     }
 
     [Fact]

@@ -10,6 +10,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<RefreshToken> RefreshTokens { get; set; }
 
+    public DbSet<Company> Companies { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -22,6 +24,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                   .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(rt => rt.Token);
+        });
+
+        builder.Entity<Company>(entity =>
+        {
+            entity.HasKey(c => c.Id);
+            entity.HasIndex(c => c.Code).IsUnique();
+            entity.HasIndex(c => c.Isin);
+            entity.HasIndex(c => c.Name);
         });
     }
 }

@@ -21,7 +21,7 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
             .Where(t => dates.Contains(t.PublishingDate))
             .ToListAsync();
 
-        await symbolService.ResolveSymbols(insiderTrades, existingTrades);
+        await symbolService.ResolveSymbolsAsync(insiderTrades);
 
         int newTradesCount = 0;
         int removedTradesCount = 0;

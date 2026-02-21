@@ -1,91 +1,53 @@
-﻿using AktieKoll.Interfaces;
+﻿using AktieKoll.Data;
+using AktieKoll.Interfaces;
 using AktieKoll.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace AktieKoll.Services;
 
-public class SymbolService(IOpenFigiService figiService) : ISymbolService
+public class SymbolService(ApplicationDbContext context, ILogger<SymbolService> logger) : ISymbolService
 {
-    public async Task ResolveSymbols(
-        List<InsiderTrade> newTrades,
-        List<InsiderTrade> existingTrades,
-        CancellationToken ct = default)
+    public async Task ResolveSymbolsAsync(List<InsiderTrade> trades)
     {
-        // CompanyName -> Symbol (from existing)
-        var symbolCache = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach(var t in existingTrades)
+        var isins = trades
+            .Where(t => !string.IsNullOrEmpty(t.Isin) && string.IsNullOrEmpty(t.Symbol))
+            .Select(t => t.Isin!)
+            .Distinct()
+            .ToList();
+
+        if (isins.Count == 0)
         {
-            var name = t.CompanyName;
-            var symbol = t.Symbol;
-            if(!string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(symbol))
-            {
-                symbolCache.TryAdd(name, symbol);
-            }
+            logger.LogInformation("No ISINs need symbol resolution");
+            return;
         }
 
-        // ISIN -> Symbol (from existing)
-        var byIsin = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach(var t in existingTrades)
+        logger.LogInformation("Resolving symbols for {Count} ISINs", isins.Count);
+
+        var companies = await context.Companies
+            .Where(c => c.Isin != null && isins.Contains(c.Isin))
+            .ToDictionaryAsync(c => c.Isin!, c => c.Code);
+
+        int resolved = 0;
+        int notFound = 0;
+
+        foreach (var trade in trades)
         {
-            var isin = t.Isin;
-            var symbol = t.Symbol;
-            if(!string.IsNullOrWhiteSpace(isin) && !string.IsNullOrWhiteSpace(symbol))
-            {
-                byIsin.TryAdd(isin, symbol);
-            }
-        }
-
-        // Per-run dedupe of FIGI lookups: ISIN -> Symbol
-        var runIsin = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var trade in newTrades)
-        {
-            ct.ThrowIfCancellationRequested();
-
-            // If already has a symbol, seed caches and continue
-            if (!string.IsNullOrWhiteSpace(trade.Symbol))
-            {
-                if (!string.IsNullOrWhiteSpace(trade.Isin))
-                    byIsin.TryAdd(trade.Isin, trade.Symbol); // <-- fixed parentheses & semicolon
-
-                if (!string.IsNullOrWhiteSpace(trade.CompanyName))
-                    symbolCache.TryAdd(trade.CompanyName, trade.Symbol);
-
+            if (string.IsNullOrEmpty(trade.Isin))
                 continue;
-            }
 
-            string? resolved = null;
-
-            // Try ISIN-based caches first
-            var tradeIsin = trade.Isin;
-            if (!string.IsNullOrWhiteSpace(tradeIsin))
+            if (companies.TryGetValue(trade.Isin, out var code))
             {
-                if (byIsin.TryGetValue(tradeIsin, out var s) || runIsin.TryGetValue(tradeIsin, out s))
-                {
-                    resolved = s;
-                }
-                else
-                {
-                    // FIGI lookup once per ISIN in this run
-                    resolved = await figiService.GetTickerByIsinAsync(tradeIsin, ct); // <-- ct now in scope
-                    if (!string.IsNullOrWhiteSpace(resolved))
-                    {
-                        runIsin[tradeIsin] = resolved;
-                        byIsin[tradeIsin] = resolved;
-                    }
-                }
+                trade.Symbol = code;
+                resolved++;
             }
-
-            // Fallback: name cache
-            var tradeName = trade.CompanyName;
-            if (resolved is null && !string.IsNullOrWhiteSpace(tradeName))
-                symbolCache.TryGetValue(tradeName, out resolved);
-
-            if (!string.IsNullOrWhiteSpace(resolved))
+            else
             {
-                trade.Symbol = resolved!;
-                if (!string.IsNullOrWhiteSpace(tradeName))
-                    symbolCache.TryAdd(tradeName, resolved);
+                logger.LogWarning("No symbol found for ISIN: {Isin} (Company: {Company})", 
+                    trade.Isin, trade.CompanyName);
+                notFound++;
             }
         }
+
+        logger.LogInformation("Resolved {Resolved} symbols, {NotFound} not found", resolved, notFound);
     }
 }
