@@ -1,5 +1,5 @@
 ﻿using AktieKoll.Services;
-using static AktieKoll.Models.CsvDtoExtensions;
+using static AktieKoll.Extensions.CsvDtoExtensions;
 
 namespace AktieKoll.Tests.Unit;
 

@@ -135,8 +135,7 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.AddScoped<ITokenService, TokenService>();
 
 builder.Services.AddHttpClient<CsvFetchService>();
-builder.Services.AddHttpClient<IOpenFigiService, OpenFigiService>(client =>
-    client.BaseAddress = new Uri("https://api.openfigi.com/v3/"));
+
 builder.Services.AddTransient<ISymbolService, SymbolService>();
 builder.Services.AddHostedService<RefreshTokenCleanupService>();
 

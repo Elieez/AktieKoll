@@ -1,35 +1,19 @@
-﻿using AktieKoll.Data;
-using AktieKoll.Models;
+﻿using AktieKoll.Models;
 using AktieKoll.Services;
-using AktieKoll.Tests.Fixture;
-using Microsoft.EntityFrameworkCore;
-using static AktieKoll.Models.CsvDtoExtensions;
+using AktieKoll.Tests.Shared.TestHelpers;
+using static AktieKoll.Extensions.CsvDtoExtensions;
 using AktieKoll.Tests.Extensions;
 
 namespace AktieKoll.Tests.Integration.Services;
 
 public class TransactionsDbTests
 {
-    private static ApplicationDbContext CreateContext()
-    {
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-        return new ApplicationDbContext(options);
-    }
-
-    private static InsiderTradeService CreateService(ApplicationDbContext ctx, OpenFigiServiceFake? figi = null)
-    {
-        var fake = figi ?? new OpenFigiServiceFake();
-        var symbolService = new SymbolService(fake);
-        return new InsiderTradeService(ctx, symbolService);
-    }
 
     [Fact]
     public async Task GetInsiderTrades_ReturnsAddedTrades()
     {
-        var ctx = CreateContext();
-        var service = CreateService(ctx);
+        var ctx = ServiceTestHelpers.CreateContext();
+        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
 
         var trades = new List<InsiderTrade>
         {
@@ -71,8 +55,8 @@ public class TransactionsDbTests
     [Fact]
     public async Task GetInsiderTradesTop_ReturnsTopByValue()
     {
-        var ctx = CreateContext();
-        var service = CreateService(ctx);
+        var ctx = ServiceTestHelpers.CreateContext();
+        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
 
         var trades = Enumerable.Range(0, 3).Select(i => new InsiderTrade
         {
@@ -98,9 +82,13 @@ public class TransactionsDbTests
     [Fact]
     public async Task AddInsiderTrades_Duplicate()
     {
-        var ctx = CreateContext();
-        var figi = new OpenFigiServiceFake().Map("SE001", "FOO").Map("SE002", "BAR");
-        var service = CreateService(ctx, figi);
+        var ctx = ServiceTestHelpers.CreateContext();
+
+        await ServiceTestHelpers.SeedCompanies(ctx,
+        ("SE001", "FOO"),
+        ("SE002", "BAR"));
+
+        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
 
         var trades = new List<InsiderTrade>
         {
@@ -159,14 +147,14 @@ public class TransactionsDbTests
     [InlineData("2025-06-23", "2025-06-24")]
     public async Task AddNewCsvData(DateTime fromDate, DateTime toDate)
     {
-        var ctx = CreateContext();
+        var ctx = ServiceTestHelpers.CreateContext();
         var csvFetchService = ServiceProviderFixture
                                    .GetRequiredService<CsvFetchService>(services => services.AuthorizedClient());
 
         var csvDto = await csvFetchService.FetchInsiderTradesAsync(fromDate, toDate);
         var trades = InsiderTradeMapper.MapDtosToTrades(csvDto);
 
-        var service = CreateService(ctx);
+        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
         await service.AddInsiderTrades(trades);
 
         var result = await service.GetInsiderTrades();
@@ -192,8 +180,8 @@ public class TransactionsDbTests
     [InlineData("Lån utlåning")]
     public async Task AddInsiderTrades_ExcludedTransactionsFiltered(string transactionType)
     {
-        var ctx = CreateContext();
-        var service = CreateService(ctx);
+        var ctx = ServiceTestHelpers.CreateContext();
+        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
 
         var csvDtos = new List<CsvDTO>
         {
@@ -214,8 +202,8 @@ public class TransactionsDbTests
     [Fact]
     public async Task AddInsiderTrades_FilterPositionName()
     {
-        var ctx = CreateContext();
-        var service = CreateService(ctx);
+        var ctx = ServiceTestHelpers.CreateContext();
+        var service = ServiceTestHelpers.   CreateInsiderTradeService(ctx);
 
         var csvDtos = new List<CsvDTO>
         {
@@ -238,8 +226,8 @@ public class TransactionsDbTests
     [Fact]
     public async Task GetInsiderTrades_FilterTransactionType()
     {
-        var ctx = CreateContext();
-        var service = CreateService(ctx);
+        var ctx = ServiceTestHelpers.CreateContext();
+        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
 
         var csvDtos = new List<CsvDTO>
         {
@@ -300,7 +288,7 @@ public class TransactionsDbTests
     [InlineData(null, null, 365)]
     public async Task GetTransactionCountBuy_ReturnsMostActive(string? companyName, int? top, int days)
     {
-        var ctx = CreateContext();
+        var ctx = ServiceTestHelpers.CreateContext();
         var csvFetchService = ServiceProviderFixture
                                    .GetRequiredService<CsvFetchService>(services => services.AuthorizedClient());
 
@@ -310,7 +298,7 @@ public class TransactionsDbTests
         var csvDto = await csvFetchService.FetchInsiderTradesAsync(fromDate, toDate);
         var trades = InsiderTradeMapper.MapDtosToTrades(csvDto);
 
-        var service = CreateService(ctx);
+        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
         await service.AddInsiderTrades(trades);
 
         var result = await service.GetTransactionCountBuy(companyName, days, top);
@@ -324,7 +312,7 @@ public class TransactionsDbTests
     [InlineData(null, null, 365)]
     public async Task GetTransactionCountSell_ReturnsMostActive(string? companyName, int? top, int days)
     {
-        var ctx = CreateContext();
+        var ctx = ServiceTestHelpers.CreateContext();
         var csvFetchService = ServiceProviderFixture
                                    .GetRequiredService<CsvFetchService>(services => services.AuthorizedClient());
 
@@ -334,7 +322,7 @@ public class TransactionsDbTests
         var csvDto = await csvFetchService.FetchInsiderTradesAsync(fromDate, toDate);
         var trades = InsiderTradeMapper.MapDtosToTrades(csvDto);
 
-        var service = CreateService(ctx);
+        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
         await service.AddInsiderTrades(trades);
 
         var result = await service.GetTransactionCountSell(companyName, days, top);
@@ -349,14 +337,14 @@ public class TransactionsDbTests
 
     public async Task GetTradesByCompany_ReturnTrades(DateTime fromDate, DateTime toDate, string companyName)
     {
-        var ctx = CreateContext();
+        var ctx = ServiceTestHelpers.CreateContext();
         var csvFetchService = ServiceProviderFixture
                                    .GetRequiredService<CsvFetchService>(services => services.AuthorizedClient());
 
         var csvDto = await csvFetchService.FetchInsiderTradesAsync(fromDate, toDate);
         var trades = InsiderTradeMapper.MapDtosToTrades(csvDto);
 
-        var service = CreateService(ctx);
+        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
         await service.AddInsiderTrades(trades);
 
         var result = await service.GetInsiderTradesByCompany(companyName);
