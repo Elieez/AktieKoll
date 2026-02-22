@@ -1,5 +1,4 @@
-﻿using AktieKoll.Data;
-using AktieKoll.Models;
+﻿using AktieKoll.Models;
 using Microsoft.EntityFrameworkCore;
 using AktieKoll.Tests.Shared.TestHelpers;
 
