@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AktieKoll.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260221174314_AddCompaniesTable")]
+    [Migration("20260222002002_AddCompaniesTable")]
     partial class AddCompaniesTable
     {
         /// <inheritdoc />
@@ -144,7 +144,7 @@ namespace AktieKoll.Migrations
 
                     b.HasIndex("Name");
 
-                    b.ToTable("Company");
+                    b.ToTable("Companies");
                 });
 
             modelBuilder.Entity("AktieKoll.Models.InsiderTrade", b =>
