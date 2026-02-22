@@ -22,7 +22,7 @@ namespace AktieKoll.Migrations
                 oldNullable: true);
 
             migrationBuilder.CreateTable(
-                name: "Company",
+                name: "Companies",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -36,23 +36,23 @@ namespace AktieKoll.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Company", x => x.Id);
+                    table.PrimaryKey("PK_Companies", x => x.Id);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Company_Code",
-                table: "Company",
+                name: "IX_Companies_Code",
+                table: "Companies",
                 column: "Code",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Company_Isin",
-                table: "Company",
+                name: "IX_Companies_Isin",
+                table: "Companies",
                 column: "Isin");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Company_Name",
-                table: "Company",
+                name: "IX_Companies_Name",
+                table: "Companies",
                 column: "Name");
         }
 
@@ -60,7 +60,7 @@ namespace AktieKoll.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Company");
+                name: "Companies");
 
             migrationBuilder.AlterColumn<string>(
                 name: "DisplayName",
