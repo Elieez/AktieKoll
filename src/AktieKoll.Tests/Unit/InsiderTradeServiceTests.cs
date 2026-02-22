@@ -7,22 +7,6 @@ namespace AktieKoll.Tests.Unit;
 
 public class InsiderTradeServiceTests
 {
-    private static async Task SeedCompanies(ApplicationDbContext ctx, params (string Isin, string Code)[] companies)
-    {
-        foreach (var (isin, code) in companies)
-        {
-            ctx.Companies.Add(new Company
-            {
-                Code = code,
-                Name = $"Company {code}",
-                Isin = isin,
-                Currency = "SEK",
-                Type = "Common Stock"
-            });
-        }
-        await ctx.SaveChangesAsync();
-    }
-
     [Fact]
     public async Task AddInsiderTrades_NewList_AddsTrades()
     {

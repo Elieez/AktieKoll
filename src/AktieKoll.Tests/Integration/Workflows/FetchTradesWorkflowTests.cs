@@ -9,7 +9,7 @@ using static AktieKoll.Extensions.CsvDtoExtensions;
 
 namespace AktieKoll.Tests.Integration.Workflows;
 
-public class FetchTradesWorkflowTests : IAsyncDisposable
+public class FetchTradesWorkflowTests
 {
     private readonly ApplicationDbContext _context;
     public FetchTradesWorkflowTests()
@@ -21,28 +21,18 @@ public class FetchTradesWorkflowTests : IAsyncDisposable
         _context = new ApplicationDbContext(options);
     }
 
-    [Fact]
-    public async Task FetchTrades_CompleteWorkflow_ShouldSucceed()
+    [Theory]
+    [InlineData("2025-01-01", "2025-01-02")]
+    public async Task FetchTrades_CompleteWorkflow_ShouldSucceed(DateTime fromDate, DateTime toDate)
     {
         // Arrange
         await ServiceTestHelpers.SeedCompanies(_context,
             ("SE0000108656", "ERIC-B"),
             ("SE0000115446", "SEB-A"),
             ("SE0000108847", "TEL2-B"),
-            ("SE0011166610", "HM-B"), 
+            ("SE0011166610", "HM-B"),
             ("SE0000115420", "VOLV-B")
         );
-
-        var httpClient = new HttpClient();
-
-        static CsvReader CsvReaderFactory(TextReader reader)
-        {
-            var config = new CsvHelper.Configuration.CsvConfiguration(new CultureInfo("sv-SE"))
-            {
-                Delimiter = ";"
-            };
-            return new CsvReader(reader, config);
-        }
 
         using var loggerFactory = LoggerFactory.Create(builder =>
             builder.AddConsole().SetMinimumLevel(LogLevel.Warning));
@@ -50,12 +40,13 @@ public class FetchTradesWorkflowTests : IAsyncDisposable
         var csvLogger = loggerFactory.CreateLogger<CsvFetchService>();
         var symbolLogger = loggerFactory.CreateLogger<SymbolService>();
 
-        var csvService = new CsvFetchService(httpClient, CsvReaderFactory, csvLogger);
+        var csvFetchService = ServiceProviderFixture
+                                   .GetRequiredService<CsvFetchService>(services => services.AuthorizedClient());
         var symbolService = new SymbolService(_context, symbolLogger);
         var tradeService = new InsiderTradeService(_context, symbolService);
 
         // Act
-        var csvResults = await csvService.FetchInsiderTradesAsync();
+        var csvResults = await csvFetchService.FetchInsiderTradesAsync(fromDate, toDate);
         var trades = InsiderTradeMapper.MapDtosToTrades(csvResults);
         var message = await tradeService.AddInsiderTrades(trades);
 
@@ -97,9 +88,5 @@ public class FetchTradesWorkflowTests : IAsyncDisposable
         Assert.Equal("sv-SE", csvReader.Configuration.CultureInfo.Name);
     }
 
-    public async ValueTask DisposeAsync()
-    {
-        await _context.DisposeAsync();
-        GC.SuppressFinalize(this);
-    }
+    
 }
