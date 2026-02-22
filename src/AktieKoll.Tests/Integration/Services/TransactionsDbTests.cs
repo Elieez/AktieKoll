@@ -3,6 +3,7 @@ using AktieKoll.Services;
 using AktieKoll.Tests.Shared.TestHelpers;
 using static AktieKoll.Extensions.CsvDtoExtensions;
 using AktieKoll.Tests.Extensions;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AktieKoll.Tests.Integration.Services;
 
@@ -350,5 +351,46 @@ public class TransactionsDbTests
         var result = await service.GetInsiderTradesByCompany(companyName);
 
         await Verify(result);
+    }
+
+    [Fact]
+    public async Task ResolveSymbols_FallsBackToCompanyName_WhenIsinNotFound()
+    {
+        var ctx = ServiceTestHelpers.CreateContext();
+
+        ctx.Companies.Add(new Company
+        {
+            Code = "VOLV-B",
+            Name = "Volvo Group",
+            Isin = null,
+            Currency = "SEK",
+            Type = "Common Stock"
+        });
+        await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var logger = NullLogger<SymbolService>.Instance;
+        var symbolService = new SymbolService(ctx, logger);
+
+        var trades = new List<InsiderTrade>
+        {
+            new()
+            {
+                CompanyName = "Volvo Group",
+                InsiderName = "Alice",
+                Position = "CFO",
+                TransactionType = "Buy",
+                Shares = 100,
+                Price = 10.5m,
+                Currency = "SEK",
+                Isin = "SE0000115420", // Wrong ISIN (VOLVO A)
+                Status = "Aktuell",
+                PublishingDate = DateTime.Today,
+                TransactionDate = DateTime.Today
+            }
+        };
+
+        await symbolService.ResolveSymbolsAsync(trades);
+
+        Assert.Equal("VOLV-B", trades[0].Symbol);
     }
 }
