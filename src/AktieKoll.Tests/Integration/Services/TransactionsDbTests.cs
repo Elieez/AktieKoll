@@ -1,9 +1,9 @@
 ﻿using AktieKoll.Models;
 using AktieKoll.Services;
-using AktieKoll.Tests.Shared.TestHelpers;
-using static AktieKoll.Extensions.CsvDtoExtensions;
 using AktieKoll.Tests.Extensions;
+using AktieKoll.Tests.Shared.TestHelpers;
 using Microsoft.Extensions.Logging.Abstractions;
+using static AktieKoll.Extensions.CsvDtoExtensions;
 
 namespace AktieKoll.Tests.Integration.Services;
 
@@ -392,5 +392,175 @@ public class TransactionsDbTests
         await symbolService.ResolveSymbolsAsync(trades);
 
         Assert.Equal("VOLV-B", trades[0].Symbol);
+    }
+
+    [Fact]
+    public async Task ResolveSymbols_MatchesWithAndWithoutAB()
+    {
+        var ctx = ServiceTestHelpers.CreateContext();
+
+        ctx.Companies.Add(new Company
+        {
+            Code = "VOLV-B",
+            Name = "Volvo Group AB",
+            Isin = null,
+            Currency = "SEK",
+            Type = "Common Stock"
+        });
+        await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var logger = NullLogger<SymbolService>.Instance;
+        var symbolService = new SymbolService(ctx, logger);
+
+        var trades = new List<InsiderTrade>
+        {
+            new()
+            {
+                CompanyName = "Volvo Group", // ← WITHOUT AB
+                Isin = "SE0000115420", // Wrong ISIN to force name fallback
+                InsiderName = "Test",
+                Position = "CEO",
+                TransactionType = "Förvärv",
+                Shares = 100,
+                Price = 10m,
+                Currency = "SEK",
+                Status = "Aktuell",
+                PublishingDate = DateTime.Today,
+                TransactionDate = DateTime.Today
+            }
+        };
+
+        // Act
+        await symbolService.ResolveSymbolsAsync(trades);
+
+        // Assert
+        Assert.Equal("VOLV-B", trades[0].Symbol);
+    }
+
+    [Fact]
+    public async Task ResolveSymbols_MatchesWithPubl()
+    {
+        // Arrange
+        var ctx = ServiceTestHelpers.CreateContext();
+
+        ctx.Companies.Add(new Company
+        {
+            Code = "ERIC-B",
+            Name = "Ericsson AB (publ)",
+            Isin = null,
+            Currency = "SEK",
+            Type = "Common Stock"
+        });
+        await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var logger = NullLogger<SymbolService>.Instance;
+        var symbolService = new SymbolService(ctx, logger);
+
+        var trades = new List<InsiderTrade>
+    {
+        new()
+        {
+            CompanyName = "Ericsson", // ← Without AB or (publ)
+            Isin = "SE0000108656",
+            InsiderName = "Test",
+            Position = "CEO",
+            TransactionType = "Förvärv",
+            Shares = 100,
+            Price = 10m,
+            Currency = "SEK",
+            Status = "Aktuell",
+            PublishingDate = DateTime.Today,
+            TransactionDate = DateTime.Today
+        }
+    };
+
+        // Act
+        await symbolService.ResolveSymbolsAsync(trades);
+
+        // Assert
+        Assert.Equal("ERIC-B", trades[0].Symbol);
+    }
+
+    [Fact]
+    public async Task ResolveSymbols_MultipleMatches_PicksBShare()
+    {
+        // Arrange
+        var ctx = ServiceTestHelpers.CreateContext();
+
+        // Both A and B shares for same company
+        ctx.Companies.AddRange(
+            new Company { Code = "VOLV-A", Name = "Volvo Group AB", Isin = "SE0000115422", Currency = "SEK", Type = "Common Stock" },
+            new Company { Code = "VOLV-B", Name = "Volvo Group AB", Isin = "SE0000115420", Currency = "SEK", Type = "Common Stock" }
+        );
+        await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var logger = NullLogger<SymbolService>.Instance;
+        var symbolService = new SymbolService(ctx, logger);
+
+        var trades = new List<InsiderTrade>
+    {
+        new()
+        {
+            CompanyName = "Volvo Group", // Ambiguous - could be A or B
+            Isin = "SE9999999999", // Wrong ISIN to force name fallback
+            InsiderName = "Test",
+            Position = "CEO",
+            TransactionType = "Förvärv",
+            Shares = 100,
+            Price = 10m,
+            Currency = "SEK",
+            Status = "Aktuell",
+            PublishingDate = DateTime.Today,
+            TransactionDate = DateTime.Today
+        }
+    };
+
+        // Act
+        await symbolService.ResolveSymbolsAsync(trades);
+
+        // Assert - Should pick B-share (most liquid in Sweden)
+        Assert.Equal("VOLV-B", trades[0].Symbol);
+    }
+
+    [Fact]
+    public async Task ResolveSymbols_NoSuffix_PicksNoSuffixOverAB()
+    {
+        // Arrange
+        var ctx = ServiceTestHelpers.CreateContext();
+
+        // Mix: A-share, B-share, and no suffix
+        ctx.Companies.AddRange(
+            new Company { Code = "TEST-A", Name = "Test Corp AB", Isin = null, Currency = "SEK", Type = "Common Stock" },
+            new Company { Code = "TEST-B", Name = "Test Corp AB", Isin = null, Currency = "SEK", Type = "Common Stock" },
+            new Company { Code = "TEST", Name = "Test Corp AB", Isin = null, Currency = "SEK", Type = "Common Stock" }
+        );
+        await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var logger = NullLogger<SymbolService>.Instance;
+        var symbolService = new SymbolService(ctx, logger);
+
+        var trades = new List<InsiderTrade>
+    {
+        new()
+        {
+            CompanyName = "Test Corp",
+            Isin = "SE9999999999",
+            InsiderName = "Test",
+            Position = "CEO",
+            TransactionType = "Förvärv",
+            Shares = 100,
+            Price = 10m,
+            Currency = "SEK",
+            Status = "Aktuell",
+            PublishingDate = DateTime.Today,
+            TransactionDate = DateTime.Today
+        }
+    };
+
+        // Act
+        await symbolService.ResolveSymbolsAsync(trades);
+
+        // Assert - Should pick B-share first (highest priority for Swedish stocks)
+        Assert.Equal("TEST-B", trades[0].Symbol);
     }
 }

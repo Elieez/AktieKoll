@@ -31,20 +31,28 @@ public class SymbolService(ApplicationDbContext context, ILogger<SymbolService> 
             .Where(t => !string.IsNullOrEmpty(t.Isin) &&
                         string.IsNullOrEmpty(t.Symbol) &&
                         !companiesByIsin.ContainsKey(t.Isin))
-            .Select(t => t.CompanyName.Trim())
+            .Select(t => NormalizeCompanyName(t.CompanyName))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-        Dictionary<string, string> companiesByName = new();
+        Dictionary<string, string> companiesByName = [];
 
         if (unresolvedCompanyNames.Count > 0)
         {
             logger.LogInformation("Attempting to resolve symbols for {Count} companies by name", 
                 unresolvedCompanyNames.Count);
 
-            companiesByName = await context.Companies
-                .Where(c => unresolvedCompanyNames.Contains(c.Name))
-                .ToDictionaryAsync(c => c.Name, c => c.Code, StringComparer.OrdinalIgnoreCase);
+            var allCompanies = await context.Companies
+                .Select(c => new { c.Name, c.Code })
+                .ToListAsync();
+
+            companiesByName = allCompanies
+                .GroupBy(c => NormalizeCompanyName(c.Name))
+                .Where(g => unresolvedCompanyNames.Contains(g.Key, StringComparer.OrdinalIgnoreCase))
+                .ToDictionary(
+                    g => g.Key,
+                    g => PickBestTicker(g.Select(x => x.Code).ToList()),
+                    StringComparer.OrdinalIgnoreCase);
         }
 
         int resolvedByIsin = 0;
@@ -61,23 +69,65 @@ public class SymbolService(ApplicationDbContext context, ILogger<SymbolService> 
                 trade.Symbol = codeByIsin;
                 resolvedByIsin++;
             }
+            else 
+            {
+                var normalizedName = NormalizeCompanyName(trade.CompanyName);
 
-            else if (companiesByName.TryGetValue(trade.CompanyName.Trim(), out var codeByName))
-            {
-                trade.Symbol = codeByName;
-                resolvedByName++;
-                logger.LogInformation("Resolved by name fallback: {Company} (ISIN: {Isin}) → {Symbol}",
-                    trade.CompanyName, trade.Isin, codeByName);
-            }
-            else
-            {
-                logger.LogWarning("No symbol found for ISIN: {Isin} (Company: {Company})", 
-                    trade.Isin, trade.CompanyName);
-                notFound++;
+                if (companiesByName.TryGetValue(normalizedName, out var codeByName))
+                {
+                    trade.Symbol = codeByName;
+                    resolvedByName++;
+                    logger.LogInformation("Resolved by name: '{Original}' → '{Normalized}' → {Symbol}",
+                        trade.CompanyName, normalizedName, codeByName);
+                }
+                else
+                {
+                    logger.LogWarning("No symbol found for ISIN: {Isin} (Company: {Company})",
+                        trade.Isin, trade.CompanyName);
+                    notFound++;
+                }
             }
         }
 
         logger.LogInformation("Symbol resolution complete: {ResolvedByIsin} by ISIN, {ResolvedByName} by name fallback, {NotFound} not found", 
             resolvedByIsin, resolvedByName, notFound);
+    }
+
+    private static string NormalizeCompanyName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return string.Empty;
+
+        return name
+            .Trim()
+            .Replace(" AB", "", StringComparison.OrdinalIgnoreCase)
+            .Replace(" (publ)", "", StringComparison.OrdinalIgnoreCase)
+            .Replace("AB ", "", StringComparison.OrdinalIgnoreCase)
+            .Trim();
+    }
+
+    private static string PickBestTicker(List<string> tickers)
+    {
+        if (tickers.Count == 1)
+            return tickers[0];
+
+        // Priority order:
+        // 1. B-shares (most liquid in Sweden)
+        var bShare = tickers.FirstOrDefault(t => t.EndsWith("-B"));
+        if (bShare != null)
+            return bShare;
+
+        // 2. A-shares
+        var aShare = tickers.FirstOrDefault(t => t.EndsWith("-A"));
+        if (aShare != null)
+            return aShare;
+
+        // 3. No suffix (single share class)
+        var noSuffix = tickers.FirstOrDefault(t => !t.Contains('-'));
+        if (noSuffix != null)
+            return noSuffix;
+
+        // 4. Fallback to first
+        return tickers[0];
     }
 }
