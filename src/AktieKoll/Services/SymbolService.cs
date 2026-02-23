@@ -123,7 +123,7 @@ public class SymbolService(ApplicationDbContext context, ILogger<SymbolService> 
             return aShare;
 
         // 3. No suffix (single share class)
-        var noSuffix = tickers.FirstOrDefault(t => !t.Contains("-"));
+        var noSuffix = tickers.FirstOrDefault(t => !t.Contains('-'));
         if (noSuffix != null)
             return noSuffix;
 
