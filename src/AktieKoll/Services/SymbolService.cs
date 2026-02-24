@@ -9,38 +9,48 @@ public class SymbolService(ApplicationDbContext context, ILogger<SymbolService> 
 {
     public async Task ResolveSymbolsAsync(List<InsiderTrade> trades)
     {
-        var uniqueIsins = trades
-            .Where(t => !string.IsNullOrEmpty(t.Isin) && string.IsNullOrEmpty(t.Symbol))
-            .Select(t => t.Isin!)
-            .Distinct()
+        var tradesWithIsin = trades
+        .Where(t => !string.IsNullOrEmpty(t.Isin) && string.IsNullOrEmpty(t.Symbol))
+        .ToList();
+
+        var tradesWithoutIsin = trades
+            .Where(t => string.IsNullOrEmpty(t.Isin) && string.IsNullOrEmpty(t.Symbol))
             .ToList();
 
-        if (uniqueIsins.Count == 0)
+        logger.LogInformation("Resolving symbols for {WithIsin} trades with ISIN, {WithoutIsin} without ISIN",
+            tradesWithIsin.Count, tradesWithoutIsin.Count);
+
+        // Step 1: Resolve by ISIN (for trades that have ISINs)
+        Dictionary<string, string> companiesByIsin = [];
+
+        if (tradesWithIsin.Count > 0)
         {
-            logger.LogInformation("No ISINs need symbol resolution");
-            return;
+            var uniqueIsins = tradesWithIsin
+                .Select(t => t.Isin!)
+                .Distinct()
+                .ToList();
+
+            companiesByIsin = await context.Companies
+                .Where(c => c.Isin != null && uniqueIsins.Contains(c.Isin))
+                .ToDictionaryAsync(c => c.Isin!, c => c.Code);
         }
 
-        logger.LogInformation("Resolving symbols for {Count} unique ISINs", uniqueIsins.Count);
-
-        var companiesByIsin = await context.Companies
-            .Where(c => c.Isin != null && uniqueIsins.Contains(c.Isin))
-            .ToDictionaryAsync(c => c.Isin!, c => c.Code);
-
-        var unresolvedCompanyNames = trades
-            .Where(t => !string.IsNullOrEmpty(t.Isin) &&
-                        string.IsNullOrEmpty(t.Symbol) &&
-                        !companiesByIsin.ContainsKey(t.Isin))
-            .Select(t => NormalizeCompanyName(t.CompanyName))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+        // Step 2: Build name fallback for unresolved trades (with OR without ISIN)
+        var unresolvedTrades = trades
+            .Where(t => string.IsNullOrEmpty(t.Symbol))
+            .Where(t => string.IsNullOrEmpty(t.Isin) || !companiesByIsin.ContainsKey(t.Isin))
             .ToList();
 
         Dictionary<string, string> companiesByName = [];
 
-        if (unresolvedCompanyNames.Count > 0)
+        if (unresolvedTrades.Count > 0)
         {
-            logger.LogInformation("Attempting to resolve symbols for {Count} companies by name", 
-                unresolvedCompanyNames.Count);
+            var normalizedNames = unresolvedTrades
+                .Select(t => NormalizeCompanyName(t.CompanyName))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            logger.LogInformation("Attempting name fallback for {Count} companies", normalizedNames.Count);
 
             var allCompanies = await context.Companies
                 .Select(c => new { c.Name, c.Code })
@@ -48,28 +58,32 @@ public class SymbolService(ApplicationDbContext context, ILogger<SymbolService> 
 
             companiesByName = allCompanies
                 .GroupBy(c => NormalizeCompanyName(c.Name))
-                .Where(g => unresolvedCompanyNames.Contains(g.Key, StringComparer.OrdinalIgnoreCase))
+                .Where(g => normalizedNames.Contains(g.Key, StringComparer.OrdinalIgnoreCase))
                 .ToDictionary(
                     g => g.Key,
                     g => PickBestTicker(g.Select(x => x.Code).ToList()),
                     StringComparer.OrdinalIgnoreCase);
         }
 
+        // Step 3: Assign symbols
         int resolvedByIsin = 0;
         int resolvedByName = 0;
         int notFound = 0;
 
         foreach (var trade in trades)
         {
-            if (string.IsNullOrEmpty(trade.Isin) || !string.IsNullOrEmpty(trade.Symbol))
+            if (!string.IsNullOrEmpty(trade.Symbol))
                 continue;
 
-            if (companiesByIsin.TryGetValue(trade.Isin, out var codeByIsin))
+            // Try ISIN first (if trade has ISIN)
+            if (!string.IsNullOrEmpty(trade.Isin) &&
+                companiesByIsin.TryGetValue(trade.Isin, out var codeByIsin))
             {
                 trade.Symbol = codeByIsin;
                 resolvedByIsin++;
             }
-            else 
+            // Fallback to name
+            else
             {
                 var normalizedName = NormalizeCompanyName(trade.CompanyName);
 
@@ -82,14 +96,15 @@ public class SymbolService(ApplicationDbContext context, ILogger<SymbolService> 
                 }
                 else
                 {
-                    logger.LogWarning("No symbol found for ISIN: {Isin} (Company: {Company})",
-                        trade.Isin, trade.CompanyName);
+                    logger.LogWarning("No symbol found - ISIN: '{Isin}', Company: '{Company}' (normalized: '{Normalized}')",
+                        trade.Isin ?? "none", trade.CompanyName, normalizedName);
                     notFound++;
                 }
             }
         }
 
-        logger.LogInformation("Symbol resolution complete: {ResolvedByIsin} by ISIN, {ResolvedByName} by name fallback, {NotFound} not found", 
+        logger.LogInformation(
+            "Symbol resolution complete: {ResolvedByIsin} by ISIN, {ResolvedByName} by name, {NotFound} not found",
             resolvedByIsin, resolvedByName, notFound);
     }
 
@@ -98,12 +113,19 @@ public class SymbolService(ApplicationDbContext context, ILogger<SymbolService> 
         if (string.IsNullOrWhiteSpace(name))
             return string.Empty;
 
-        return name
+         return name
             .Trim()
+            .TrimEnd('.', ',', ';')
             .Replace(" AB", "", StringComparison.OrdinalIgnoreCase)
-            .Replace(" (publ)", "", StringComparison.OrdinalIgnoreCase)
             .Replace("AB ", "", StringComparison.OrdinalIgnoreCase)
-            .Trim();
+            .Replace(" (publ)", "", StringComparison.OrdinalIgnoreCase)
+            .Replace("(publ)", "", StringComparison.OrdinalIgnoreCase)
+            .Replace(" Series A", "", StringComparison.OrdinalIgnoreCase)
+            .Replace(" Series B", "", StringComparison.OrdinalIgnoreCase)
+            .Replace(" A", "", StringComparison.OrdinalIgnoreCase)
+            .Replace(" B", "", StringComparison.OrdinalIgnoreCase)
+            .Trim()
+            .Replace("  ", " ");
     }
 
     private static string PickBestTicker(List<string> tickers)
