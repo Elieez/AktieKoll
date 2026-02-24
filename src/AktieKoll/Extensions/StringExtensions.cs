@@ -4,7 +4,6 @@ namespace AktieKoll.Extensions;
 
 public static partial class StringExtensions
 {
-
     [GeneratedRegex(@"\s*\(publ\)", RegexOptions.IgnoreCase)]
     private static partial Regex PublRegex();
 
@@ -13,6 +12,17 @@ public static partial class StringExtensions
 
     [GeneratedRegex(@"^Interntransaktion\s*–\s*", RegexOptions.IgnoreCase)]
     private static partial Regex InternalPrefixRegex();
+
+    [GeneratedRegex(@"\s+", RegexOptions.None)]
+    private static partial Regex WhitespaceRegex();
+
+    // NEW: Regex for trailing punctuation
+    [GeneratedRegex(@"[.,;]+$", RegexOptions.None)]
+    private static partial Regex TrailingPunctuationRegex();
+
+    // NEW: Regex for " Series A/B" suffix
+    [GeneratedRegex(@"\s+Series\s+[AB]$", RegexOptions.IgnoreCase)]
+    private static partial Regex SeriesRegex();
 
     private static readonly Dictionary<string, string> PositionNameMap = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -38,13 +48,30 @@ public static partial class StringExtensions
     [GeneratedRegex(@"\barbetstag(ar)?\b", RegexOptions.IgnoreCase)]
     private static partial Regex ArbetstagRegex();
 
-    [GeneratedRegex(@"\s+", RegexOptions.None)]
-    private static partial Regex WhitespaceRegex();
-
     public static string FilterCompanyName(this string input)
-        => string.IsNullOrEmpty(input)
-        ? input
-        : AbRegex().Replace(PublRegex().Replace(input, ""), "");
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return input ?? string.Empty;
+
+        var result = input;
+
+        // Remove (publ)
+        result = PublRegex().Replace(result, "");
+
+        // Remove AB
+        result = AbRegex().Replace(result, "");
+
+        // Remove " Series A/B"
+        result = SeriesRegex().Replace(result, "");
+
+        // Remove trailing punctuation (., ; ,)
+        result = TrailingPunctuationRegex().Replace(result, "");
+
+        // Normalize whitespace (multiple spaces to single space)
+        result = WhitespaceRegex().Replace(result, " ").Trim();
+
+        return result;
+    }
 
     public static string FilterTransactionType(this string input)
         => string.IsNullOrWhiteSpace(input)

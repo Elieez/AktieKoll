@@ -23,14 +23,25 @@ public static class ServiceTestHelpers
         return new InsiderTradeService(ctx, symbolService);
     }
 
-    public static async Task SeedCompanies(ApplicationDbContext ctx, params (string Isin, string Code)[] companies)
+    public static async Task SeedCompanies(
+    ApplicationDbContext ctx,
+    params (string Isin, string Code)[] companies)
     {
-        foreach (var (isin, code) in companies)
+        var converted = companies
+            .Select(c => (Isin: (string?)c.Isin, c.Code, Name: (string?)null))
+            .ToArray();
+
+        await SeedCompanies(ctx, converted);
+    }
+
+    public static async Task SeedCompanies(ApplicationDbContext ctx, params (string? Isin, string Code, string? Name)[] companies)
+    {
+        foreach (var (isin, code, name) in companies)
         {
             ctx.Companies.Add(new Company
             {
                 Code = code,
-                Name = $"Company {code}",
+                Name = name ?? $"Company {code}",
                 Isin = isin,
                 Currency = "SEK",
                 Type = "Common Stock"
