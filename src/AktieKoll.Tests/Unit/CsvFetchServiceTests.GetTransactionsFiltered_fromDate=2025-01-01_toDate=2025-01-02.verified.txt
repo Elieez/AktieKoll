@@ -39,7 +39,7 @@
     TransactionDate: DateTime_4
   },
   {
-    CompanyName: Pricer.,
+    CompanyName: Pricer,
     InsiderName: Jörgen Jost Auf Der Stroth,
     Position: Ledningsgrupp,
     TransactionType: Förvärv,
@@ -488,7 +488,7 @@
     TransactionDate: DateTime_13
   },
   {
-    CompanyName: AUTOLIV, INC.,
+    CompanyName: AUTOLIV, INC,
     InsiderName: Jan Carlson,
     Position: Styrelseordförande,
     TransactionType: Avyttring,
