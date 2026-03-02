@@ -140,6 +140,7 @@ builder.Services.AddTransient<ISymbolService, SymbolService>();
 builder.Services.AddHostedService<RefreshTokenCleanupService>();
 
 builder.Services.AddScoped<IInsiderTradeService, InsiderTradeService>();
+builder.Services.AddScoped<ICompanyService, CompanyService>();
 
 builder.Services.AddResponseCaching();
 builder.Services.AddMemoryCache();
