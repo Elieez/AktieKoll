@@ -1,21 +1,36 @@
 # AktieKoll 📈
-**Financial Intelligence & Insider Trade Analytics**
+**Spårning och analys av insiderhandel på den svenska aktiemarknaden**
 
-AktieKoll är en robust backend-tjänst utvecklad i **.NET 10** för att spåra och analysera insiderhandel på den svenska aktiemarknaden. Systemet automatiserar hela flödet: från datainsamling via Finansinspektionen till berikning av data via externa finansiella API:er, allt presenterat genom ett säkert och väldokumenterat REST API.
-
----
-
-## 🚀 Huvudfunktioner
-
-* **Automatiserad Datainsamling:** Ett schemalagt arbetsflöde som hämtar dagliga rapporter över insiderhandel direkt från Finansinspektionens publika register.
-* **Datatvätt & Normalisering:** Avancerad parsing av rå CSV-data där irrelevant brus filtreras bort och bolagsnamn normaliseras (t.ex. automatisk rensning av suffix som "AB" och "(publ)") för högre datakvalitet.
-* **Bolagsregister & Ticker Mapping:** En dedikerad motor som månadsvis synkroniserar svenska börsbolag via EODHD. Genom att lagra ISIN och Ticker i databasen kan systemet snabbt koppla transaktioner till rätt bolag utan externa API-anrop i realtid.
-* **Säkerhet i Bankklass:** Implementerat JWT-baserat autentiseringssystem med **Refresh Tokens** lagrade i säkra, HTTP-only cookies för att minimera risker som XSS-attacker.
-* **Finansiell Analys:** Skräddarsydda endpoints för att identifiera marknadstrender, såsom de mest köpta/sålda aktierna över specifika tidsperioder baserat på volym och transaktionsvärde.
+AktieKoll är ett backend-system byggt i **.NET 10** som automatiskt hämtar, bearbetar och presenterar insiderhandelsdata från Finansinspektionen. Tanken är enkel: istället för att manuellt leta i FI:s register kan du via ett REST API direkt fråga efter trender, bolagshistorik och de senaste affärerna.
 
 ---
 
-## 🛠 Teknisk Stack
+## 🔄 Hur det fungerar – flödet i tre steg
+
+```
+1. HÄMTA       →   2. BERIKA       →   3. PRESENTERA
+FI:s register      Koppla ticker       REST API
+(CSV dagligen)     och ISIN via        
+                   EODHD
+```
+
+1. **Hämta** – Var 6:e timme hämtas nya insideraffärer direkt från Finansinspektionens publika CSV-register.
+2. **Berika** – Varje transaktion kopplas till rätt bolag via en lokal databas med tickers och ISIN-koder (synkad månadsvis från EODHD). Bolagsnamn rensas automatiskt från suffix som "AB" och "(publ)".
+3. **Presentera** – All data görs tillgänglig via ett säkert REST API med JWT-autentisering.
+
+---
+
+## 🚀 Funktioner
+
+- **Daglig datainsamling** – Automatisk synkronisering med FI:s insiderregister.
+- **Datatvätt** – Rå CSV-data normaliseras och felaktig/irrelevant data filtreras bort.
+- **Ticker-mapping** – Transaktioner kopplas till börssymboler (tickers) och ISIN utan externa API-anrop i realtid.
+- **Trendanalys** – Endpoints för att hitta de mest köpta/sålda aktierna under en vald period.
+- **Säker inloggning** – JWT-autentisering med refresh tokens i HTTP-only cookies (skydd mot XSS).
+
+---
+
+## 🛠 Teknisk stack
 
 | Område | Teknik |
 | :--- | :--- |
@@ -23,44 +38,62 @@ AktieKoll är en robust backend-tjänst utvecklad i **.NET 10** för att spåra 
 | **Databas** | PostgreSQL med Entity Framework Core |
 | **Säkerhet** | JWT, Refresh Tokens, HTTP-only Cookies |
 | **Testning** | xUnit, Moq, FluentAssertions, Verify |
-| **Externa API:er** | EODHD APIs (Exchange Data & Ticker Mapping)
-| **DevOps** | GitHub Actions (CI & Cron-jobs), Renovate Bot |
+| **Externa API:er** | EODHD (börskurser & ticker-data) |
+| **DevOps** | GitHub Actions (CI & Cron-jobb), Renovate Bot |
 
 ---
 
-## 🏗 Arkitektur & Struktur
+## 🏗 Projektstruktur
 
-Projektet är byggt med fokus på **Clean Architecture** och separationsprincipen (*Separation of Concerns*), fördelat på tre huvudmoduler:
+Projektet följer **Clean Architecture** och är uppdelat i fyra delar:
 
-* **`AktieKoll/`** – **Core API**: Innehåller controllers, affärslogik, databasmodeller och den säkra autentiseringsmodulen.
-* **`FetchTrades/`** – **Data Ingestion**: En specialiserad konsolapplikation designad för att köras som ett schemalagt jobb (Cron) för att driva datapipe-linen.
-* **`FetchCompanies/`** – Metadata Sync: Ett månatligt jobb som populerar databasen med tickers och ISIN-koder för alla noterade bolag i Sverige via EODHD.
-* **`AktieKoll.Tests/`** – **Quality Assurance**: Omfattande enhets- och integrationstester som validerar allt från parsing-logik till databasintegritet.
-
----
-
-## 📡 API Översikt (Urval)
-
-### Autentisering (`/api/auth`)
-* `POST /login` – Autentiserar användare och utfärdar access tokens.
-* `POST /refresh` – Förnyar sessionen via säkra cookies.
-
-### Insynsdata (`/api/insidertrades`)
-* `GET /top` – De 10 tyngsta transaktionerna från föregående handelsdag.
-* `GET /count-buy` – Trendanalys: Bolag med flest köptransaktioner över vald period.
-* `GET /company/{ticker}` – Full historik för specifika bolag.
+| Modul | Syfte |
+| :--- | :--- |
+| `AktieKoll/` | Core API – controllers, affärslogik, databasmodeller och autentisering |
+| `FetchTrades/` | Konsolapp som körs som cron-jobb och hämtar dagliga insideraffärer från FI |
+| `FetchCompanies/` | Månatligt jobb som synkroniserar tickers och ISIN för alla svenska börsbolag |
+| `AktieKoll.Tests/` | Enhets- och integrationstester för parsing, databaslogik m.m. |
 
 ---
 
-## ⚙️ Automatisering & Drift
+## 📡 API-översikt
 
-Projektet nyttjar **GitHub Actions** för en helt automatiserad datapipe-line:
-* **CI-Pipeline (`ci.yml`):** Automatisk byggnation och testkörning vid varje push för att garantera stabilitet.
-* **Trade-Sync (`cron-fetch.yml`):** Körs var 6:e timme för att synkronisera databasen med de senaste transaktionerna från Finansinspektionen.
-* **Company-Sync (`update-companies`):** Körs den 1:a varje månad för att uppdatera databasen över börsnoterade bolag (Tickers/ISIN).
-* **Dependency Management:** Integrerad med **Renovate** för att automatiskt hantera och uppdatera NuGet-paket, vilket håller systemet säkert och up-to-date.
+### Autentisering – `/api/auth`
+| Metod | Endpoint | Beskrivning |
+| :--- | :--- | :--- |
+| `POST` | `/login` | Loggar in och returnerar en access token |
+| `POST` | `/refresh` | Förnyar sessionen med hjälp av refresh token-cookie |
+
+### Insiderhandel – `/api/insidertrades`
+| Metod | Endpoint | Beskrivning |
+| :--- | :--- | :--- |
+| `GET` | `/top` | De 10 tyngsta transaktionerna från föregående handelsdag |
+| `GET` | `/count-buy` | Bolag med flest köptransaktioner under en vald period |
+| `GET` | `/company/{ticker}` | Alla transaktioner för ett specifikt bolag |
+
+### Bolagsregister – `/api/company`
+| Metod | Endpoint | Beskrivning |
+| :--- | :--- | :--- |
+| `GET` | `/` | Lista alla börsnoterade bolag i databasen |
+| `GET` | `/{ticker}` | Hämta information om ett specifikt bolag (namn, ISIN, ticker) |
+| `GET` | `/search?q={query}` | Sök efter bolag på namn eller ticker |
 
 ---
 
-### Syfte & Lärdomar
-Det här projektet skapades för att fördjupa mina kunskaper inom .NET och utforska komplexiteten i att hantera finansiell transaktionsdata. Fokus har legat på att bygga ett system som är både säkert och lätt att underhålla genom tydlig arkitektur och hög testtäckning.
+## ⚙️ Automatisering
+
+Allt körs automatiskt via **GitHub Actions**:
+
+| Jobb | Trigger | Vad det gör |
+| :--- | :--- | :--- |
+| `ci.yml` | Varje push | Bygger projektet och kör alla tester |
+| `cron-fetch.yml` | Var 6:e timme | Hämtar och sparar nya insideraffärer från FI |
+| `update-companies.yml` | 1:a varje månad | Uppdaterar databasen med tickers och ISIN via EODHD |
+
+**Renovate Bot** håller automatiskt NuGet-paket uppdaterade för att minimera säkerhetsrisker.
+
+---
+
+## 💡 Syfte & lärdomar
+
+Projektet skapades för att fördjupa kunskaper inom .NET och utforska hur man hanterar finansiell transaktionsdata i praktiken. Fokus har legat på säkerhet, enkel underhållbarhet och tydlig arkitektur – med hög testtäckning som grund.
