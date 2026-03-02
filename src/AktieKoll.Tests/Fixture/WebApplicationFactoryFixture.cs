@@ -59,6 +59,7 @@ public class WebApplicationFactoryFixture : WebApplicationFactory<Program>
         db.RefreshTokens.RemoveRange(db.RefreshTokens);
         db.Users.RemoveRange(db.Users);
         db.InsiderTrades.RemoveRange(db.InsiderTrades);
+        db.Companies.RemoveRange(db.Companies);
         db.SaveChanges();
     }
 }
