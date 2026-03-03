@@ -67,13 +67,6 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
 
     }
 
-    public async Task<IEnumerable<InsiderTrade>> GetInsiderTrades()
-    {
-        return await context.InsiderTrades
-            .OrderByDescending(t => t.PublishingDate)
-            .ToListAsync();
-    }
-
     public async Task<IEnumerable<InsiderTrade>> GetInsiderTradesPage(int page, int pageSize)
     {
         var skip = (page - 1) * pageSize;
@@ -104,12 +97,12 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
 
         var query = context.InsiderTrades
             .Where(t => t.PublishingDate >= startDate && t.PublishingDate < endDate)
-            .Where(t => t.TransactionType.Equals(transactionType, StringComparison.OrdinalIgnoreCase));
+            .Where(t => t.TransactionType.ToLower() == transactionType.ToLower());
 
         if (!string.IsNullOrWhiteSpace(companyName))
         {
-            var filtered = companyName.FilterCompanyName();
-            query = query.Where(t => t.CompanyName.Equals(filtered, StringComparison.OrdinalIgnoreCase));
+            var filtered = companyName.FilterCompanyName().ToLower();
+            query = query.Where(t => t.CompanyName.ToLower() == filtered);
         }
 
         var grouped = query
@@ -131,9 +124,9 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
     }
 
     public Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountBuy(string? companyName, int days = 30, int? top = 5)
-        => GetTransactionCountByType("Förvärv", companyName, days, top);
+        => GetTransactionCountByType("förvärv", companyName, days, top);
     public Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountSell(string? companyName, int days = 30, int? top = 5)
-        => GetTransactionCountByType("Avyttring", companyName, days, top);
+        => GetTransactionCountByType("avyttring", companyName, days, top);
 
     public async Task<IEnumerable<InsiderTrade>> GetInsiderTradesByCompany(string companyName, int skip = 0, int take = 10)
     {
@@ -142,10 +135,10 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
             return [];
         }
 
-        var filteredCompanyName = companyName.FilterCompanyName();
+        var filteredCompanyName = companyName.FilterCompanyName().ToLower();
 
         return await context.InsiderTrades
-            .Where(t => t.CompanyName.Equals(filteredCompanyName, StringComparison.OrdinalIgnoreCase))
+            .Where(t => t.CompanyName.ToLower() == filteredCompanyName)
             .OrderByDescending(t => t.PublishingDate)
             .Skip(skip)
             .Take(take)

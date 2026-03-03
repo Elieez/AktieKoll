@@ -1,4 +1,5 @@
-﻿using AktieKoll.Models;
+﻿using AktieKoll.Dtos;
+using AktieKoll.Models;
 
 namespace AktieKoll.Extensions;
 
@@ -17,4 +18,21 @@ public static class InsiderTradeExtensions
 
     public static bool IsRevised(this InsiderTrade trade)
         => string.Equals(trade.Status, "Reviderad", StringComparison.OrdinalIgnoreCase);
+
+    public static InsiderTradeListDto ToListDto(this InsiderTrade trade)
+    {
+        return new InsiderTradeListDto
+        {
+            CompanyName = trade.CompanyName,
+            InsiderName = trade.InsiderName,
+            Position = trade.Position,
+            TransactionType = trade.TransactionType,
+            Shares = trade.Shares,
+            Price = trade.Price,
+            Currency = trade.Currency,
+            Symbol = trade.Symbol,
+            PublishingDate = trade.PublishingDate,
+            TransactionDate = trade.TransactionDate
+        };
+    }
 }
