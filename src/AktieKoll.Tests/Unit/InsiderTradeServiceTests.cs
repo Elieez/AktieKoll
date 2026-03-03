@@ -190,7 +190,7 @@ public class InsiderTradeServiceTests
         await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
         var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
 
-        var result = await service.GetInsiderTrades();
+        var result = await service.GetInsiderTradesPage(1, 100);
 
         Assert.Equal(2, result.Count());
     }

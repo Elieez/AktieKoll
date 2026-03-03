@@ -48,7 +48,7 @@ public class TransactionsDbTests
 
         await service.AddInsiderTrades(trades);
 
-        var result = await service.GetInsiderTrades();
+        var result = await service.GetInsiderTradesPage(1, 100);
 
         await Verify(result);
     }
@@ -139,7 +139,7 @@ public class TransactionsDbTests
 
         await service.AddInsiderTrades(trades);
 
-        var result = await service.GetInsiderTrades();
+        var result = await service.GetInsiderTradesPage(1, 100);
 
         await Verify(result);
     }
@@ -158,7 +158,7 @@ public class TransactionsDbTests
         var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
         await service.AddInsiderTrades(trades);
 
-        var result = await service.GetInsiderTrades();
+        var result = await service.GetInsiderTradesPage(1, 100);
 
         await Verify(result);
     }
@@ -195,7 +195,7 @@ public class TransactionsDbTests
 
         await service.AddInsiderTrades(trades);
 
-        var result = await service.GetInsiderTrades();
+        var result = await service.GetInsiderTradesPage(1, 100);
 
         await Verify(result);
     }
@@ -219,7 +219,7 @@ public class TransactionsDbTests
 
         await service.AddInsiderTrades(trades);
 
-        var result = await service.GetInsiderTrades();
+        var result = await service.GetInsiderTradesPage(1, 100);
 
         await Verify(result);
     }
@@ -278,7 +278,7 @@ public class TransactionsDbTests
 
         await service.AddInsiderTrades(trades);
 
-        var result = await service.GetInsiderTrades();
+        var result = await service.GetInsiderTradesPage(1, 100);
 
         await Verify(result);
     }

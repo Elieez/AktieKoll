@@ -1,4 +1,6 @@
-﻿using AktieKoll.Interfaces;
+﻿using AktieKoll.Dtos;
+using AktieKoll.Extensions;
+using AktieKoll.Interfaces;
 using AktieKoll.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -10,30 +12,27 @@ namespace AktieKoll.Controllers;
 [EnableRateLimiting("api")]
 public class InsiderTradesController(IInsiderTradeService tradeService) : ControllerBase
 {
-
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<InsiderTrade>>> GetInsiderTrades()
-    {
-        var trades = await tradeService.GetInsiderTrades();
-        return Ok(trades);
-    }
-
     [HttpGet("page")]
-    public async Task<ActionResult<IEnumerable<InsiderTrade>>> GetInsiderTradesPage([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<IEnumerable<InsiderTradeListDto>>> GetInsiderTradesPage([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         if (page < 1 || pageSize < 1)
         {
             return BadRequest("Page and page size must be greater than zero.");
         }
+
         var trades = await tradeService.GetInsiderTradesPage(page, pageSize);
-        return Ok(trades);
+        var dtos = trades.Select(t => t.ToListDto());
+
+        return Ok(dtos);
     }
 
     [HttpGet("top")]
-    public async Task<ActionResult<IEnumerable<InsiderTrade>>> GetInsiderTradesTop()
+    public async Task<ActionResult<IEnumerable<InsiderTradeListDto>>> GetInsiderTradesTop()
     {
         var trades = await tradeService.GetInsiderTradesTop();
-        return Ok(trades);
+        var dtos = trades.Select(t => t.ToListDto());
+
+        return Ok(dtos);
     }
 
     [HttpGet("count-buy")]
@@ -57,7 +56,7 @@ public class InsiderTradesController(IInsiderTradeService tradeService) : Contro
     }
 
     [HttpGet("company")]
-    public async Task<ActionResult<IEnumerable<InsiderTrade>>> GetByCompanyName(
+    public async Task<ActionResult<IEnumerable<InsiderTradeListDto>>> GetByCompanyName(
         [FromQuery] string name,
         [FromQuery] int skip = 0,
         [FromQuery] int take = 10)
@@ -69,6 +68,8 @@ public class InsiderTradesController(IInsiderTradeService tradeService) : Contro
             return NotFound(new { error = $"No trades found for company: {name}" });
         }
 
-        return Ok(trades);
+        var dtos = trades.Select(t => t.ToListDto());
+
+        return Ok(dtos);
     }
 }

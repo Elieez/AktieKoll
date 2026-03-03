@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using AktieKoll.Data;
+using AktieKoll.Dtos;
 using AktieKoll.Models;
 using AktieKoll.Tests.Fixture;
 using AktieKoll.Tests.Integration.TestHelpers;
@@ -38,50 +39,6 @@ public class InsiderTradeControllerTests(WebApplicationFactoryFixture factory) :
             TransactionDate = publishingDate ?? DateTime.Today
         };
 
-    // GET /api/insidertrade
-    [Fact]
-    public async Task GetInsiderTrades_EmptyDatabase_ReturnsOkWithEmptyArray()
-    {
-        // Act
-        var response = await Client.GetTestAsync("/api/insidertrades");
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var trades = await response.Content.ReadFromJsonTestAsync<List<InsiderTrade>>();
-        trades.Should().BeEmpty();
-    }
-
-    [Fact]
-    public async Task GetInsiderTrades_WithTrades_ReturnsAllTrades()
-    {
-        // Arrange
-        await SeedTradesAsync(
-            MakeTrade("Volvo"),
-            MakeTrade("Ericsson")
-        );
-
-        // Act
-        var response = await Client.GetTestAsync("/api/insidertrades");
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var trades = await response.Content.ReadFromJsonTestAsync<List<InsiderTrade>>();
-        trades.Should().HaveCount(2);
-    }
-
-    [Fact]
-    public async Task GetInsiderTrades_ReturnsJsonContentType()
-    {
-        // Act
-        var response = await Client.GetTestAsync("/api/insidertrades");
-
-        // Assert
-        response.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
-    }
-
-
     // GET /api/insidertrade/page
     [Fact]
     public async Task GetInsiderTradesPage_DefaultParams_ReturnsFirstPage()
@@ -99,7 +56,7 @@ public class InsiderTradeControllerTests(WebApplicationFactoryFixture factory) :
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var trades = await response.Content.ReadFromJsonTestAsync<List<InsiderTrade>>();
+        var trades = await response.Content.ReadFromJsonTestAsync<List<InsiderTradeListDto>>();
         trades.Should().NotBeEmpty();
     }
 
@@ -121,7 +78,7 @@ public class InsiderTradeControllerTests(WebApplicationFactoryFixture factory) :
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var trades = await response.Content.ReadFromJsonTestAsync<List<InsiderTrade>>();
+        var trades = await response.Content.ReadFromJsonTestAsync<List<InsiderTradeListDto>>();
         trades.Should().HaveCount(2);
     }
 
@@ -141,8 +98,8 @@ public class InsiderTradeControllerTests(WebApplicationFactoryFixture factory) :
         var page2 = await Client.GetTestAsync("/api/insidertrades/page?page=2&pageSize=2");
 
         // Assert
-        var trades1 = await page1.Content.ReadFromJsonTestAsync<List<InsiderTrade>>();
-        var trades2 = await page2.Content.ReadFromJsonTestAsync<List<InsiderTrade>>();
+        var trades1 = await page1.Content.ReadFromJsonTestAsync<List<InsiderTradeListDto>>();
+        var trades2 = await page2.Content.ReadFromJsonTestAsync<List<InsiderTradeListDto>>();
 
         trades1.Should().HaveCount(2);
         trades2.Should().HaveCount(2);
@@ -198,7 +155,7 @@ public class InsiderTradeControllerTests(WebApplicationFactoryFixture factory) :
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var trades = await response.Content.ReadFromJsonTestAsync<List<InsiderTrade>>();
+        var trades = await response.Content.ReadFromJsonTestAsync<List<InsiderTradeListDto>>();
         trades.Should().NotBeEmpty();
         trades![0].CompanyName.Should().Be("BigCorp");
     }
@@ -333,7 +290,7 @@ public class InsiderTradeControllerTests(WebApplicationFactoryFixture factory) :
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var trades = await response.Content.ReadFromJsonTestAsync<List<InsiderTrade>>();
+        var trades = await response.Content.ReadFromJsonTestAsync<List<InsiderTradeListDto>>();
         trades.Should().HaveCount(1);
         trades![0].CompanyName.Should().Be("Volvo");
     }
@@ -366,7 +323,7 @@ public class InsiderTradeControllerTests(WebApplicationFactoryFixture factory) :
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var trades = await response.Content.ReadFromJsonTestAsync<List<InsiderTrade>>();
+        var trades = await response.Content.ReadFromJsonTestAsync<List<InsiderTradeListDto>>();
         trades.Should().HaveCount(2);
     }
 
@@ -386,8 +343,8 @@ public class InsiderTradeControllerTests(WebApplicationFactoryFixture factory) :
         var page2 = await Client.GetTestAsync("/api/insidertrades/company?name=Volvo&skip=2&take=2");
 
         // Assert
-        var trades1 = await page1.Content.ReadFromJsonTestAsync<List<InsiderTrade>>();
-        var trades2 = await page2.Content.ReadFromJsonTestAsync<List<InsiderTrade>>();
+        var trades1 = await page1.Content.ReadFromJsonTestAsync<List<InsiderTradeListDto>>();
+        var trades2 = await page2.Content.ReadFromJsonTestAsync<List<InsiderTradeListDto>>();
 
         trades1.Should().HaveCount(2);
         trades2.Should().HaveCount(2);
