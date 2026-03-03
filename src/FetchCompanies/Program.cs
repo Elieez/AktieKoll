@@ -52,18 +52,8 @@ int updated = 0;
 
 foreach (var company in companies)
 {
-    Company? existing;
-
-    if (!string.IsNullOrEmpty(company.Isin))
-    {
-        existing = await context.Companies
-            .FirstOrDefaultAsync(c => c.Isin == company.Isin);
-    }
-    else
-    {
-        existing = await context.Companies
-            .FirstOrDefaultAsync(c => c.Code == company.Code);
-    }
+    var existing = await context.Companies
+        .FirstOrDefaultAsync(c => c.Code == company.Code);
 
     if (existing == null)
     {
@@ -72,7 +62,6 @@ foreach (var company in companies)
     }
     else
     {
-        existing.Code = company.Code;
         existing.Name = company.Name;
         existing.Isin = company.Isin;
         existing.Currency = company.Currency;
