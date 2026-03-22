@@ -4,10 +4,6 @@
     TransactionCount: 8
   },
   {
-    CompanyName: NORDIC LEVEL GROUP,
-    TransactionCount: 3
-  },
-  {
     CompanyName: Lyckegård Group,
     TransactionCount: 2
   },
@@ -32,11 +28,11 @@
     TransactionCount: 1
   },
   {
-    CompanyName: Isofol Medical,
+    CompanyName: Mysafety Group,
     TransactionCount: 1
   },
   {
-    CompanyName: Mysafety Group,
+    CompanyName: NORDIC LEVEL GROUP,
     TransactionCount: 1
   },
   {

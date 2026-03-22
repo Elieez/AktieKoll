@@ -360,4 +360,25 @@ public class InsiderTradeControllerTests(WebApplicationFactoryFixture factory) :
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
+
+    // GET /api/insidertrades/ytd-stats
+    [Fact]
+    public async Task GetYtdStats_WithCurrentYearTrades_ReturnsCorrectCount()
+    {
+        // Arrange
+        await SeedTradesAsync(
+            MakeTrade("Volvo"),
+            MakeTrade("Ericsson"),
+            MakeTrade("Volvo")
+        );
+
+        // Act
+        var response = await Client.GetTestAsync("/api/insidertrades/ytd-stats");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var stats = await response.Content.ReadFromJsonTestAsync<YtdStats>();
+        stats!.TotalTransactions.Should().Be(3);
+    }
 }

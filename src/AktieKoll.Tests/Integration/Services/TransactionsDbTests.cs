@@ -3,6 +3,7 @@ using AktieKoll.Services;
 using AktieKoll.Tests.Extensions;
 using AktieKoll.Tests.Shared.TestHelpers;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Time.Testing;
 using static AktieKoll.Extensions.CsvDtoExtensions;
 
 namespace AktieKoll.Tests.Integration.Services;
@@ -200,6 +201,35 @@ public class TransactionsDbTests
         await Verify(result);
     }
 
+    //[Theory]
+    //[InlineData("Swap")]
+    //[InlineData("Ränteswap")]
+    //[InlineData("BTU")]
+    //[InlineData("Teckningsrätt/Uniträtt")]
+    //[InlineData("Kreditderivat")]
+    //[InlineData("Terminskontrakt")]
+    //[InlineData("Option")]
+    //public async Task AddInsiderTrades_ExcludedInstrumentTypeFiltered(string instrumentType)
+    //{
+    //    var ctx = ServiceTestHelpers.CreateContext();
+    //    var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
+
+    //    var csvDtos = new List<CsvDTO>
+    //    {
+    //        FakeDTO.MakeCsvDto(d => { d.Karaktär = instrumentType; }),
+
+    //        FakeDTO.MakeCsvDto(d => { d.Karaktär = "Aktie"; })
+    //    };
+
+    //    var trades = InsiderTradeMapper.MapDtosToTrades(csvDtos);
+
+    //    await service.AddInsiderTrades(trades);
+
+    //    var result = await service.GetInsiderTradesPage(1, 100);
+
+    //    await Verify(result);
+    //}
+
     [Fact]
     public async Task AddInsiderTrades_FilterPositionName()
     {
@@ -309,7 +339,7 @@ public class TransactionsDbTests
 
     [Theory]
     [InlineData(null, 2, 365)]
-    [InlineData("Isofol Medical", null, 365)]
+    [InlineData("Zinzino AB", null, 365)]
     [InlineData(null, null, 365)]
     public async Task GetTransactionCountSell_ReturnsMostActive(string? companyName, int? top, int days)
     {
@@ -562,5 +592,29 @@ public class TransactionsDbTests
 
         // Assert - Should pick B-share first (highest priority for Swedish stocks)
         Assert.Equal("TEST-B", trades[0].Symbol);
+    }
+
+    [Fact]
+    public async Task GetTransactionStats_ReturnsModellSuccess()
+    {
+        var ctx = ServiceTestHelpers.CreateContext();
+        var csvFetchService = ServiceProviderFixture
+                                   .GetRequiredService<CsvFetchService>(services => services.AuthorizedClient());
+
+        var fromDate = new DateTime(2025, 6, 23);
+        var toDate = new DateTime(2025, 6, 24);
+
+        var fakeTime = new FakeTimeProvider();
+        fakeTime.SetUtcNow(new DateTimeOffset(2025, 12, 31, 0, 0, 0, TimeSpan.Zero));
+
+        var csvDto = await csvFetchService.FetchInsiderTradesAsync(fromDate, toDate);
+        var trades = InsiderTradeMapper.MapDtosToTrades(csvDto);
+
+        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx,fakeTime);
+        await service.AddInsiderTrades(trades);
+
+        var result = await service.GetYtdTransactionStatsAsync();
+
+        await Verify(result);
     }
 }

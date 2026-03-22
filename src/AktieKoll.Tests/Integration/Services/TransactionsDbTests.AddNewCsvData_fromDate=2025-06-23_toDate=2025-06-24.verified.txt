@@ -29,34 +29,6 @@
   },
   {
     Id: 3,
-    CompanyName: NORDIC LEVEL GROUP,
-    InsiderName: Mikael Pettersson,
-    Position: Ledningsgrupp,
-    TransactionType: Förvärv,
-    Shares: 132432,
-    Price: 0.01,
-    Currency: SEK,
-    Isin: SE0020356178,
-    Status: Aktuell,
-    PublishingDate: DateTime_4,
-    TransactionDate: DateTime_2
-  },
-  {
-    Id: 4,
-    CompanyName: NORDIC LEVEL GROUP,
-    InsiderName: Jalal Anbtawi,
-    Position: VD,
-    TransactionType: Förvärv,
-    Shares: 781381,
-    Price: 0.01,
-    Currency: SEK,
-    Isin: SE0020356178,
-    Status: Aktuell,
-    PublishingDate: DateTime_5,
-    TransactionDate: DateTime_2
-  },
-  {
-    Id: 5,
     CompanyName: SenzaGen,
     InsiderName: Bengt Peter Nählstedt,
     Position: VD,
@@ -66,11 +38,11 @@
     Currency: SEK,
     Isin: SE0010219626,
     Status: Aktuell,
-    PublishingDate: DateTime_6,
+    PublishingDate: DateTime_4,
     TransactionDate: DateTime_2
   },
   {
-    Id: 6,
+    Id: 4,
     CompanyName: eEducation Albert,
     InsiderName: Fredrik Bengtsson,
     Position: VD,
@@ -80,11 +52,11 @@
     Currency: SEK,
     Isin: SE0016797989,
     Status: Aktuell,
-    PublishingDate: DateTime_7,
-    TransactionDate: DateTime_8
+    PublishingDate: DateTime_5,
+    TransactionDate: DateTime_6
   },
   {
-    Id: 7,
+    Id: 5,
     CompanyName: eEducation Albert,
     InsiderName: Fredrik Bengtsson,
     Position: VD,
@@ -94,11 +66,11 @@
     Currency: SEK,
     Isin: SE0016797989,
     Status: Aktuell,
-    PublishingDate: DateTime_7,
-    TransactionDate: DateTime_8
+    PublishingDate: DateTime_5,
+    TransactionDate: DateTime_6
   },
   {
-    Id: 8,
+    Id: 6,
     CompanyName: eEducation Albert,
     InsiderName: Fredrik Bengtsson,
     Position: VD,
@@ -108,11 +80,11 @@
     Currency: SEK,
     Isin: SE0016797989,
     Status: Aktuell,
-    PublishingDate: DateTime_7,
-    TransactionDate: DateTime_8
+    PublishingDate: DateTime_5,
+    TransactionDate: DateTime_6
   },
   {
-    Id: 9,
+    Id: 7,
     CompanyName: eEducation Albert,
     InsiderName: Fredrik Bengtsson,
     Position: VD,
@@ -122,11 +94,11 @@
     Currency: SEK,
     Isin: SE0016797989,
     Status: Aktuell,
-    PublishingDate: DateTime_7,
-    TransactionDate: DateTime_8
+    PublishingDate: DateTime_5,
+    TransactionDate: DateTime_6
   },
   {
-    Id: 10,
+    Id: 8,
     CompanyName: eEducation Albert,
     InsiderName: Fredrik Bengtsson,
     Position: VD,
@@ -136,11 +108,11 @@
     Currency: SEK,
     Isin: SE0016797989,
     Status: Aktuell,
-    PublishingDate: DateTime_7,
-    TransactionDate: DateTime_8
+    PublishingDate: DateTime_5,
+    TransactionDate: DateTime_6
   },
   {
-    Id: 11,
+    Id: 9,
     CompanyName: eEducation Albert,
     InsiderName: Fredrik Bengtsson,
     Position: VD,
@@ -150,11 +122,11 @@
     Currency: SEK,
     Isin: SE0016797989,
     Status: Aktuell,
-    PublishingDate: DateTime_7,
-    TransactionDate: DateTime_8
+    PublishingDate: DateTime_5,
+    TransactionDate: DateTime_6
   },
   {
-    Id: 12,
+    Id: 10,
     CompanyName: eEducation Albert,
     InsiderName: Fredrik Bengtsson,
     Position: VD,
@@ -164,11 +136,11 @@
     Currency: SEK,
     Isin: SE0016797989,
     Status: Aktuell,
-    PublishingDate: DateTime_7,
-    TransactionDate: DateTime_8
+    PublishingDate: DateTime_5,
+    TransactionDate: DateTime_6
   },
   {
-    Id: 13,
+    Id: 11,
     CompanyName: eEducation Albert,
     InsiderName: Fredrik Bengtsson,
     Position: VD,
@@ -178,11 +150,11 @@
     Currency: SEK,
     Isin: SE0016797989,
     Status: Aktuell,
-    PublishingDate: DateTime_7,
-    TransactionDate: DateTime_8
+    PublishingDate: DateTime_5,
+    TransactionDate: DateTime_6
   },
   {
-    Id: 14,
+    Id: 12,
     CompanyName: niutech Group,
     InsiderName: Björn Rickard Olovsson,
     Position: Annan ledande befattningshavare,
@@ -192,11 +164,11 @@
     Currency: SEK,
     Isin: SE0016609911,
     Status: Aktuell,
-    PublishingDate: DateTime_9,
-    TransactionDate: DateTime_10
+    PublishingDate: DateTime_7,
+    TransactionDate: DateTime_8
   },
   {
-    Id: 15,
+    Id: 13,
     CompanyName: Niutech Group,
     InsiderName: Magnus Karlsson,
     Position: Annan ledande befattningshavare,
@@ -206,11 +178,11 @@
     Currency: SEK,
     Isin: SE0016609911,
     Status: Aktuell,
-    PublishingDate: DateTime_11,
-    TransactionDate: DateTime_10
+    PublishingDate: DateTime_9,
+    TransactionDate: DateTime_8
   },
   {
-    Id: 16,
+    Id: 14,
     CompanyName: VEF,
     InsiderName: david nangle,
     Position: VD,
@@ -220,53 +192,11 @@
     Currency: SEK,
     Isin: SE0025399728,
     Status: Aktuell,
-    PublishingDate: DateTime_12,
-    TransactionDate: DateTime_10
-  },
-  {
-    Id: 17,
-    CompanyName: Isofol Medical,
-    InsiderName: Petter Segelman Lindqvist,
-    Position: VD,
-    TransactionType: Avyttring,
-    Shares: 33408,
-    Price: 0.09,
-    Currency: SEK,
-    Isin: SE0025197528,
-    Status: Aktuell,
-    PublishingDate: DateTime_13,
-    TransactionDate: DateTime_10
-  },
-  {
-    Id: 18,
-    CompanyName: Isofol Medical,
-    InsiderName: Petter Segelman Lindqvist,
-    Position: VD,
-    TransactionType: Avyttring,
-    Shares: 400000,
-    Price: 0.09,
-    Currency: SEK,
-    Isin: SE0025197528,
-    Status: Aktuell,
-    PublishingDate: DateTime_13,
+    PublishingDate: DateTime_10,
     TransactionDate: DateTime_8
   },
   {
-    Id: 19,
-    CompanyName: Isofol Medical,
-    InsiderName: Petter Segelman Lindqvist,
-    Position: VD,
-    TransactionType: Förvärv,
-    Shares: 1139601,
-    Price: 0.09,
-    Currency: SEK,
-    Isin: SE0025197528,
-    Status: Aktuell,
-    PublishingDate: DateTime_13,
-    TransactionDate: DateTime_10
-  },
-  {
-    Id: 20,
+    Id: 15,
     CompanyName: NYAB,
     InsiderName: Klas Rewelj,
     Position: CFO,
@@ -276,11 +206,11 @@
     Currency: SEK,
     Isin: SE0022242434,
     Status: Aktuell,
-    PublishingDate: DateTime_14,
+    PublishingDate: DateTime_11,
     TransactionDate: DateTime_2
   },
   {
-    Id: 21,
+    Id: 16,
     CompanyName: Terranet,
     InsiderName: Jonas Renander,
     Position: Annan ledande befattningshavare,
@@ -290,25 +220,11 @@
     Currency: SEK,
     Isin: SE0009806045,
     Status: Aktuell,
-    PublishingDate: DateTime_15,
-    TransactionDate: DateTime_10
-  },
-  {
-    Id: 22,
-    CompanyName: W5 Solutions, org.nr 556973-2034,
-    InsiderName: Gunilla Stomberg,
-    Position: Ledningsgrupp,
-    TransactionType: Tilldelning,
-    Shares: 30000,
-    Price: 9.47,
-    Currency: SEK,
-    Isin: ,
-    Status: Aktuell,
-    PublishingDate: DateTime_16,
+    PublishingDate: DateTime_12,
     TransactionDate: DateTime_8
   },
   {
-    Id: 23,
+    Id: 17,
     CompanyName: Terranet,
     InsiderName: Torgny Hellström,
     Position: Styrelseordförande,
@@ -318,11 +234,11 @@
     Currency: SEK,
     Isin: SE0009806045,
     Status: Aktuell,
-    PublishingDate: DateTime_17,
-    TransactionDate: DateTime_10
+    PublishingDate: DateTime_13,
+    TransactionDate: DateTime_8
   },
   {
-    Id: 24,
+    Id: 18,
     CompanyName: Qualisys,
     InsiderName: Magnus Berlander,
     Position: Ledningsgrupp,
@@ -332,11 +248,11 @@
     Currency: SEK,
     Isin: SE0023837091,
     Status: Aktuell,
-    PublishingDate: DateTime_18,
-    TransactionDate: DateTime_8
+    PublishingDate: DateTime_14,
+    TransactionDate: DateTime_6
   },
   {
-    Id: 25,
+    Id: 19,
     CompanyName: VEF,
     InsiderName: Helena Caan Mattsson,
     Position: Ledningsgrupp,
@@ -346,11 +262,11 @@
     Currency: SEK,
     Isin: SE0025399728,
     Status: Aktuell,
-    PublishingDate: DateTime_19,
-    TransactionDate: DateTime_10
+    PublishingDate: DateTime_15,
+    TransactionDate: DateTime_8
   },
   {
-    Id: 26,
+    Id: 20,
     CompanyName: Intrum,
     InsiderName: Annette Kumlien,
     Position: Ledningsgrupp,
@@ -360,11 +276,11 @@
     Currency: SEK,
     Isin: SE0000936478,
     Status: Aktuell,
-    PublishingDate: DateTime_20,
-    TransactionDate: DateTime_10
+    PublishingDate: DateTime_16,
+    TransactionDate: DateTime_8
   },
   {
-    Id: 27,
+    Id: 21,
     CompanyName: CombinedX,
     InsiderName: Anna Cedgård Hedström,
     Position: CFO,
@@ -374,11 +290,11 @@
     Currency: SEK,
     Isin: SE0025399769,
     Status: Aktuell,
-    PublishingDate: DateTime_21,
-    TransactionDate: DateTime_22
+    PublishingDate: DateTime_17,
+    TransactionDate: DateTime_18
   },
   {
-    Id: 28,
+    Id: 22,
     CompanyName: Scandi Standard,
     InsiderName: Paulo Gaspar,
     Position: Styrelseledamot,
@@ -388,11 +304,11 @@
     Currency: SEK,
     Isin: SE0005999760,
     Status: Aktuell,
-    PublishingDate: DateTime_23,
-    TransactionDate: DateTime_24
+    PublishingDate: DateTime_19,
+    TransactionDate: DateTime_20
   },
   {
-    Id: 29,
+    Id: 23,
     CompanyName: Scandi Standard,
     InsiderName: Paulo Gaspar,
     Position: Styrelseledamot,
@@ -402,11 +318,11 @@
     Currency: SEK,
     Isin: SE0005999760,
     Status: Aktuell,
-    PublishingDate: DateTime_23,
-    TransactionDate: DateTime_10
+    PublishingDate: DateTime_19,
+    TransactionDate: DateTime_8
   },
   {
-    Id: 30,
+    Id: 24,
     CompanyName: W5 Solutions,
     InsiderName: Cecilia Driving,
     Position: CFO,
@@ -416,11 +332,11 @@
     Currency: SEK,
     Isin: ,
     Status: Aktuell,
-    PublishingDate: DateTime_25,
-    TransactionDate: DateTime_8
+    PublishingDate: DateTime_21,
+    TransactionDate: DateTime_6
   },
   {
-    Id: 31,
+    Id: 25,
     CompanyName: W5 Solutions,
     InsiderName: Joachim Hammersland,
     Position: Vice VD,
@@ -430,11 +346,11 @@
     Currency: SEK,
     Isin: SE0016786040,
     Status: Aktuell,
-    PublishingDate: DateTime_26,
-    TransactionDate: DateTime_8
+    PublishingDate: DateTime_22,
+    TransactionDate: DateTime_6
   },
   {
-    Id: 32,
+    Id: 26,
     CompanyName: W5 Solutions,
     InsiderName: Martin Kammenhed,
     Position: Annan ledande befattningshavare,
@@ -444,11 +360,11 @@
     Currency: SEK,
     Isin: SE0016786040,
     Status: Aktuell,
-    PublishingDate: DateTime_27,
-    TransactionDate: DateTime_8
+    PublishingDate: DateTime_23,
+    TransactionDate: DateTime_6
   },
   {
-    Id: 33,
+    Id: 27,
     CompanyName: Zinzino,
     InsiderName: Daniel Vennerstrand,
     Position: Ledningsgrupp,
@@ -458,11 +374,11 @@
     Currency: SEK,
     Isin: SE0002480442,
     Status: Aktuell,
-    PublishingDate: DateTime_28,
-    TransactionDate: DateTime_29
+    PublishingDate: DateTime_24,
+    TransactionDate: DateTime_25
   },
   {
-    Id: 34,
+    Id: 28,
     CompanyName: Zinzino,
     InsiderName: Daniel Vennerstrand,
     Position: Ledningsgrupp,
@@ -472,11 +388,11 @@
     Currency: SEK,
     Isin: SE0002480442,
     Status: Aktuell,
-    PublishingDate: DateTime_28,
-    TransactionDate: DateTime_29
+    PublishingDate: DateTime_24,
+    TransactionDate: DateTime_25
   },
   {
-    Id: 35,
+    Id: 29,
     CompanyName: Niutech Group,
     InsiderName: Mattias Leijon,
     Position: Styrelseledamot,
@@ -486,25 +402,11 @@
     Currency: SEK,
     Isin: SE0016609911,
     Status: Aktuell,
-    PublishingDate: DateTime_30,
-    TransactionDate: DateTime_10
+    PublishingDate: DateTime_26,
+    TransactionDate: DateTime_8
   },
   {
-    Id: 36,
-    CompanyName: Flat Capital,
-    InsiderName: Amaury de Poret,
-    Position: Styrelseledamot,
-    TransactionType: Avyttring,
-    Shares: 500000,
-    Price: 1.60,
-    Currency: SEK,
-    Isin: SE0025196868,
-    Status: Aktuell,
-    PublishingDate: DateTime_31,
-    TransactionDate: DateTime_24
-  },
-  {
-    Id: 37,
+    Id: 30,
     CompanyName: Flat Capital,
     InsiderName: Amaury de Poret,
     Position: Styrelseledamot,
@@ -514,11 +416,11 @@
     Currency: SEK,
     Isin: SE0025196876,
     Status: Aktuell,
-    PublishingDate: DateTime_31,
-    TransactionDate: DateTime_10
+    PublishingDate: DateTime_27,
+    TransactionDate: DateTime_8
   },
   {
-    Id: 38,
+    Id: 31,
     CompanyName: Rolling Optics Holding,
     InsiderName: Thomas SAVARE,
     Position: Styrelseordförande,
@@ -528,11 +430,11 @@
     Currency: SEK,
     Isin: SE0010520155,
     Status: Aktuell,
-    PublishingDate: DateTime_32,
-    TransactionDate: DateTime_10
+    PublishingDate: DateTime_28,
+    TransactionDate: DateTime_8
   },
   {
-    Id: 39,
+    Id: 32,
     CompanyName: Niutech Group,
     InsiderName: Klas Zetterman,
     Position: VD,
@@ -542,11 +444,11 @@
     Currency: SEK,
     Isin: SE0016609911,
     Status: Aktuell,
-    PublishingDate: DateTime_33,
-    TransactionDate: DateTime_10
+    PublishingDate: DateTime_29,
+    TransactionDate: DateTime_8
   },
   {
-    Id: 40,
+    Id: 33,
     CompanyName: Lyckegård Group,
     InsiderName: Anders Gösta Holm,
     Position: Styrelseordförande,
@@ -556,11 +458,11 @@
     Currency: SEK,
     Isin: SE0017160575,
     Status: Aktuell,
-    PublishingDate: DateTime_34,
-    TransactionDate: DateTime_8
+    PublishingDate: DateTime_30,
+    TransactionDate: DateTime_6
   },
   {
-    Id: 41,
+    Id: 34,
     CompanyName: Lyckegård Group,
     InsiderName: Anders Gösta Holm,
     Position: Styrelseordförande,
@@ -570,11 +472,11 @@
     Currency: SEK,
     Isin: SE0017160575,
     Status: Aktuell,
-    PublishingDate: DateTime_35,
-    TransactionDate: DateTime_8
+    PublishingDate: DateTime_31,
+    TransactionDate: DateTime_6
   },
   {
-    Id: 42,
+    Id: 35,
     CompanyName: W5 Solutions,
     InsiderName: Sara Evelina Hedskog,
     Position: VD,
@@ -584,11 +486,11 @@
     Currency: SEK,
     Isin: ,
     Status: Aktuell,
-    PublishingDate: DateTime_36,
-    TransactionDate: DateTime_8
+    PublishingDate: DateTime_32,
+    TransactionDate: DateTime_6
   },
   {
-    Id: 43,
+    Id: 36,
     CompanyName: Bure Equity,
     InsiderName: Henrik Gustaf Knutsson Blomquist,
     Position: VD,
@@ -598,11 +500,11 @@
     Currency: SEK,
     Isin: SE0000195810,
     Status: Aktuell,
-    PublishingDate: DateTime_37,
-    TransactionDate: DateTime_8
+    PublishingDate: DateTime_33,
+    TransactionDate: DateTime_6
   },
   {
-    Id: 44,
+    Id: 37,
     CompanyName: SpectraCure,
     InsiderName: Kristina Espemar Holst,
     Position: Ledningsgrupp,
@@ -612,11 +514,11 @@
     Currency: SEK,
     Isin: SE0025165699,
     Status: Aktuell,
-    PublishingDate: DateTime_38,
-    TransactionDate: DateTime_10
+    PublishingDate: DateTime_34,
+    TransactionDate: DateTime_8
   },
   {
-    Id: 45,
+    Id: 38,
     CompanyName: Ambea Abp,
     InsiderName: yrjö närhinen,
     Position: Styrelseordförande,
@@ -626,7 +528,7 @@
     Currency: SEK,
     Isin: SE0009663826,
     Status: Aktuell,
-    PublishingDate: DateTime_39,
-    TransactionDate: DateTime_24
+    PublishingDate: DateTime_35,
+    TransactionDate: DateTime_20
   }
 ]

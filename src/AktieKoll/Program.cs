@@ -136,6 +136,8 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 
 builder.Services.AddHttpClient<CsvFetchService>();
 
+builder.Services.AddSingleton(TimeProvider.System);
+
 builder.Services.AddTransient<ISymbolService, SymbolService>();
 builder.Services.AddHostedService<RefreshTokenCleanupService>();
 

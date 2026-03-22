@@ -1,6 +1,6 @@
 ﻿[
   {
-    Id: 6,
+    Id: 4,
     CompanyName: eEducation Albert,
     InsiderName: Fredrik Bengtsson,
     Position: VD,
@@ -14,7 +14,7 @@
     TransactionDate: DateTime_2
   },
   {
-    Id: 7,
+    Id: 5,
     CompanyName: eEducation Albert,
     InsiderName: Fredrik Bengtsson,
     Position: VD,
@@ -28,7 +28,7 @@
     TransactionDate: DateTime_2
   },
   {
-    Id: 8,
+    Id: 6,
     CompanyName: eEducation Albert,
     InsiderName: Fredrik Bengtsson,
     Position: VD,
@@ -42,7 +42,7 @@
     TransactionDate: DateTime_2
   },
   {
-    Id: 9,
+    Id: 7,
     CompanyName: eEducation Albert,
     InsiderName: Fredrik Bengtsson,
     Position: VD,
@@ -56,7 +56,7 @@
     TransactionDate: DateTime_2
   },
   {
-    Id: 10,
+    Id: 8,
     CompanyName: eEducation Albert,
     InsiderName: Fredrik Bengtsson,
     Position: VD,
@@ -70,7 +70,7 @@
     TransactionDate: DateTime_2
   },
   {
-    Id: 11,
+    Id: 9,
     CompanyName: eEducation Albert,
     InsiderName: Fredrik Bengtsson,
     Position: VD,
@@ -84,7 +84,7 @@
     TransactionDate: DateTime_2
   },
   {
-    Id: 12,
+    Id: 10,
     CompanyName: eEducation Albert,
     InsiderName: Fredrik Bengtsson,
     Position: VD,
@@ -98,7 +98,7 @@
     TransactionDate: DateTime_2
   },
   {
-    Id: 13,
+    Id: 11,
     CompanyName: eEducation Albert,
     InsiderName: Fredrik Bengtsson,
     Position: VD,

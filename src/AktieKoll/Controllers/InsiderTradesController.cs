@@ -72,4 +72,12 @@ public class InsiderTradesController(IInsiderTradeService tradeService) : Contro
 
         return Ok(dtos);
     }
+
+    [HttpGet("ytd-stats")]
+    [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
+    public async Task<ActionResult<YtdStats>> GetYtdStats()
+    {
+        var stats = await tradeService.GetYtdTransactionStatsAsync();
+        return Ok(stats);
+    }
 }
