@@ -93,7 +93,7 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
 
     private async Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountByType(string transactionType, string? companyName, int days, int? top)
     {
-        var endDate = DateTime.Now.Date.AddDays(1);
+        var endDate = DateTime.UtcNow.Date.AddDays(1);
         var startDate = endDate.AddDays(-days);
 
         var query = context.InsiderTrades
