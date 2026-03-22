@@ -1,4 +1,0 @@
-﻿{
-  TotalTransactions: 45,
-  TotalValue: 65129641.011920
-}
