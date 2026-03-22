@@ -4,11 +4,11 @@
     TransactionCount: 8
   },
   {
-    CompanyName: NORDIC LEVEL GROUP,
-    TransactionCount: 3
+    CompanyName: Lyckegård Group,
+    TransactionCount: 2
   },
   {
-    CompanyName: Lyckegård Group,
+    CompanyName: Scandi Standard,
     TransactionCount: 2
   }
 ]

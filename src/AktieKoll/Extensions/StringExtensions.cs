@@ -10,9 +10,6 @@ public static partial class StringExtensions
     [GeneratedRegex(@"\s*\bAB\b", RegexOptions.IgnoreCase)]
     private static partial Regex AbRegex();
 
-    [GeneratedRegex(@"^Interntransaktion\s*–\s*", RegexOptions.IgnoreCase)]
-    private static partial Regex InternalPrefixRegex();
-
     [GeneratedRegex(@"\s+", RegexOptions.None)]
     private static partial Regex WhitespaceRegex();
 
@@ -73,10 +70,7 @@ public static partial class StringExtensions
         return result;
     }
 
-    public static string FilterTransactionType(this string input)
-        => string.IsNullOrWhiteSpace(input)
-        ? input
-        : InternalPrefixRegex().Replace(input, "");
+    public static string FilterTransactionType(this string input) => input ?? string.Empty;
 
     public static string FilterPosition(this string? input)
     {

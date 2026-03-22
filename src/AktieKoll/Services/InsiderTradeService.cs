@@ -3,10 +3,11 @@ using AktieKoll.Extensions;
 using AktieKoll.Interfaces;
 using AktieKoll.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace AktieKoll.Services;
 
-public class InsiderTradeService(ApplicationDbContext context, ISymbolService symbolService) : IInsiderTradeService
+public class InsiderTradeService(ApplicationDbContext context, ISymbolService symbolService, IMemoryCache cache, TimeProvider timeProvider) : IInsiderTradeService
 {
     public async Task<string> AddInsiderTrades(List<InsiderTrade> insiderTrades)
     {
@@ -92,7 +93,7 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
 
     private async Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountByType(string transactionType, string? companyName, int days, int? top)
     {
-        var endDate = DateTime.Now.Date.AddDays(1);
+        var endDate = DateTime.UtcNow.Date.AddDays(1);
         var startDate = endDate.AddDays(-days);
 
         var query = context.InsiderTrades
@@ -143,5 +144,31 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
             .Skip(skip)
             .Take(take)
             .ToListAsync();
+    }
+
+    public async Task<YtdStats> GetYtdTransactionStatsAsync()
+    {
+        const string cacheKey = "trades:ytd-stats";
+
+        if (cache.TryGetValue(cacheKey, out YtdStats? cachedStats) && cachedStats != null)
+            return cachedStats;
+
+        var startOfYear = new DateTime(timeProvider.GetLocalNow().Year, 1, 1);
+
+        var trades = await context.InsiderTrades
+            .Where(t => t.PublishingDate >= startOfYear)
+            .Select(t => new { t.Price, t.Shares })
+            .ToListAsync();
+
+        var stats = new YtdStats
+        {
+            TotalTransactions = trades.LongCount(),
+            TotalValue = trades.Sum(t => (decimal)t.Price * (decimal)t.Shares)
+        };
+
+        cache.Set(cacheKey, stats, new MemoryCacheEntryOptions()
+            .SetAbsoluteExpiration(TimeSpan.FromHours(6)));
+
+        return stats;
     }
 }

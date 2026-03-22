@@ -40,12 +40,27 @@ public static class CsvDtoExtensions
             "Bodelning ökning",
             "Arv mottagen",
             "Konvertering ökning",
-            "Lån utlåning"
+            "Lån utlåning",
+            "Interntransaktion – Avyttring",
+            "Interntransaktion – Förvärv"
+        };
+
+        private static readonly HashSet<string> ExcludedInstrumentTypes = new(
+        StringComparer.OrdinalIgnoreCase)
+        {
+            "Swap",
+            "Ränteswap",
+            "BTU",
+            "Teckningsrätt/Uniträtt",
+            "Kreditderivat",
+            "Terminskontrakt",
+            "Option"
         };
 
         public static List<InsiderTrade> MapDtosToTrades(IEnumerable<CsvDTO> dtos)
         => [.. dtos
            .Where(dto => !ExcludedTransactionsTypes.Contains(dto.Karaktär.FilterTransactionType()))
+           .Where(dto => !ExcludedInstrumentTypes.Contains(dto.Instrumenttyp))
            .Select(dto => dto.ToInsiderTrade())];
     }
 }

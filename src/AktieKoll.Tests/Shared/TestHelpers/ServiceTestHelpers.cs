@@ -2,6 +2,7 @@
 using AktieKoll.Models;
 using AktieKoll.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AktieKoll.Tests.Shared.TestHelpers;
@@ -16,11 +17,13 @@ public static class ServiceTestHelpers
         return new ApplicationDbContext(options);
     }
 
-    public static InsiderTradeService CreateInsiderTradeService(ApplicationDbContext ctx)
+    public static InsiderTradeService CreateInsiderTradeService(ApplicationDbContext ctx, TimeProvider? timeProvider = null)
     {
         var logger = NullLogger<SymbolService>.Instance;
         var symbolService = new SymbolService(ctx, logger);
-        return new InsiderTradeService(ctx, symbolService);
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        
+        return new InsiderTradeService(ctx, symbolService, cache, timeProvider ?? TimeProvider.System);
     }
 
     public static async Task SeedCompanies(

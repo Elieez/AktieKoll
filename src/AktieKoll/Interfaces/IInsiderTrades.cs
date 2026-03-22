@@ -10,4 +10,5 @@ public interface IInsiderTradeService
     Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountBuy(string? companyName = null, int days = 30, int? top = 5);
     Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountSell(string? companyName = null, int days = 30, int? top = 5);
     Task<IEnumerable<InsiderTrade>> GetInsiderTradesByCompany(string companyName, int skip = 0, int take = 10);
+    Task<YtdStats> GetYtdTransactionStatsAsync();
 }

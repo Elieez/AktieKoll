@@ -37,13 +37,9 @@ public class FetchTradesWorkflowTests
         using var loggerFactory = LoggerFactory.Create(builder =>
             builder.AddConsole().SetMinimumLevel(LogLevel.Warning));
 
-        var csvLogger = loggerFactory.CreateLogger<CsvFetchService>();
-        var symbolLogger = loggerFactory.CreateLogger<SymbolService>();
-
         var csvFetchService = ServiceProviderFixture
                                    .GetRequiredService<CsvFetchService>(services => services.AuthorizedClient());
-        var symbolService = new SymbolService(_context, symbolLogger);
-        var tradeService = new InsiderTradeService(_context, symbolService);
+        var tradeService = ServiceTestHelpers.CreateInsiderTradeService(_context);
 
         // Act
         var csvResults = await csvFetchService.FetchInsiderTradesAsync(fromDate, toDate);
