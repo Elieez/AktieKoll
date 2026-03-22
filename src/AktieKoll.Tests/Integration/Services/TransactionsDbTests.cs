@@ -201,34 +201,34 @@ public class TransactionsDbTests
         await Verify(result);
     }
 
-    //[Theory]
-    //[InlineData("Swap")]
-    //[InlineData("Ränteswap")]
-    //[InlineData("BTU")]
-    //[InlineData("Teckningsrätt/Uniträtt")]
-    //[InlineData("Kreditderivat")]
-    //[InlineData("Terminskontrakt")]
-    //[InlineData("Option")]
-    //public async Task AddInsiderTrades_ExcludedInstrumentTypeFiltered(string instrumentType)
-    //{
-    //    var ctx = ServiceTestHelpers.CreateContext();
-    //    var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
+    [Theory]
+    [InlineData("Swap")]
+    [InlineData("Ränteswap")]
+    [InlineData("BTU")]
+    [InlineData("Teckningsrätt/Uniträtt")]
+    [InlineData("Kreditderivat")]
+    [InlineData("Terminskontrakt")]
+    [InlineData("Option")]
+    public async Task AddInsiderTrades_ExcludedInstrumentTypeFiltered(string instrumentType)
+    {
+        var ctx = ServiceTestHelpers.CreateContext();
+        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
 
-    //    var csvDtos = new List<CsvDTO>
-    //    {
-    //        FakeDTO.MakeCsvDto(d => { d.Karaktär = instrumentType; }),
+        var csvDtos = new List<CsvDTO>
+        {
+            FakeDTO.MakeCsvDto(d => { d.Instrumenttyp = instrumentType; }),
 
-    //        FakeDTO.MakeCsvDto(d => { d.Karaktär = "Aktie"; })
-    //    };
+            FakeDTO.MakeCsvDto(d => { d.Instrumenttyp = "Aktie"; })
+        };
 
-    //    var trades = InsiderTradeMapper.MapDtosToTrades(csvDtos);
+        var trades = InsiderTradeMapper.MapDtosToTrades(csvDtos);
 
-    //    await service.AddInsiderTrades(trades);
+        await service.AddInsiderTrades(trades);
 
-    //    var result = await service.GetInsiderTradesPage(1, 100);
+        var result = await service.GetInsiderTradesPage(1, 100);
 
-    //    await Verify(result);
-    //}
+        await Verify(result);
+    }
 
     [Fact]
     public async Task AddInsiderTrades_FilterPositionName()
