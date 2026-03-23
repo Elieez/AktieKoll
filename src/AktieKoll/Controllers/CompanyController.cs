@@ -12,8 +12,9 @@ namespace AktieKoll.Controllers;
 public class CompanyController(ICompanyService service) : ControllerBase
 {
     [HttpGet("search")]
-    //[ResponseCache(Duration = 3600)]
-    public async Task<ActionResult<IEnumerable<CompanySearchResultDto>>> SearchCompanies([FromQuery] string q, [FromQuery] int limit = 10)
+    public async Task<ActionResult<IEnumerable<CompanySearchResultDto>>> SearchCompanies(
+        [FromQuery] string q,
+        [FromQuery] int limit = 10)
     {
         if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
         {
@@ -33,7 +34,7 @@ public class CompanyController(ICompanyService service) : ControllerBase
 
     [HttpGet("{code}")]
     [ResponseCache(Duration = 3600)]
-    public async Task<ActionResult> GetCompanyByCode(string code)
+    public async Task<ActionResult<CompanyDto>> GetCompanyByCode(string code)
     {
         if (string.IsNullOrWhiteSpace(code))
         {

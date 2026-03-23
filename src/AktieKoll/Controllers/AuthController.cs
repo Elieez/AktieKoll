@@ -11,14 +11,24 @@ namespace AktieKoll.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController(UserManager<ApplicationUser> userManager,
-                            ApplicationDbContext db,
-                            ITokenService tokenService,
-                            IConfiguration config) : ControllerBase
+public class AuthController(
+    UserManager<ApplicationUser> userManager,
+    ApplicationDbContext db,
+    ITokenService tokenService,
+    IConfiguration config) : ControllerBase
 {
+
+    private CookieOptions BuildRefreshCookieOptions(DateTime expires) => new()
+    {
+        HttpOnly = true,
+        Secure = config.GetValue<bool>("CookieSettings:Secure"),
+        SameSite = config.GetValue<SameSiteMode>("CookieSettings:SameSite", SameSiteMode.Lax),
+        Expires = expires
+    };
+
     [HttpPost("register")]
     [EnableRateLimiting("auth")]
-    public async Task<IActionResult> Register(RegisterDto dto)
+    public async Task<IActionResult> Register([FromBody]RegisterDto dto)
     {
         var user = new ApplicationUser
         {
@@ -36,39 +46,43 @@ public class AuthController(UserManager<ApplicationUser> userManager,
 
     [HttpPost("login")]
     [EnableRateLimiting("auth")]
-    public async Task<IActionResult> Login(LoginDto dto)
+    public async Task<IActionResult> Login([FromBody]LoginDto dto)
     {
         var user = await userManager.FindByEmailAsync(dto.Email);
-        if (user == null) return Unauthorized("Invalid email or password.");
+
+        if (user == null) 
+            return Unauthorized("Invalid email or password.");
+
+        if (await userManager.IsLockedOutAsync(user))
+            return Unauthorized("Account is locked. Please try again later.");
 
         var valid = await userManager.CheckPasswordAsync(user, dto.Password);
-        if (!valid) return Unauthorized("Invalid email or password.");
+        if (!valid) 
+            return Unauthorized("Invalid email or password.");
 
         var accessToken = tokenService.GenerateAccessToken(user);
         var rawRefresh = tokenService.GenerateRefreshToken();
         var hashed = tokenService.HashToken(rawRefresh);
+
+        var refreshTokenDays = config.GetValue<int>("Jwt:RefreshTokenDays", 7);
+        var accessTokenMinutes = config.GetValue<int>("Jwt:AccessTokenMinutes", 15);
 
         // Save Refresh token in DB
         var rt = new RefreshToken
         {
             Token = hashed,
             UserId = user.Id,
-            ExpiresAt = DateTime.UtcNow.AddDays(int.Parse(config["Jwt:RefreshTokenDays"] ?? "7")),
+            ExpiresAt = DateTime.UtcNow.AddDays(refreshTokenDays),
             CreatedByIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"
         };
         db.RefreshTokens.Add(rt);
         await db.SaveChangesAsync();
 
         // Set Cookie
-        Response.Cookies.Append("refreshToken", rawRefresh, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = bool.Parse(config["CookieSettings:Secure"] ?? "false"),
-            SameSite = Enum.Parse<SameSiteMode>(config["CookieSettings:SameSite"] ?? "Lax"),
-            Expires = rt.ExpiresAt
-        });
+        Response.Cookies.Append("refreshToken", rawRefresh, BuildRefreshCookieOptions(rt.ExpiresAt));
 
-        var expiresAt = DateTime.UtcNow.AddMinutes(int.Parse(config["Jwt:AccessTokenMinutes"] ?? "15"));
+        var expiresAt = DateTime.UtcNow.AddMinutes(accessTokenMinutes);
+
         return Ok(new AuthResponseDto { AccessToken = accessToken, ExpiresAt = expiresAt });
     }
 
@@ -102,11 +116,14 @@ public class AuthController(UserManager<ApplicationUser> userManager,
 
         rt.ReplacedByToken = newHashToken;
 
+        var refreshTokenDays = config.GetValue<int>("Jwt:RefreshTokenDays", 7);
+        var accessTokenMinutes = config.GetValue<int>("Jwt:AccessTokenMinutes", 15);
+
         var newRt = new RefreshToken
         {
             Token = newHashToken,
             UserId = rt.UserId,
-            ExpiresAt = DateTime.UtcNow.AddDays(int.Parse(config["Jwt:RefreshTokenDays"] ?? "7")),
+            ExpiresAt = DateTime.UtcNow.AddDays(refreshTokenDays),
             CreatedByIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"
         };
 
@@ -114,15 +131,9 @@ public class AuthController(UserManager<ApplicationUser> userManager,
         await db.SaveChangesAsync();
 
         var accessToken = tokenService.GenerateAccessToken(user);
-        var expiresAt = DateTime.UtcNow.AddMinutes(int.Parse(config["Jwt:AccessTokenMinutes"] ?? "15"));
+        var expiresAt = DateTime.UtcNow.AddMinutes(accessTokenMinutes);
 
-        Response.Cookies.Append("refreshToken", newRawToken, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = bool.Parse(config["CookieSettings:Secure"] ?? "false"),
-            SameSite = Enum.Parse<SameSiteMode>(config["CookieSettings:SameSite"] ?? "Lax"),
-            Expires = newRt.ExpiresAt
-        });
+        Response.Cookies.Append("refreshToken", newRawToken, BuildRefreshCookieOptions(newRt.ExpiresAt));
 
         return Ok(new AuthResponseDto { AccessToken = accessToken, ExpiresAt = expiresAt });
     }
@@ -145,8 +156,8 @@ public class AuthController(UserManager<ApplicationUser> userManager,
         Response.Cookies.Delete("refreshToken", new CookieOptions
         {
             HttpOnly = true,
-            Secure = bool.Parse(config["CookieSettings:Secure"] ?? "false"),
-            SameSite = Enum.Parse<SameSiteMode>(config["CookieSettings:SameSite"] ?? "Lax"),
+            Secure = config.GetValue<bool>("CookieSettings:Secure"),
+            SameSite = config.GetValue<SameSiteMode>("CookieSettings:SameSite", SameSiteMode.Lax),
         });
 
         return Ok();

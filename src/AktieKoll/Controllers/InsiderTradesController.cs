@@ -12,12 +12,22 @@ namespace AktieKoll.Controllers;
 [EnableRateLimiting("api")]
 public class InsiderTradesController(IInsiderTradeService tradeService) : ControllerBase
 {
+
+    private const int MaxPageSize = 100;
+
     [HttpGet("page")]
-    public async Task<ActionResult<IEnumerable<InsiderTradeListDto>>> GetInsiderTradesPage([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<IEnumerable<InsiderTradeListDto>>> GetInsiderTradesPage(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
     {
-        if (page < 1 || pageSize < 1)
+        if (page < 1)
         {
-            return BadRequest("Page and page size must be greater than zero.");
+            return BadRequest(new { error = "Page must be greater than zero." });
+        }
+
+        if (pageSize < 1 || pageSize > MaxPageSize)
+        {
+            return BadRequest(new { error = $"Page size must be between 1 and {MaxPageSize}." });
         }
 
         var trades = await tradeService.GetInsiderTradesPage(page, pageSize);
@@ -41,6 +51,12 @@ public class InsiderTradesController(IInsiderTradeService tradeService) : Contro
         [FromQuery] int days = 30,
         [FromQuery] int? top = 3)
     {
+        if (days < 1 || days > 3650)
+            return BadRequest(new { error = "Days must be between 1 and 3650." });
+
+        if (top.HasValue && (top.Value < 1 || top.Value > 100))
+            return BadRequest(new { error = "Top must be between 1 and 100." });
+
         var stats = await tradeService.GetTransactionCountBuy(companyName, days, top);
         return Ok(stats);
     }
@@ -51,6 +67,12 @@ public class InsiderTradesController(IInsiderTradeService tradeService) : Contro
         [FromQuery] int days = 30,
         [FromQuery] int? top = 3)
     {
+        if (days < 1 || days > 3650)
+            return BadRequest(new { error = "Days must be between 1 and 3650." });
+
+        if (top.HasValue && (top.Value < 1 || top.Value > 100))
+            return BadRequest(new { error = "Top must be between 1 and 100." });
+
         var stats = await tradeService.GetTransactionCountSell(companyName, days, top);
         return Ok(stats);
     }
@@ -61,9 +83,18 @@ public class InsiderTradesController(IInsiderTradeService tradeService) : Contro
         [FromQuery] int skip = 0,
         [FromQuery] int take = 10)
     {
-        var trades = await tradeService.GetInsiderTradesByCompany(name, skip, take);
+        if (string.IsNullOrWhiteSpace(name))
+            return BadRequest(new { error = "Company name is required." });
 
-        if (!trades.Any())
+        if (skip < 0)
+            return BadRequest(new { error = "Skip must be zero or greater." });
+
+        if (take < 1 || take > MaxPageSize)
+            return BadRequest (new { error = $"Take must be between 1 and {MaxPageSize}." });
+
+        var trades = (await tradeService.GetInsiderTradesByCompany(name, skip, take)).ToList();
+
+        if (trades.Count == 0)
         {
             return NotFound(new { error = $"No trades found for company: {name}" });
         }

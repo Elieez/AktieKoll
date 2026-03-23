@@ -14,12 +14,16 @@ using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigin")
+    .Get<string[]>() ?? ["http://localhost:3000"];
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowNextApp", policy =>
     {
         policy
-          .WithOrigins("http://localhost:3000")
+          .WithOrigins(allowedOrigins)
           .AllowCredentials()
           .AllowAnyMethod()
           .AllowAnyHeader();
@@ -60,7 +64,6 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-var connectionString = builder.Configuration.GetConnectionString("PostgresConnection");
 
 if (!builder.Environment.IsEnvironment("Testing"))
 {
@@ -87,9 +90,10 @@ if (string.IsNullOrEmpty(jwtKey))
 {
     throw new InvalidOperationException("JWT Key missing from configuration.");
 }
-var requireHttps = bool.Parse(builder.Configuration["CookieSettings:Secure"] ?? "false");
 
-var keyBytes = Encoding.UTF8.GetBytes(jwtKey ?? throw new Exception("JWT Key missing"));
+var requireHttps = builder.Configuration.GetValue<bool>("CookieSettings:Secure");
+
+var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
 
 builder.Services.AddAuthentication(options =>
 {
@@ -105,6 +109,7 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateIssuerSigningKey = true,
+        ValidateLifetime = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
@@ -115,9 +120,9 @@ builder.Services.AddAuthentication(options =>
 builder.Services.Configure<CookieAuthenticationOptions>(IdentityConstants.ApplicationScheme, options =>
 {
     options.Cookie.Name = "AktieKollAuthCookie";
-    options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+    options.Cookie.SecurePolicy = requireHttps ? CookieSecurePolicy.Always : CookieSecurePolicy.SameAsRequest;
     options.Cookie.HttpOnly = true;
-    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SameSite = requireHttps ? SameSiteMode.None : SameSiteMode.Lax;
     options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
     options.SlidingExpiration = true;
 });
@@ -149,16 +154,32 @@ builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 
-app.UseSwagger();
-app.UseSwaggerUI(options =>
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Staging"))
 {
-    options.SwaggerEndpoint("/swagger/v1/swagger.json", "AktieKoll API v1");
-    options.RoutePrefix = "swagger";
-});
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "AktieKoll API v1");
+        options.RoutePrefix = "swagger";
+    });
+}
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler(errorApp =>
+    {
+        errorApp.Run(async context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            context.Response.ContentType = "application/problem+json";
+            await context.Response.WriteAsJsonAsync(new
+            {
+                type = "https://tools.ietf.org/html/rfc9110#section-15.6.1",
+                title = "An unexpected error occurred.",
+                status = 500
+            });
+        });
+    });
     app.UseHsts();
 }
 
@@ -168,6 +189,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseRateLimiter();
 
 app.UseResponseCaching();
 

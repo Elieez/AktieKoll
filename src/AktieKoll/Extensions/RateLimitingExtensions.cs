@@ -58,6 +58,19 @@ public static class RateLimitingExtensions
                     });
             });
 
+            options.AddPolicy("public-api", context =>
+            {
+                var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                return RateLimitPartition.GetFixedWindowLimiter(ipAddress, _ =>
+                    new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = apiLimit,
+                        Window = TimeSpan.FromMinutes(apiWindow),
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        QueueLimit = 10
+                    });
+            }); 
+
             options.OnRejected = async (context, cancellationToken) =>
             {
                 context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
