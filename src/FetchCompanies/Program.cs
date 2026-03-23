@@ -1,79 +1,103 @@
-﻿
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using AktieKoll.Data;
 using AktieKoll.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
-var apiToken = Environment.GetEnvironmentVariable("EOD_API_TOKEN")
-    ?? throw new Exception("EOD_API_TOKEN environment variable not set");
+var host = Host.CreateApplicationBuilder(args).Build();
+var logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger("FetchCompanies");
 
-var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__PostgresConnection")
-    ?? throw new Exception("ConnectionStrings__PostgresConnection not set");
+var apiToken = Environment.GetEnvironmentVariable("EOD_API_TOKEN");
+if (string.IsNullOrWhiteSpace(apiToken))
+{
+    logger.LogCritical("EOD_API_TOKEN environment variable not set");
+    return 1;
+}
 
-var httpClient = new HttpClient();
+var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__PostgresConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    logger.LogCritical("ConnectionStrings__PostgresConnection environment variable not set");
+    return 1;
+}
+
+using var httpClient = new HttpClient();
 var url = $"https://eodhd.com/api/exchange-symbol-list/ST?api_token={apiToken}&fmt=json";
 
-Console.WriteLine("Fetching Swedish companies from EOD Historical Data...");
+logger.LogInformation("Fetching Swedish companies from EOD Historical Data...");
 
-var response = await httpClient.GetAsync(url);
-response.EnsureSuccessStatusCode();
+HttpResponseMessage response;
+try
+{
+    response = await httpClient.GetAsync(url);
+    response.EnsureSuccessStatusCode();
+}
+catch (Exception ex)
+{
+    logger.LogError(ex, "Failed to fetch companies from EOD API");
+    return 1;
+}
 
 var eodCompanies = await response.Content.ReadFromJsonAsync<List<EodCompany>>();
 
 if (eodCompanies == null || eodCompanies.Count == 0)
 {
-    Console.WriteLine("No companies returned from API");
-    return;
+    logger.LogWarning("No companies returned from EOD API");
+    return 0;
 }
 
-Console.WriteLine($"Total companies fetched: {eodCompanies.Count}");
+logger.LogInformation("Total companies fetched: {Count}", eodCompanies.Count);
 
-var companies = eodCompanies
+var incomingCompanies = eodCompanies
     .Where(c => c.Type == "Common Stock")
-    .Select(c => new Company
-    {
-        Code = c.Code,
-        Name = c.Name,
-        Isin = c.Isin,
-        Currency = c.Currency,
-        Type = c.Type
-    })
     .ToList();
 
-Console.WriteLine($"Filtered to {companies.Count} common stocks");
+logger.LogInformation("Filtered to {Count} common stocks", incomingCompanies.Count);
 
 var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
 optionsBuilder.UseNpgsql(connectionString);
 
 await using var context = new ApplicationDbContext(optionsBuilder.Options);
 
+var incomingCode = incomingCompanies.Select(c => c.Code).ToHashSet();
+var existingByCode = await context.Companies
+    .Where(c => incomingCode.Contains(c.Code))
+    .ToDictionaryAsync(c => c.Code);
+
 int added = 0;
 int updated = 0;
 
-foreach (var company in companies)
+foreach (var eod in incomingCompanies)
 {
-    var existing = await context.Companies
-        .FirstOrDefaultAsync(c => c.Code == company.Code);
-
-    if (existing == null)
+    if (existingByCode.TryGetValue(eod.Code, out var existing))
     {
-        context.Companies.Add(company);
-        added++;
+        existing.Name = eod.Name;
+        existing.Isin = eod.Isin;
+        existing.Currency = eod.Currency;
+        existing.Type = eod.Type;
+        existing.LastUpdated = DateTime.UtcNow;
+        updated++;
     }
     else
     {
-        existing.Name = company.Name;
-        existing.Isin = company.Isin;
-        existing.Currency = company.Currency;
-        existing.Type = company.Type;
-        existing.LastUpdated = DateTime.UtcNow;
-        updated++;
+        context.Companies.Add(new Company
+        {
+            Code = eod.Code,
+            Name = eod.Name,
+            Isin = eod.Isin,
+            Currency = eod.Currency,
+            Type = eod.Type
+        });
+        added++;
     }
 }
 
 await context.SaveChangesAsync();
 
-Console.WriteLine($"✅ {added} companies added, {updated} updated.");
+logger.LogInformation("{Added} companies added, {Updated} updated.", added, updated);
+return 0;
 
 record EodCompany(
     string Code,

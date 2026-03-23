@@ -80,7 +80,7 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
 
     public async Task<IEnumerable<InsiderTrade>> GetInsiderTradesTop()
     {
-        var today = DateTime.Now.Date;
+        var today = DateTime.UtcNow.Date;
         var yesterday = today.AddDays(-1);
         var tomorrow = today.AddDays(1);
 
@@ -96,17 +96,11 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
         var endDate = DateTime.UtcNow.Date.AddDays(1);
         var startDate = endDate.AddDays(-days);
 
-        var query = context.InsiderTrades
+        IQueryable<CompanyTransactionStats> grouped = context.InsiderTrades
             .Where(t => t.PublishingDate >= startDate && t.PublishingDate < endDate)
-            .Where(t => t.TransactionType.ToLower() == transactionType.ToLower());
-
-        if (!string.IsNullOrWhiteSpace(companyName))
-        {
-            var filtered = companyName.FilterCompanyName().ToLower();
-            query = query.Where(t => t.CompanyName.ToLower() == filtered);
-        }
-
-        var grouped = query
+            .Where(t => t.TransactionType.ToLower() == transactionType.ToLower())
+            .Where(t => string.IsNullOrWhiteSpace(companyName) ||
+                        t.CompanyName.ToLower() == companyName.FilterCompanyName().ToLower())
             .GroupBy(t => t.CompanyName)
             .Select(g => new CompanyTransactionStats
             {
@@ -115,10 +109,10 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
             })
             .OrderByDescending(c => c.TransactionCount)
             .ThenBy(c => c.CompanyName);
-
+            
         if (top.HasValue)
         {
-            grouped = (IOrderedQueryable<CompanyTransactionStats>)grouped.Take(top.Value);
+            grouped = grouped.Take(top.Value);
         }
 
         return await grouped.ToListAsync();
@@ -153,7 +147,7 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
         if (cache.TryGetValue(cacheKey, out YtdStats? cachedStats) && cachedStats != null)
             return cachedStats;
 
-        var startOfYear = new DateTime(timeProvider.GetLocalNow().Year, 1, 1);
+        var startOfYear = new DateTime(timeProvider.GetUtcNow().Year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         var trades = await context.InsiderTrades
             .Where(t => t.PublishingDate >= startOfYear)

@@ -20,7 +20,7 @@ if (string.IsNullOrWhiteSpace(connectionString))
 // Build host with DI
 var builder = Host.CreateApplicationBuilder(args);
 
-// Databse
+// Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
@@ -69,7 +69,6 @@ try
     var message = await tradeService.AddInsiderTrades(trades);
 
     logger.LogInformation("Completed: {Message}", message);
-    Console.WriteLine(message);
 
     return 0;
 }
