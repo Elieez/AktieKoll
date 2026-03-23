@@ -1,9 +1,13 @@
-﻿using AktieKoll.Data;
+﻿using System.Threading.RateLimiting;
+using AktieKoll.Data;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace AktieKoll.Tests.Fixture;
 
@@ -43,6 +47,20 @@ public class WebApplicationFactoryFixture : WebApplicationFactory<Program>
             {
                 options.UseInMemoryDatabase(_databaseName);
                 options.EnableSensitiveDataLogging();
+            });
+
+            var rateLimiterDescriptors = services
+                .Where(d => d.ServiceType == typeof(IConfigureOptions<RateLimiterOptions>))
+                .ToList();
+            foreach (var d in rateLimiterDescriptors)
+                services.Remove(d);
+
+            services.AddRateLimiter(options =>
+            {
+                options.AddPolicy("auth", _ => RateLimitPartition.GetNoLimiter("no-limit"));
+                options.AddPolicy("api", _ => RateLimitPartition.GetNoLimiter("no-limit"));
+                options.AddPolicy("sensitive", _ => RateLimitPartition.GetNoLimiter("no-limit"));
+                options.AddPolicy("public-api", _ => RateLimitPartition.GetNoLimiter("no-limit"));
             });
         });
     }
