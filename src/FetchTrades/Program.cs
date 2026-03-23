@@ -44,6 +44,7 @@ builder.Services.AddSingleton<Func<TextReader, CsvReader>>(_ =>
 
 // Services
 builder.Services.AddMemoryCache();
+builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddTransient<CsvFetchService>();
 builder.Services.AddTransient<ISymbolService, SymbolService>();
 builder.Services.AddTransient<InsiderTradeService>();
