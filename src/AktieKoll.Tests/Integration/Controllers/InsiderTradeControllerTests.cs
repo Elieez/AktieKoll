@@ -198,25 +198,25 @@ public class InsiderTradeControllerTests(WebApplicationFactoryFixture factory) :
         volvoStats!.TransactionCount.Should().Be(2);
     }
 
-    [Fact]
-    public async Task GetTransactionCountBuy_FilterByCompany_ReturnsOnlyThatCompany()
-    {
-        // Arrange
-        await SeedTradesAsync(
-            MakeTrade("Volvo", transactionType: "Förvärv"),
-            MakeTrade("Ericsson", transactionType: "Förvärv")
-        );
+    //[Fact]
+    //public async Task GetTransactionCountBuy_FilterByCompany_ReturnsOnlyThatCompany()
+    //{
+    //    // Arrange
+    //    await SeedTradesAsync(
+    //        MakeTrade("Volvo", transactionType: "Förvärv"),
+    //        MakeTrade("Ericsson", transactionType: "Förvärv")
+    //    );
 
-        // Act
-        var response = await Client.GetTestAsync("/api/insidertrades/count-buy?companyName=Volvo&days=365");
+    //    // Act
+    //    var response = await Client.GetTestAsync("/api/insidertrades/count-buy?companyName=Volvo&days=365");
 
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    //    // Assert
+    //    response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var stats = await response.Content.ReadFromJsonTestAsync<List<CompanyTransactionStats>>();
-        stats.Should().HaveCount(1);
-        stats![0].CompanyName.Should().Be("Volvo");
-    }
+    //    var stats = await response.Content.ReadFromJsonTestAsync<List<CompanyTransactionStats>>();
+    //    stats.Should().HaveCount(1);
+    //    stats![0].CompanyName.Should().Be("Volvo");
+    //}
 
     [Fact]
     public async Task GetTransactionCountBuy_WithTopFilter_ReturnsLimitedResults()

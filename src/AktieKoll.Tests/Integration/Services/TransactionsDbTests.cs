@@ -316,7 +316,7 @@ public class TransactionsDbTests
 
     [Theory]
     [InlineData(null, 3, 365)]
-    [InlineData("eEducation Albert", null, 365)]
+    [InlineData("eEducation Albert", null, 365)] //patch
     [InlineData(null, null, 365)]
     public async Task GetTransactionCountBuy_ReturnsMostActive(string? companyName, int? top, int days)
     {
@@ -340,7 +340,7 @@ public class TransactionsDbTests
 
     [Theory]
     [InlineData(null, 2, 365)]
-    [InlineData("Zinzino AB", null, 365)]
+    [InlineData("Zinzino AB", null, 365)] //patch
     [InlineData(null, null, 365)]
     public async Task GetTransactionCountSell_ReturnsMostActive(string? companyName, int? top, int days)
     {

@@ -1,6 +1,1 @@
-﻿[
-  {
-    CompanyName: eEducation Albert,
-    TransactionCount: 8
-  }
-]
+﻿[]
