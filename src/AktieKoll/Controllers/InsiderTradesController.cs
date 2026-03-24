@@ -46,7 +46,7 @@ public class InsiderTradesController(IInsiderTradeService tradeService, ILogger<
 
     [HttpGet("count-buy")]
     public async Task<ActionResult<IEnumerable<CompanyTransactionStats>>> GetTransactionCountBuy(
-        [FromQuery] string? companyName,
+        [FromQuery] string? symbol,
         [FromQuery] int days = 30,
         [FromQuery] int? top = 3)
     {
@@ -56,13 +56,13 @@ public class InsiderTradesController(IInsiderTradeService tradeService, ILogger<
         if (top.HasValue && (top.Value < 1 || top.Value > 100))
             return BadRequest(new { error = "Top must be between 1 and 100." });
 
-        var stats = await tradeService.GetTransactionCountBuy(companyName, days, top);
+        var stats = await tradeService.GetTransactionCountBuy(symbol, days, top);
         return Ok(stats);
     }
 
     [HttpGet("count-sell")]
     public async Task<ActionResult<IEnumerable<CompanyTransactionStats>>> GetTransactionCountSell(
-        [FromQuery] string? companyName,
+        [FromQuery] string? symbol,
         [FromQuery] int days = 30,
         [FromQuery] int? top = 3)
     {
@@ -72,7 +72,7 @@ public class InsiderTradesController(IInsiderTradeService tradeService, ILogger<
         if (top.HasValue && (top.Value < 1 || top.Value > 100))
             return BadRequest(new { error = "Top must be between 1 and 100." });
 
-        var stats = await tradeService.GetTransactionCountSell(companyName, days, top);
+        var stats = await tradeService.GetTransactionCountSell(symbol, days, top);
         return Ok(stats);
     }
 
@@ -83,9 +83,6 @@ public class InsiderTradesController(IInsiderTradeService tradeService, ILogger<
         [FromQuery] int skip = 0,
         [FromQuery] int take = 10)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            return BadRequest(new { error = "Company name is required." });
-
         if (skip < 0)
             return BadRequest(new { error = "Skip must be zero or greater." });
 
@@ -93,7 +90,7 @@ public class InsiderTradesController(IInsiderTradeService tradeService, ILogger<
             return BadRequest(new { error = $"Take must be between 1 and {MaxPageSize}." });
         if (!string.IsNullOrWhiteSpace(symbol))
         {
-            var trades = (await tradeService.GetInsiderTradesByCompany(symbol, skip, take)).ToList();
+            var trades = (await tradeService.GetInsiderTradesBySymbol(symbol, skip, take)).ToList();
             
             if (trades.Count == 0)
             {
