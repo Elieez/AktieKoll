@@ -7,6 +7,12 @@ public static partial class StringExtensions
     [GeneratedRegex(@"\s*\(publ\)", RegexOptions.IgnoreCase)]
     private static partial Regex PublRegex();
 
+    [GeneratedRegex(@"\bAktiebolaget\b", RegexOptions.IgnoreCase)]
+    private static partial Regex AktiebolagetRegex();
+
+    [GeneratedRegex(@"\bgroup\b", RegexOptions.IgnoreCase)]
+    private static partial Regex GroupRegex();
+
     [GeneratedRegex(@"\s*\bAB\b", RegexOptions.IgnoreCase)]
     private static partial Regex AbRegex();
 
@@ -54,6 +60,12 @@ public static partial class StringExtensions
 
         // Remove (publ)
         result = PublRegex().Replace(result, "");
+
+        // Expand "Aktiebolaget" → "AB" so the next step strips it
+        result = AktiebolagetRegex().Replace(result, "AB");
+
+        //Remove Group
+        result = GroupRegex().Replace(result, "");
 
         // Remove AB
         result = AbRegex().Replace(result, "");

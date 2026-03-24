@@ -1,5 +1,6 @@
 ﻿using AktieKoll.Services;
 using AktieKoll.Tests.Shared.TestHelpers;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 using static AktieKoll.Extensions.CsvDtoExtensions;
 
@@ -66,7 +67,8 @@ public class CsvFetchServiceTests
                                    .GetRequiredService<CsvFetchService>(services => services.AuthorizedClient());
 
         var logger = NullLogger<SymbolService>.Instance;
-        var symbolService = new SymbolService(ctx, logger);
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var symbolService = new SymbolService(ctx, cache,logger);
 
         var csvResult = await csvFetchService.FetchInsiderTradesAsync(fromDate, toDate);
         var trades = InsiderTradeMapper.MapDtosToTrades(csvResult);

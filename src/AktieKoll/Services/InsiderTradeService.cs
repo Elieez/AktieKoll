@@ -7,7 +7,12 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace AktieKoll.Services;
 
-public class InsiderTradeService(ApplicationDbContext context, ISymbolService symbolService, IMemoryCache cache, TimeProvider timeProvider) : IInsiderTradeService
+public class InsiderTradeService(
+    ApplicationDbContext context,
+    ISymbolService symbolService, 
+    IMemoryCache cache,
+    TimeProvider timeProvider,
+    ILogger<InsiderTradeService> logger) : IInsiderTradeService
 {
     public async Task<string> AddInsiderTrades(List<InsiderTrade> insiderTrades)
     {
@@ -43,6 +48,13 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
             if (duplicate != null)
             {
                 continue;
+            }
+
+            if (string.IsNullOrEmpty(trade.Symbol)) 
+            {
+                logger.LogWarning(
+                    "Trade unresolved at ingestion - CompanyName: '{Company}', ISIN: '{Isin}'",
+                    trade.CompanyName, trade.Isin ?? "none");
             }
 
             context.InsiderTrades.Add(trade);
@@ -134,6 +146,21 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
 
         return await context.InsiderTrades
             .Where(t => t.CompanyName.ToLower() == filteredCompanyName)
+            .OrderByDescending(t => t.PublishingDate)
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<InsiderTrade>> GetInsiderTradesBySymbol(string symbol, int skip = 0, int take = 10)
+    {
+        if (string.IsNullOrWhiteSpace(symbol))
+        {
+            return [];
+        }
+
+        return await context.InsiderTrades
+            .Where(t => t.Symbol == symbol)
             .OrderByDescending(t => t.PublishingDate)
             .Skip(skip)
             .Take(take)

@@ -4,7 +4,7 @@
     TransactionCount: 8
   },
   {
-    CompanyName: Lyckegård Group,
+    CompanyName: Lyckegård,
     TransactionCount: 2
   },
   {
@@ -28,11 +28,11 @@
     TransactionCount: 1
   },
   {
-    CompanyName: Mysafety Group,
+    CompanyName: Mysafety,
     TransactionCount: 1
   },
   {
-    CompanyName: NORDIC LEVEL GROUP,
+    CompanyName: NORDIC LEVEL,
     TransactionCount: 1
   },
   {

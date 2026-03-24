@@ -74,7 +74,7 @@ foreach (var eod in incomingCompanies)
     if (existingByCode.TryGetValue(eod.Code, out var existing))
     {
         existing.Name = eod.Name;
-        existing.Isin = eod.Isin;
+        existing.Isin = eod.Isin ?? existing.Isin;
         existing.Currency = eod.Currency;
         existing.Type = eod.Type;
         existing.LastUpdated = DateTime.UtcNow;

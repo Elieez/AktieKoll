@@ -4,7 +4,7 @@
     TransactionCount: 8
   },
   {
-    CompanyName: Lyckegård Group,
+    CompanyName: Lyckegård,
     TransactionCount: 2
   },
   {
