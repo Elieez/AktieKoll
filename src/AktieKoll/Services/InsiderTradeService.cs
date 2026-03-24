@@ -103,7 +103,7 @@ public class InsiderTradeService(
             .ToListAsync();
     }
 
-    private async Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountByType(string transactionType, string? companyName, int days, int? top)
+    private async Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountByType(string transactionType, string? symbol, int days, int? top)
     {
         var endDate = DateTime.UtcNow.Date.AddDays(1);
         var startDate = endDate.AddDays(-days);
@@ -111,8 +111,7 @@ public class InsiderTradeService(
         IQueryable<CompanyTransactionStats> grouped = context.InsiderTrades
             .Where(t => t.PublishingDate >= startDate && t.PublishingDate < endDate)
             .Where(t => t.TransactionType.ToLower() == transactionType.ToLower())
-            .Where(t => string.IsNullOrWhiteSpace(companyName) ||
-                        t.CompanyName.ToLower() == companyName.FilterCompanyName().ToLower())
+            .Where(t => string.IsNullOrWhiteSpace(symbol) || t.Symbol == symbol)
             .GroupBy(t => t.CompanyName)
             .Select(g => new CompanyTransactionStats
             {
@@ -130,10 +129,10 @@ public class InsiderTradeService(
         return await grouped.ToListAsync();
     }
 
-    public Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountBuy(string? companyName, int days = 30, int? top = 5)
-        => GetTransactionCountByType("förvärv", companyName, days, top);
-    public Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountSell(string? companyName, int days = 30, int? top = 5)
-        => GetTransactionCountByType("avyttring", companyName, days, top);
+    public Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountBuy(string? symbol = null, int days = 30, int? top = 5)
+        => GetTransactionCountByType("förvärv", symbol, days, top);
+    public Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountSell(string? symbol = null, int days = 30, int? top = 5)
+        => GetTransactionCountByType("avyttring", symbol, days, top);
 
     public async Task<IEnumerable<InsiderTrade>> GetInsiderTradesByCompany(string companyName, int skip = 0, int take = 10)
     {

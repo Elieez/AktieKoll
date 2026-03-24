@@ -46,7 +46,7 @@ public class InsiderTradesController(IInsiderTradeService tradeService, ILogger<
 
     [HttpGet("count-buy")]
     public async Task<ActionResult<IEnumerable<CompanyTransactionStats>>> GetTransactionCountBuy(
-        [FromQuery] string? companyName,
+        [FromQuery] string? symbol,
         [FromQuery] int days = 30,
         [FromQuery] int? top = 3)
     {
@@ -56,13 +56,13 @@ public class InsiderTradesController(IInsiderTradeService tradeService, ILogger<
         if (top.HasValue && (top.Value < 1 || top.Value > 100))
             return BadRequest(new { error = "Top must be between 1 and 100." });
 
-        var stats = await tradeService.GetTransactionCountBuy(companyName, days, top);
+        var stats = await tradeService.GetTransactionCountBuy(symbol, days, top);
         return Ok(stats);
     }
 
     [HttpGet("count-sell")]
     public async Task<ActionResult<IEnumerable<CompanyTransactionStats>>> GetTransactionCountSell(
-        [FromQuery] string? companyName,
+        [FromQuery] string? symbol,
         [FromQuery] int days = 30,
         [FromQuery] int? top = 3)
     {
@@ -72,7 +72,7 @@ public class InsiderTradesController(IInsiderTradeService tradeService, ILogger<
         if (top.HasValue && (top.Value < 1 || top.Value > 100))
             return BadRequest(new { error = "Top must be between 1 and 100." });
 
-        var stats = await tradeService.GetTransactionCountSell(companyName, days, top);
+        var stats = await tradeService.GetTransactionCountSell(symbol, days, top);
         return Ok(stats);
     }
 
