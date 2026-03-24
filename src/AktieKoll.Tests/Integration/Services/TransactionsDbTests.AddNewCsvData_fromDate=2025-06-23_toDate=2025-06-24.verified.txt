@@ -1,7 +1,7 @@
 ﻿[
   {
     Id: 1,
-    CompanyName: NORDIC LEVEL GROUP,
+    CompanyName: NORDIC LEVEL,
     InsiderName: Samir Taha,
     Position: Styrelseordförande,
     TransactionType: Förvärv,
@@ -15,7 +15,7 @@
   },
   {
     Id: 2,
-    CompanyName: Mysafety Group,
+    CompanyName: Mysafety,
     InsiderName: Marcus Pettersson Berver,
     Position: VD,
     TransactionType: Förvärv,
@@ -155,7 +155,7 @@
   },
   {
     Id: 12,
-    CompanyName: niutech Group,
+    CompanyName: niutech,
     InsiderName: Björn Rickard Olovsson,
     Position: Annan ledande befattningshavare,
     TransactionType: Tilldelning,
@@ -169,7 +169,7 @@
   },
   {
     Id: 13,
-    CompanyName: Niutech Group,
+    CompanyName: Niutech,
     InsiderName: Magnus Karlsson,
     Position: Annan ledande befattningshavare,
     TransactionType: Tilldelning,
@@ -393,7 +393,7 @@
   },
   {
     Id: 29,
-    CompanyName: Niutech Group,
+    CompanyName: Niutech,
     InsiderName: Mattias Leijon,
     Position: Styrelseledamot,
     TransactionType: Tilldelning,
@@ -435,7 +435,7 @@
   },
   {
     Id: 32,
-    CompanyName: Niutech Group,
+    CompanyName: Niutech,
     InsiderName: Klas Zetterman,
     Position: VD,
     TransactionType: Tilldelning,
@@ -449,7 +449,7 @@
   },
   {
     Id: 33,
-    CompanyName: Lyckegård Group,
+    CompanyName: Lyckegård,
     InsiderName: Anders Gösta Holm,
     Position: Styrelseordförande,
     TransactionType: Förvärv,
@@ -463,7 +463,7 @@
   },
   {
     Id: 34,
-    CompanyName: Lyckegård Group,
+    CompanyName: Lyckegård,
     InsiderName: Anders Gösta Holm,
     Position: Styrelseordförande,
     TransactionType: Förvärv,

@@ -17,18 +17,24 @@ public static class ServiceTestHelpers
         return new ApplicationDbContext(options);
     }
 
+    public static SymbolService CreateSymbolService(ApplicationDbContext ctx, IMemoryCache? cache = null)
+    {
+        return new SymbolService(ctx, cache ?? new MemoryCache(new MemoryCacheOptions()), NullLogger<SymbolService>.Instance);
+    }
+
     public static InsiderTradeService CreateInsiderTradeService(ApplicationDbContext ctx, TimeProvider? timeProvider = null)
     {
-        var logger = NullLogger<SymbolService>.Instance;
-        var symbolService = new SymbolService(ctx, logger);
+        var symbolService = CreateSymbolService(ctx);
         var cache = new MemoryCache(new MemoryCacheOptions());
+        var tradeLogger = NullLogger<InsiderTradeService>.Instance;
+
         
-        return new InsiderTradeService(ctx, symbolService, cache, timeProvider ?? TimeProvider.System);
+        return new InsiderTradeService(ctx, symbolService, cache, timeProvider ?? TimeProvider.System, tradeLogger);
     }
 
     public static async Task SeedCompanies(
-    ApplicationDbContext ctx,
-    params (string Isin, string Code)[] companies)
+        ApplicationDbContext ctx,
+        params (string Isin, string Code)[] companies)
     {
         var converted = companies
             .Select(c => (Isin: (string?)c.Isin, c.Code, Name: (string?)null))

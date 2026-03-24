@@ -10,9 +10,8 @@ namespace AktieKoll.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [EnableRateLimiting("api")]
-public class InsiderTradesController(IInsiderTradeService tradeService) : ControllerBase
+public class InsiderTradesController(IInsiderTradeService tradeService, ILogger<InsiderTradesController> logger) : ControllerBase
 {
-
     private const int MaxPageSize = 100;
 
     [HttpGet("page")]
@@ -79,7 +78,8 @@ public class InsiderTradesController(IInsiderTradeService tradeService) : Contro
 
     [HttpGet("company")]
     public async Task<ActionResult<IEnumerable<InsiderTradeListDto>>> GetByCompanyName(
-        [FromQuery] string name,
+        [FromQuery] string? symbol,
+        [FromQuery] string? name,
         [FromQuery] int skip = 0,
         [FromQuery] int take = 10)
     {
@@ -90,18 +90,36 @@ public class InsiderTradesController(IInsiderTradeService tradeService) : Contro
             return BadRequest(new { error = "Skip must be zero or greater." });
 
         if (take < 1 || take > MaxPageSize)
-            return BadRequest (new { error = $"Take must be between 1 and {MaxPageSize}." });
-
-        var trades = (await tradeService.GetInsiderTradesByCompany(name, skip, take)).ToList();
-
-        if (trades.Count == 0)
+            return BadRequest(new { error = $"Take must be between 1 and {MaxPageSize}." });
+        if (!string.IsNullOrWhiteSpace(symbol))
         {
-            return NotFound(new { error = $"No trades found for company: {name}" });
+            var trades = (await tradeService.GetInsiderTradesByCompany(symbol, skip, take)).ToList();
+            
+            if (trades.Count == 0)
+            {
+                return NotFound(new
+                {
+                    error = $"No insider trades found for symbol {symbol}."
+                });
+            }
+
+            return Ok(trades.Select(t => t.ToListDto()));
         }
 
-        var dtos = trades.Select(t => t.ToListDto());
+        if (!string.IsNullOrWhiteSpace(name))
+        {
+            logger.LogWarning(
+                "Deprecated ?name= parameter used on /api/InsiderTrades/company (name='{Name}').", name);
 
-        return Ok(dtos);
+            var trades = (await tradeService.GetInsiderTradesByCompany(name, skip, take)).ToList();
+
+            if (trades.Count == 0)
+                return NotFound(new { error = $"No trades found for company: {name}" });
+
+            return Ok(trades.Select(t => t.ToListDto()));
+        }
+
+        return BadRequest(new { error = "Either 'symbol' or 'name' query parameter is required." });
     }
 
     [HttpGet("ytd-stats")]

@@ -1,6 +1,6 @@
 ﻿[
   {
-    CompanyName: Balco Group,
+    CompanyName: Balco,
     InsiderName: Ingalill Berglund,
     Position: Styrelseordförande,
     TransactionType: Förvärv,
@@ -13,7 +13,7 @@
     TransactionDate: DateTime_2
   },
   {
-    CompanyName: Balco Group,
+    CompanyName: Balco,
     InsiderName: Ingalill Berglund,
     Position: Styrelseordförande,
     TransactionType: Förvärv,
@@ -52,7 +52,7 @@
     TransactionDate: DateTime_6
   },
   {
-    CompanyName: Dynavox Group,
+    CompanyName: Dynavox,
     InsiderName: Linda Tybring,
     Position: CFO,
     TransactionType: Förvärv,
@@ -64,7 +64,7 @@
     TransactionDate: DateTime_2
   },
   {
-    CompanyName: Dynavox Group,
+    CompanyName: Dynavox,
     InsiderName: Linda Tybring,
     Position: CFO,
     TransactionType: Avyttring,
@@ -116,7 +116,7 @@
     TransactionDate: DateTime_2
   },
   {
-    CompanyName: Dynavox Group,
+    CompanyName: Dynavox,
     InsiderName: Tara Ann Rudnicki,
     Position: Annan ledande befattningshavare,
     TransactionType: Förvärv,
@@ -322,7 +322,7 @@
     TransactionDate: DateTime_6
   },
   {
-    CompanyName: Nelly Group,
+    CompanyName: Nelly,
     InsiderName: Lotta Fermén,
     Position: Ledningsgrupp,
     TransactionType: Tilldelning,

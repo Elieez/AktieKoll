@@ -2,6 +2,7 @@
 using AktieKoll.Services;
 using AktieKoll.Tests.Extensions;
 using AktieKoll.Tests.Shared.TestHelpers;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
 using static AktieKoll.Extensions.CsvDtoExtensions;
@@ -399,7 +400,8 @@ public class TransactionsDbTests
         await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var logger = NullLogger<SymbolService>.Instance;
-        var symbolService = new SymbolService(ctx, logger);
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var symbolService = new SymbolService(ctx, cache, logger);
 
         var trades = new List<InsiderTrade>
         {
@@ -440,7 +442,9 @@ public class TransactionsDbTests
         await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var logger = NullLogger<SymbolService>.Instance;
-        var symbolService = new SymbolService(ctx, logger);
+        var cache = new MemoryCache(new MemoryCacheOptions());
+
+        var symbolService = new SymbolService(ctx, cache, logger);
 
         var trades = new List<InsiderTrade>
         {
@@ -484,7 +488,8 @@ public class TransactionsDbTests
         await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var logger = NullLogger<SymbolService>.Instance;
-        var symbolService = new SymbolService(ctx, logger);
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var symbolService = new SymbolService(ctx, cache,logger);
 
         var trades = new List<InsiderTrade>
     {
@@ -525,7 +530,8 @@ public class TransactionsDbTests
         await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var logger = NullLogger<SymbolService>.Instance;
-        var symbolService = new SymbolService(ctx, logger);
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var symbolService = new SymbolService(ctx, cache, logger);
 
         var trades = new List<InsiderTrade>
     {
@@ -567,7 +573,8 @@ public class TransactionsDbTests
         await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var logger = NullLogger<SymbolService>.Instance;
-        var symbolService = new SymbolService(ctx, logger);
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var symbolService = new SymbolService(ctx, cache, logger);
 
         var trades = new List<InsiderTrade>
     {
