@@ -16,7 +16,7 @@ public class InsiderTrade
     public string? Symbol { get; set; }
     public required string Status { get; set; }
 
-    [Column(TypeName = "timestamp without time zone")]
+    [Column(TypeName = "timestamp with time zone")]
     public required DateTime PublishingDate { get; set; }
     [Column(TypeName = "date")]
     public required DateTime TransactionDate { get; set; }
