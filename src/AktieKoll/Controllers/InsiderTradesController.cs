@@ -83,9 +83,6 @@ public class InsiderTradesController(IInsiderTradeService tradeService, ILogger<
         [FromQuery] int skip = 0,
         [FromQuery] int take = 10)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            return BadRequest(new { error = "Company name is required." });
-
         if (skip < 0)
             return BadRequest(new { error = "Skip must be zero or greater." });
 
@@ -93,7 +90,7 @@ public class InsiderTradesController(IInsiderTradeService tradeService, ILogger<
             return BadRequest(new { error = $"Take must be between 1 and {MaxPageSize}." });
         if (!string.IsNullOrWhiteSpace(symbol))
         {
-            var trades = (await tradeService.GetInsiderTradesByCompany(symbol, skip, take)).ToList();
+            var trades = (await tradeService.GetInsiderTradesBySymbol(symbol, skip, take)).ToList();
             
             if (trades.Count == 0)
             {
