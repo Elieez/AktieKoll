@@ -5,10 +5,10 @@
     <NoWarn>$(NoWarn);NU1507</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="coverlet.collector" Version="8.0.0" />
+    <PackageVersion Include="coverlet.collector" Version="8.0.1" />
     <PackageVersion Include="CsvHelper" Version="33.1.0" />
     <PackageVersion Include="Devlead.Testing.MockHttp" Version="2026.2.11.605" />
-    <PackageVersion Include="FluentAssertions" Version="8.8.0" />
+    <PackageVersion Include="FluentAssertions" Version="8.9.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.5" />
     <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.5" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.5" />
@@ -22,7 +22,7 @@
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
     <PackageVersion Include="Npgsql" Version="10.0.2" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.1.6" />
-    <PackageVersion Include="Verify.XunitV3" Version="31.13.2" />
+    <PackageVersion Include="Verify.XunitV3" Version="31.13.5" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
     <PackageVersion Include="xunit.v3" Version="3.2.2" />
   </ItemGroup>

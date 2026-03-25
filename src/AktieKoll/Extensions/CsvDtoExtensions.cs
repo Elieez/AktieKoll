@@ -18,7 +18,7 @@ public static class CsvDtoExtensions
             Isin = csvDto.ISIN,
             Status = csvDto.Status,
             TransactionDate = csvDto.Transaktionsdatum,
-            PublishingDate = csvDto.Publiceringsdatum,
+            PublishingDate = DateTime.SpecifyKind(csvDto.Publiceringsdatum, DateTimeKind.Utc),
         };
     }
     public static class InsiderTradeMapper

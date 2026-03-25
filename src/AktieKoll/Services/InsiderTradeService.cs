@@ -108,10 +108,12 @@ public class InsiderTradeService(
         var endDate = DateTime.UtcNow.Date.AddDays(1);
         var startDate = endDate.AddDays(-days);
 
+        var upperSymbol = symbol?.ToUpper();
+
         IQueryable<CompanyTransactionStats> grouped = context.InsiderTrades
             .Where(t => t.PublishingDate >= startDate && t.PublishingDate < endDate)
-            .Where(t => t.TransactionType.ToLower() == transactionType.ToLower())
-            .Where(t => string.IsNullOrWhiteSpace(symbol) || t.Symbol == symbol)
+            .Where(t => string.Equals(t.TransactionType, transactionType, StringComparison.OrdinalIgnoreCase))
+            .Where(t => string.IsNullOrWhiteSpace(upperSymbol) || t.Symbol == upperSymbol)
             .GroupBy(t => t.CompanyName)
             .Select(g => new CompanyTransactionStats
             {
