@@ -292,18 +292,18 @@ public class TransactionsDbTests
                 Anmälningsskyldig = string.Empty,
                 PersonNamn = "Alice",
                 Befattning = "CFO",
-                Karaktär = "Interntransaktion – Avyttring",
+                Karaktär = "Förvärv",
                 Instrumenttyp = string.Empty,
                 Instrumentnamn = string.Empty,
                 Transaktionsdatum = DateTime.Today,
-                Volym = 150,
+                Volym = 100,
                 Volymsenhet = string.Empty,
-                Pris = 15.5m,
+                Pris = 10.5m,
                 Valuta = "SEK",
                 Handelsplats = string.Empty,
                 ISIN = "SE0001",
                 Status = "Aktuell"
-            },
+            }
         };
 
         var trades = InsiderTradeMapper.MapDtosToTrades(csvDtos);
