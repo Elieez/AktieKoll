@@ -1,4 +1,4 @@
-﻿using AktieKoll.Interfaces;
+using AktieKoll.Interfaces;
 using AktieKoll.Models;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -13,21 +13,24 @@ public class TokenService(IConfiguration config) : ITokenService
     public string GenerateAccessToken(ApplicationUser user)
     {
         var keyValue = config["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key missing from configuration.");
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyValue));
+        var key   = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyValue));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new List<Claim>
         {
-            new (JwtRegisteredClaimNames.Sub, user.Id),
-            new (JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
-            new("displayName", user.DisplayName ?? string.Empty),
+            new(JwtRegisteredClaimNames.Sub,  user.Id),
+            new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+            new("displayName",   user.DisplayName   ?? string.Empty),
+            new("emailVerified", user.EmailConfirmed.ToString().ToLowerInvariant()),
+            new("googleAvatar",  user.GoogleAvatarUrl  ?? string.Empty),
+            new("googleName",    user.GoogleDisplayName ?? string.Empty),
         };
 
         var token = new JwtSecurityToken(
-            issuer: config["Jwt:Issuer"],
-            audience: config["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(int.Parse(config["Jwt:AccessTokenMinutes"] ?? "15")),
+            issuer:             config["Jwt:Issuer"],
+            audience:           config["Jwt:Audience"],
+            claims:             claims,
+            expires:            DateTime.UtcNow.AddMinutes(int.Parse(config["Jwt:AccessTokenMinutes"] ?? "15")),
             signingCredentials: creds
         );
 
@@ -44,7 +47,7 @@ public class TokenService(IConfiguration config) : ITokenService
 
     public string HashToken(string token)
     {
-        var bytes = Encoding.UTF8.GetBytes(token);
+        var bytes  = Encoding.UTF8.GetBytes(token);
         var hashed = SHA256.HashData(bytes);
         return Convert.ToBase64String(hashed);
     }

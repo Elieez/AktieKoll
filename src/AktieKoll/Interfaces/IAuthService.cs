@@ -1,4 +1,4 @@
-﻿using AktieKoll.Models;
+using AktieKoll.Models;
 
 namespace AktieKoll.Interfaces;
 
@@ -13,4 +13,5 @@ public interface IAuthService
     Task<IssuedTokenPair> IssueTokenPairAsync(ApplicationUser user, string? ipAddress);
     Task<IssuedTokenPair?> RotateTokenPairAsync(string rawRefreshToken, string? ipAddress);
     Task RevokeRefreshTokenAsync(string rawRefreshToken);
+    Task RevokeAllUserTokensAsync(string userId);
 }
