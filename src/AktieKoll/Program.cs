@@ -5,6 +5,7 @@ using AktieKoll.Interfaces;
 using AktieKoll.Models;
 using AktieKoll.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
@@ -71,7 +72,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
         options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection")));
 }
 
-// Identity 
+// Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.Password.RequiredLength = 8;
@@ -84,21 +85,25 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+// Token lifespan: password-reset / email-verification tokens valid 24 h by default.
+// Account-deletion tokens are short-lived (1 h) and stored hashed on the user row.
+builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+    options.TokenLifespan = TimeSpan.FromHours(24));
+
 // JWT config
 var jwtKey = builder.Configuration["Jwt:Key"];
 if (string.IsNullOrEmpty(jwtKey))
-{
     throw new InvalidOperationException("JWT Key missing from configuration.");
-}
 
 var requireHttps = builder.Configuration.GetValue<bool>("CookieSettings:Secure");
-
 var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
 
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme    = JwtBearerDefaults.AuthenticationScheme;
+    // External sign-in (Google) needs a cookie scheme as intermediate
+    options.DefaultSignInScheme       = IdentityConstants.ExternalScheme;
 })
 .AddJwtBearer(options =>
 {
@@ -106,49 +111,54 @@ builder.Services.AddAuthentication(options =>
     options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
+        ValidateIssuer           = true,
+        ValidateAudience         = true,
         ValidateIssuerSigningKey = true,
-        ValidateLifetime = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+        ValidateLifetime         = true,
+        ValidIssuer              = builder.Configuration["Jwt:Issuer"],
+        ValidAudience            = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey         = new SymmetricSecurityKey(keyBytes),
     };
+})
+.AddGoogle(options =>
+{
+    // Required env vars: Google__ClientId  Google__ClientSecret
+    options.ClientId     = builder.Configuration["Google:ClientId"]     ?? throw new InvalidOperationException("Google:ClientId missing.");
+    options.ClientSecret = builder.Configuration["Google:ClientSecret"] ?? throw new InvalidOperationException("Google:ClientSecret missing.");
+    options.CallbackPath = "/api/auth/google/callback";   // handled by the Google middleware
+    options.SignInScheme = IdentityConstants.ExternalScheme;
+    options.Scope.Add("profile");
+    options.Scope.Add("email");
+    options.SaveTokens = true;
 });
 
-// Cookie config
+// Cookie config for Identity external scheme
 builder.Services.Configure<CookieAuthenticationOptions>(IdentityConstants.ApplicationScheme, options =>
 {
-    options.Cookie.Name = "AktieKollAuthCookie";
+    options.Cookie.Name       = "AktieKollAuthCookie";
     options.Cookie.SecurePolicy = requireHttps ? CookieSecurePolicy.Always : CookieSecurePolicy.SameAsRequest;
-    options.Cookie.HttpOnly = true;
-    options.Cookie.SameSite = requireHttps ? SameSiteMode.None : SameSiteMode.Lax;
-    options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly   = true;
+    options.Cookie.SameSite   = requireHttps ? SameSiteMode.None : SameSiteMode.Lax;
+    options.ExpireTimeSpan    = TimeSpan.FromMinutes(30);
     options.SlidingExpiration = true;
 });
 
 builder.Services.Configure<FormOptions>(options =>
-{
-    options.MultipartBodyLengthLimit = 10485760; // 10 MB limit
-});
+    options.MultipartBodyLengthLimit = 10485760);
 
 builder.WebHost.ConfigureKestrel(options =>
-{
-    options.Limits.MaxRequestBodySize = 10485760; // 10 MB
-});
+    options.Limits.MaxRequestBodySize = 10485760);
 
-builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ITokenService,    TokenService>();
+builder.Services.AddScoped<IAuthService,     AuthService>();
+builder.Services.AddScoped<IEmailService,    EmailService>();
 
 builder.Services.AddHttpClient<CsvFetchService>();
-
 builder.Services.AddSingleton(TimeProvider.System);
-
 builder.Services.AddTransient<ISymbolService, SymbolService>();
 builder.Services.AddHostedService<RefreshTokenCleanupService>();
-
 builder.Services.AddScoped<IInsiderTradeService, InsiderTradeService>();
-builder.Services.AddScoped<ICompanyService, CompanyService>();
+builder.Services.AddScoped<ICompanyService,      CompanyService>();
 
 builder.Services.AddResponseCaching();
 builder.Services.AddMemoryCache();
@@ -171,12 +181,12 @@ if (!app.Environment.IsDevelopment())
     {
         errorApp.Run(async context =>
         {
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            context.Response.StatusCode  = StatusCodes.Status500InternalServerError;
             context.Response.ContentType = "application/problem+json";
             await context.Response.WriteAsJsonAsync(new
             {
-                type = "https://tools.ietf.org/html/rfc9110#section-15.6.1",
-                title = "An unexpected error occurred.",
+                type   = "https://tools.ietf.org/html/rfc9110#section-15.6.1",
+                title  = "An unexpected error occurred.",
                 status = 500
             });
         });
@@ -185,18 +195,13 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowNextApp");
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
 app.UseRateLimiter();
-
 app.UseResponseCaching();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
