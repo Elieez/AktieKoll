@@ -25,14 +25,15 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger) :
     {
         var encodedToken = Uri.EscapeDataString(token);
         var link = $"{FrontendUrl}/auth/verify-email?userId={Uri.EscapeDataString(userId)}&token={encodedToken}";
+        var html = $@"<p>Hej!</p>
+               <p>Klicka på länken nedan för att verifiera din e-postadress:</p>
+               <p><a href=""{link}"">{link}</a></p>
+               <p>Länken är giltig i 24 timmar.</p>";
 
         return SendAsync(
             toEmail,
             "Verifiera din e-postadress – AktieKoll",
-            $"""<p>Hej!</p>
-               <p>Klicka på länken nedan för att verifiera din e-postadress:</p>
-               <p><a href="{link}">{link}</a></p>
-               <p>Länken är giltig i 24 timmar.</p>""",
+            html,
             ct);
     }
 
@@ -41,14 +42,15 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger) :
         var encodedToken  = Uri.EscapeDataString(token);
         var encodedEmail  = Uri.EscapeDataString(toEmail);
         var link = $"{FrontendUrl}/auth/reset-password?email={encodedEmail}&token={encodedToken}";
+        var html = $@"<p>Hej!</p>
+               <p>Vi fick en begäran om att återställa lösenordet för ditt konto.</p>
+               <p><a href=""{link}"">Återställ lösenord</a></p>
+               <p>Länken är giltig i 1 timme. Om du inte begärde detta kan du ignorera detta mejl.</p>";
 
         return SendAsync(
             toEmail,
             "Återställ ditt lösenord – AktieKoll",
-            $"""<p>Hej!</p>
-               <p>Vi fick en begäran om att återställa lösenordet för ditt konto.</p>
-               <p><a href="{link}">Återställ lösenord</a></p>
-               <p>Länken är giltig i 1 timme. Om du inte begärde detta kan du ignorera detta mejl.</p>""",
+            html,
             ct);
     }
 
@@ -56,26 +58,29 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger) :
     {
         var encodedToken = Uri.EscapeDataString(deletionToken);
         var link = $"{FrontendUrl}/auth/delete-confirm?token={encodedToken}";
+        var html = $@"<p>Hej!</p>
+               <p>Vi fick en begäran om att permanent radera ditt AktieKoll-konto.</p>
+               <p><strong>All din data kommer att raderas permanent och kan inte återställas.</strong></p>
+               <p><a href=""{link}"">Bekräfta kontoborttagning</a></p>
+               <p>Länken är giltig i 1 timme. Om du inte begärde detta, ignorera detta mejl – ditt konto är säkert.</p>";
 
         return SendAsync(
             toEmail,
             "Bekräfta borttagning av konto – AktieKoll",
-            $"""<p>Hej!</p>
-               <p>Vi fick en begäran om att permanent radera ditt AktieKoll-konto.</p>
-               <p><strong>All din data kommer att raderas permanent och kan inte återställas.</strong></p>
-               <p><a href="{link}">Bekräfta kontoborttagning</a></p>
-               <p>Länken är giltig i 1 timme. Om du inte begärde detta, ignorera detta mejl – ditt konto är säkert.</p>""",
+            html,
             ct);
     }
 
     public Task SendAccountDeletedConfirmationAsync(string toEmail, CancellationToken ct = default)
     {
+        var html = $@"<p>Hej!</p>
+               <p>Ditt AktieKoll-konto och all tillhörande data har nu raderats permanent i enlighet med GDPR.</p>
+               <p>Vi hoppas att vi ses igen.</p>";
+
         return SendAsync(
             toEmail,
             "Ditt konto har raderats – AktieKoll",
-            """<p>Hej!</p>
-               <p>Ditt AktieKoll-konto och all tillhörande data har nu raderats permanent i enlighet med GDPR.</p>
-               <p>Vi hoppas att vi ses igen.</p>""",
+            html,
             ct);
     }
 
@@ -87,10 +92,16 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger) :
         message.Subject = subject;
         message.Body = new TextPart(MimeKit.Text.TextFormat.Html) { Text = htmlBody };
 
+        var secureOptions = SmtpPort == 465
+            ? SecureSocketOptions.SslOnConnect
+            : SmtpPort == 25 || SmtpPort == 1025
+                ? SecureSocketOptions.None
+                : SecureSocketOptions.StartTls;
+
         try
         {
             using var client = new SmtpClient();
-            await client.ConnectAsync(SmtpHost, SmtpPort, SecureSocketOptions.StartTls, ct);
+            await client.ConnectAsync(SmtpHost, SmtpPort, secureOptions, ct);
             if (!string.IsNullOrEmpty(SmtpUser))
                 await client.AuthenticateAsync(SmtpUser, SmtpPass, ct);
             await client.SendAsync(message, ct);

@@ -258,7 +258,7 @@ public class AuthFeatureTests(WebApplicationFactoryFixture factory) : Integratio
         const string email    = "delete-me@example.com";
         const string password = "DeleteMe123!";
 
-        string userId, deletionToken;
+        string userId;
 
         // Step 0: create user
         using (var scope = CreateScope())

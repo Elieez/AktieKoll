@@ -1,5 +1,6 @@
 using System.Security.Claims;
-using AktieKoll.Data;
+using System.Security.Cryptography;
+using System.Text;
 using AktieKoll.Dtos;
 using AktieKoll.Interfaces;
 using AktieKoll.Models;
@@ -9,9 +10,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace AktieKoll.Controllers;
 
@@ -21,8 +19,6 @@ public class AuthController(
     UserManager<ApplicationUser> userManager,
     IAuthService authService,
     IEmailService emailService,
-    ITokenService tokenService,
-    ApplicationDbContext db,
     IConfiguration config) : ControllerBase
 {
     private const string RefreshTokenCookieName = "refreshToken";
@@ -35,9 +31,6 @@ public class AuthController(
         Expires   = expires
     };
 
-    // ─────────────────────────────────────────────────────────────
-    // REGISTER
-    // ─────────────────────────────────────────────────────────────
 
     /// <summary>Register a new user. Sends a verification email on success.</summary>
     [HttpPost("register")]
@@ -66,9 +59,6 @@ public class AuthController(
         return Ok(new { message = "User created successfully. Check your email to verify your account." });
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // LOGIN
-    // ─────────────────────────────────────────────────────────────
 
     /// <summary>Authenticate with email and password. Returns JWT access token and sets refresh-token cookie.</summary>
     [HttpPost("login")]
@@ -94,10 +84,6 @@ public class AuthController(
 
         return Ok(new AuthResponseDto { AccessToken = pair.AccessToken, ExpiresAt = pair.AccessTokenExpiresAt });
     }
-
-    // ─────────────────────────────────────────────────────────────
-    // REFRESH / LOGOUT
-    // ─────────────────────────────────────────────────────────────
 
     /// <summary>Rotate the refresh token and return a new JWT access token.</summary>
     [HttpPost("refresh")]
@@ -136,10 +122,6 @@ public class AuthController(
 
         return Ok();
     }
-
-    // ─────────────────────────────────────────────────────────────
-    // GOOGLE OAUTH
-    // ─────────────────────────────────────────────────────────────
 
     /// <summary>Initiate Google OAuth — redirects the browser to Google's consent screen.</summary>
     [HttpGet("google")]
@@ -235,10 +217,6 @@ public class AuthController(
         return Redirect($"{frontendCallback}?token={Uri.EscapeDataString(pair.AccessToken)}");
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // EMAIL VERIFICATION
-    // ─────────────────────────────────────────────────────────────
-
     /// <summary>Verify email address using the token sent to the user's inbox.</summary>
     [HttpGet("verify-email")]
     public async Task<IActionResult> VerifyEmail([FromQuery] string userId, [FromQuery] string token)
@@ -275,10 +253,6 @@ public class AuthController(
 
         return Ok(new { message = "Verifieringsmejl skickat." });
     }
-
-    // ─────────────────────────────────────────────────────────────
-    // FORGOT / RESET PASSWORD
-    // ─────────────────────────────────────────────────────────────
 
     /// <summary>
     /// Request a password reset email. Always returns 200 to prevent email enumeration.
@@ -323,10 +297,6 @@ public class AuthController(
 
         return Ok(new { message = "Lösenordet har ändrats. Du kan nu logga in." });
     }
-
-    // ─────────────────────────────────────────────────────────────
-    // ACCOUNT DELETION (GDPR)
-    // ─────────────────────────────────────────────────────────────
 
     /// <summary>
     /// Step 1 of account deletion: sends a confirmation email with a 1-hour deletion token.

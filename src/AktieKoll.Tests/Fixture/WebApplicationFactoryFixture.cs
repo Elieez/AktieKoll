@@ -1,7 +1,6 @@
 using System.Threading.RateLimiting;
 using AktieKoll.Data;
 using AktieKoll.Interfaces;
-using AktieKoll.Tests.Fixture;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
