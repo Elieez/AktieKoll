@@ -195,7 +195,7 @@ public class AuthFeatureTests(WebApplicationFactoryFixture factory) : Integratio
             resetToken = await userManager.GeneratePasswordResetTokenAsync(user);
         }
 
-        // Verify old password works for login
+        // Verify old password works for login (also creates a refresh token)
         var loginRes = await Client.PostAsJsonTestAsync("/api/auth/login", new LoginDto { Email = email, Password = oldPass });
         loginRes.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -204,6 +204,17 @@ public class AuthFeatureTests(WebApplicationFactoryFixture factory) : Integratio
         var resetRes = await Client.PostAsJsonTestAsync("/api/auth/reset-password", dto);
         resetRes.StatusCode.Should().Be(HttpStatusCode.OK);
 
+        // Assert token revocation HERE — before any subsequent login that would
+        // create a new active token and make BeEmpty() a false negative.
+        using (var scope2 = CreateScope())
+        {
+            var db2 = scope2.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var activeTokens = await db2.RefreshTokens
+                .Where(t => t.UserId == userId && !t.IsRevoked)
+                .ToListAsync(Token);
+            activeTokens.Should().BeEmpty("all pre-reset tokens should be revoked after password reset");
+        }
+
         // Old password should no longer work
         var oldLoginRes = await Client.PostAsJsonTestAsync("/api/auth/login", new LoginDto { Email = email, Password = oldPass });
         oldLoginRes.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -211,12 +222,6 @@ public class AuthFeatureTests(WebApplicationFactoryFixture factory) : Integratio
         // New password should work
         var newLoginRes = await Client.PostAsJsonTestAsync("/api/auth/login", new LoginDto { Email = email, Password = newPass });
         newLoginRes.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        // All refresh tokens should be revoked
-        using var scope2 = CreateScope();
-        var db2 = scope2.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var activeTokens = await db2.RefreshTokens.Where(t => t.UserId == userId && !t.IsRevoked).ToListAsync(Token);
-        activeTokens.Should().BeEmpty("all tokens should be revoked after password reset");
     }
 
     [Fact]
