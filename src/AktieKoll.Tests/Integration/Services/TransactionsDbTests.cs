@@ -2,6 +2,7 @@
 using AktieKoll.Services;
 using AktieKoll.Tests.Extensions;
 using AktieKoll.Tests.Shared.TestHelpers;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
@@ -291,18 +292,18 @@ public class TransactionsDbTests
                 Anmälningsskyldig = string.Empty,
                 PersonNamn = "Alice",
                 Befattning = "CFO",
-                Karaktär = "Interntransaktion – Avyttring",
+                Karaktär = "Förvärv",
                 Instrumenttyp = string.Empty,
                 Instrumentnamn = string.Empty,
                 Transaktionsdatum = DateTime.Today,
-                Volym = 150,
+                Volym = 100,
                 Volymsenhet = string.Empty,
-                Pris = 15.5m,
+                Pris = 10.5m,
                 Valuta = "SEK",
                 Handelsplats = string.Empty,
                 ISIN = "SE0001",
                 Status = "Aktuell"
-            },
+            }
         };
 
         var trades = InsiderTradeMapper.MapDtosToTrades(csvDtos);
@@ -316,11 +317,15 @@ public class TransactionsDbTests
 
     [Theory]
     [InlineData(null, 3, 365)]
-    [InlineData("eEducation Albert", null, 365)] //patch
+    [InlineData("EDUB", null, 365)]
     [InlineData(null, null, 365)]
-    public async Task GetTransactionCountBuy_ReturnsMostActive(string? companyName, int? top, int days)
+    public async Task GetTransactionCountBuy_ReturnsMostActive(string? symbol, int? top, int days)
     {
         var ctx = ServiceTestHelpers.CreateContext();
+
+        await ServiceTestHelpers.SeedCompanies(ctx,
+            ("SE0016797989", "EDUB", "eEducation Albert AB"));
+
         var csvFetchService = ServiceProviderFixture
                                    .GetRequiredService<CsvFetchService>(services => services.AuthorizedClient());
 
@@ -333,18 +338,22 @@ public class TransactionsDbTests
         var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
         await service.AddInsiderTrades(trades);
 
-        var result = await service.GetTransactionCountBuy(companyName, days, top);
+        var result = await service.GetTransactionCountBuy(symbol, days, top);
 
         await Verify(result);
     }
 
     [Theory]
     [InlineData(null, 2, 365)]
-    [InlineData("Zinzino AB", null, 365)] //patch
+    [InlineData("ZINO-B", null, 365)]
     [InlineData(null, null, 365)]
-    public async Task GetTransactionCountSell_ReturnsMostActive(string? companyName, int? top, int days)
+    public async Task GetTransactionCountSell_ReturnsMostActive(string? symbol, int? top, int days)
     {
         var ctx = ServiceTestHelpers.CreateContext();
+
+        await ServiceTestHelpers.SeedCompanies(ctx,
+            ("SE0002480442", "ZINO-B", "Zinzino AB"));
+
         var csvFetchService = ServiceProviderFixture
                                    .GetRequiredService<CsvFetchService>(services => services.AuthorizedClient());
 
@@ -357,7 +366,7 @@ public class TransactionsDbTests
         var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
         await service.AddInsiderTrades(trades);
 
-        var result = await service.GetTransactionCountSell(companyName, days, top);
+        var result = await service.GetTransactionCountSell(symbol, days, top);
 
         await Verify(result);
     }
@@ -599,6 +608,40 @@ public class TransactionsDbTests
 
         // Assert - Should pick B-share first (highest priority for Swedish stocks)
         Assert.Equal("TEST-B", trades[0].Symbol);
+    }
+
+    [Fact]
+    public async Task AddInsiderTrades_UnresolvableSymbol_TradeStillSaved()
+    {
+        // Arrange – no companies seeded, so symbol resolution always returns null
+        var ctx = ServiceTestHelpers.CreateContext();
+        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
+
+        var trades = new List<InsiderTrade>
+        {
+            new()
+            {
+                CompanyName = "UnknownCorp",
+                InsiderName = "Test User",
+                Position = "CEO",
+                TransactionType = "Förvärv",
+                Shares = 50,
+                Price = 25m,
+                Currency = "SEK",
+                Status = "Aktuell",
+                Isin = "XX9999999999",       // no matching company
+                PublishingDate = DateTime.Today,
+                TransactionDate = DateTime.Today
+            }
+        };
+
+        // Act
+        await service.AddInsiderTrades(trades);
+
+        // Assert – trade must be saved even without a resolved symbol
+        var saved = await ctx.InsiderTrades.ToListAsync(TestContext.Current.CancellationToken);
+        Assert.Single(saved);
+        Assert.Null(saved[0].Symbol);
     }
 
     [Fact]

@@ -25,7 +25,8 @@ public class InsiderTradeControllerTests(WebApplicationFactoryFixture factory) :
         string transactionType = "Förvärv",
         int shares = 100,
         decimal price = 50m,
-        DateTime? publishingDate = null) => new()
+        DateTime? publishingDate = null,
+        string? symbol = null) => new()
         {
             CompanyName = companyName,
             InsiderName = insiderName,
@@ -35,6 +36,7 @@ public class InsiderTradeControllerTests(WebApplicationFactoryFixture factory) :
             Price = price,
             Currency = "SEK",
             Status = "Aktuell",
+            Symbol = symbol,
             PublishingDate = publishingDate ?? DateTime.Today,
             TransactionDate = publishingDate ?? DateTime.Today
         };
@@ -198,25 +200,44 @@ public class InsiderTradeControllerTests(WebApplicationFactoryFixture factory) :
         volvoStats!.TransactionCount.Should().Be(2);
     }
 
-    //[Fact]
-    //public async Task GetTransactionCountBuy_FilterByCompany_ReturnsOnlyThatCompany()
-    //{
-    //    // Arrange
-    //    await SeedTradesAsync(
-    //        MakeTrade("Volvo", transactionType: "Förvärv"),
-    //        MakeTrade("Ericsson", transactionType: "Förvärv")
-    //    );
+    [Fact]
+    public async Task GetTransactionCountBuy_FilterByCompany_ReturnsOnlyThatCompany()
+    {
+        // Arrange
+        await SeedTradesAsync(
+            MakeTrade("Volvo", transactionType: "Förvärv", symbol: "VOLV-B"),
+            MakeTrade("Ericsson", transactionType: "Förvärv", symbol: "ERIC-B")
+        );
 
-    //    // Act
-    //    var response = await Client.GetTestAsync("/api/insidertrades/count-buy?companyName=Volvo&days=365");
+        // Act
+        var response = await Client.GetTestAsync("/api/insidertrades/count-buy?symbol=VOLV-B&days=365");
 
-    //    // Assert
-    //    response.StatusCode.Should().Be(HttpStatusCode.OK);
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-    //    var stats = await response.Content.ReadFromJsonTestAsync<List<CompanyTransactionStats>>();
-    //    stats.Should().HaveCount(1);
-    //    stats![0].CompanyName.Should().Be("Volvo");
-    //}
+        var stats = await response.Content.ReadFromJsonTestAsync<List<CompanyTransactionStats>>();
+        stats.Should().HaveCount(1);
+        stats![0].CompanyName.Should().Be("Volvo");
+    }
+
+    [Fact]
+    public async Task GetTransactionCountBuy_FilterBySymbol_CaseInsensitive()
+    {
+        // Arrange
+        await SeedTradesAsync(
+            MakeTrade("Volvo", transactionType: "Förvärv", symbol: "VOLV-B")
+        );
+
+        // Act – pass lower-case symbol, endpoint should still return results
+        var response = await Client.GetTestAsync("/api/insidertrades/count-buy?symbol=volv-b&days=365");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var stats = await response.Content.ReadFromJsonTestAsync<List<CompanyTransactionStats>>();
+        stats.Should().HaveCount(1);
+        stats![0].CompanyName.Should().Be("Volvo");
+    }
 
     [Fact]
     public async Task GetTransactionCountBuy_WithTopFilter_ReturnsLimitedResults()
@@ -255,6 +276,25 @@ public class InsiderTradeControllerTests(WebApplicationFactoryFixture factory) :
     }
 
     [Fact]
+    public async Task GetTransactionCountSell_FilterBySymbol_CaseInsensitive()
+    {
+        // Arrange
+        await SeedTradesAsync(
+            MakeTrade("Volvo", transactionType: "Avyttring", symbol: "VOLV-B")
+        );
+
+        // Act – pass lower-case symbol, endpoint should still return results
+        var response = await Client.GetTestAsync("/api/insidertrades/count-sell?symbol=volv-b&days=365");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var stats = await response.Content.ReadFromJsonTestAsync<List<CompanyTransactionStats>>();
+        stats.Should().HaveCount(1);
+        stats![0].CompanyName.Should().Be("Volvo");
+    }
+
+    [Fact]
     public async Task GetTransactionCountSell_WithTrades_ReturnsStats()
     {
         // Arrange
@@ -272,6 +312,26 @@ public class InsiderTradeControllerTests(WebApplicationFactoryFixture factory) :
 
         var stats = await response.Content.ReadFromJsonTestAsync<List<CompanyTransactionStats>>();
         stats.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task GetTransactionCountSell_FilterBySymbol_ReturnsOnlyThatSymbol()
+    {
+        // Arrange
+        await SeedTradesAsync(
+            MakeTrade("Volvo", transactionType: "Avyttring", symbol: "VOLV-B"),
+            MakeTrade("Ericsson", transactionType: "Avyttring", symbol: "ERIC-B")
+        );
+
+        // Act
+        var response = await Client.GetTestAsync("/api/insidertrades/count-sell?symbol=VOLV-B&days=365");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var stats = await response.Content.ReadFromJsonTestAsync<List<CompanyTransactionStats>>();
+        stats.Should().HaveCount(1);
+        stats![0].CompanyName.Should().Be("Volvo");
     }
 
     // GET /api/insidertrade/company
@@ -359,6 +419,36 @@ public class InsiderTradeControllerTests(WebApplicationFactoryFixture factory) :
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task GetBySymbol_ValidSymbol_ReturnsTrades()
+    {
+        // Arrange
+        await SeedTradesAsync(
+            MakeTrade("Volvo", symbol: "VOLV-B"),
+            MakeTrade("Ericsson", symbol: "ERIC-B")
+        );
+
+        // Act
+        var response = await Client.GetTestAsync("/api/insidertrades/company?symbol=VOLV-B");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var trades = await response.Content.ReadFromJsonTestAsync<List<InsiderTradeListDto>>();
+        trades.Should().HaveCount(1);
+        trades![0].CompanyName.Should().Be("Volvo");
+    }
+
+    [Fact]
+    public async Task GetBySymbol_NotFound_ReturnsNotFound()
+    {
+        // Act
+        var response = await Client.GetTestAsync("/api/insidertrades/company?symbol=NONEXISTENT");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     // GET /api/insidertrades/ytd-stats

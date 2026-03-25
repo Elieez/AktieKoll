@@ -11,6 +11,6 @@
     Isin: SE0001,
     Status: Aktuell,
     PublishingDate: DateTime_1,
-    TransactionDate: DateTime_1
+    TransactionDate: DateTime_2
   }
 ]

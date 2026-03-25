@@ -11,7 +11,7 @@
     Isin: SE0001,
     Status: Aktuell,
     PublishingDate: DateTime_1,
-    TransactionDate: DateTime_1
+    TransactionDate: DateTime_2
   },
   {
     Id: 2,
@@ -25,7 +25,7 @@
     Isin: SE0001,
     Status: Aktuell,
     PublishingDate: DateTime_1,
-    TransactionDate: DateTime_1
+    TransactionDate: DateTime_2
   },
   {
     Id: 3,
@@ -39,7 +39,7 @@
     Isin: SE0001,
     Status: Aktuell,
     PublishingDate: DateTime_1,
-    TransactionDate: DateTime_1
+    TransactionDate: DateTime_2
   },
   {
     Id: 4,
@@ -53,7 +53,7 @@
     Isin: SE0001,
     Status: Aktuell,
     PublishingDate: DateTime_1,
-    TransactionDate: DateTime_1
+    TransactionDate: DateTime_2
   },
   {
     Id: 5,
@@ -67,6 +67,6 @@
     Isin: SE0001,
     Status: Aktuell,
     PublishingDate: DateTime_1,
-    TransactionDate: DateTime_1
+    TransactionDate: DateTime_2
   }
 ]
