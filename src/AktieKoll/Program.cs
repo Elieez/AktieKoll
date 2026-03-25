@@ -138,6 +138,7 @@ builder.WebHost.ConfigureKestrel(options =>
 });
 
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddHttpClient<CsvFetchService>();
 

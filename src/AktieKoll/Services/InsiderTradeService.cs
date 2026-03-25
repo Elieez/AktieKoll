@@ -109,10 +109,11 @@ public class InsiderTradeService(
         var startDate = endDate.AddDays(-days);
 
         var upperSymbol = symbol?.ToUpper();
+        var searchType = transactionType.ToLower();
 
         IQueryable<CompanyTransactionStats> grouped = context.InsiderTrades
             .Where(t => t.PublishingDate >= startDate && t.PublishingDate < endDate)
-            .Where(t => string.Equals(t.TransactionType, transactionType, StringComparison.OrdinalIgnoreCase))
+            .Where(t => t.TransactionType.ToLower() == searchType)
             .Where(t => string.IsNullOrWhiteSpace(upperSymbol) || t.Symbol == upperSymbol)
             .GroupBy(t => t.CompanyName)
             .Select(g => new CompanyTransactionStats
@@ -177,20 +178,19 @@ public class InsiderTradeService(
 
         var startOfYear = new DateTime(timeProvider.GetUtcNow().Year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        var trades = await context.InsiderTrades
-            .Where(t => t.PublishingDate >= startOfYear)
-            .Select(t => new { t.Price, t.Shares })
-            .ToListAsync();
-
-        var stats = new YtdStats
-        {
-            TotalTransactions = trades.LongCount(),
-            TotalValue = trades.Sum(t => (decimal)t.Price * (decimal)t.Shares)
-        };
+        var stats = await context.InsiderTrades
+             .Where(t => t.PublishingDate >= startOfYear)
+             .GroupBy(_ => 1)
+             .Select(g => new YtdStats
+             {
+                 TotalTransactions = (long)g.Count(),
+                 TotalValue = g.Sum(t => t.Price * t.Shares)
+             })
+             .FirstOrDefaultAsync();
 
         cache.Set(cacheKey, stats, new MemoryCacheEntryOptions()
             .SetAbsoluteExpiration(TimeSpan.FromHours(6)));
 
-        return stats;
+        return stats ?? new YtdStats { TotalTransactions = 0, TotalValue = 0 };
     }
 }
