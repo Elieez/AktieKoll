@@ -15,6 +15,7 @@ public class AuthController(
     IConfiguration config) : ControllerBase
 {
     private const string RefreshTokenCookieName = "refreshToken";
+
     private CookieOptions BuildRefreshCookieOptions(DateTime expires) => new()
     {
         HttpOnly = true,
@@ -70,10 +71,8 @@ public class AuthController(
     [EnableRateLimiting("auth")]
     public async Task<IActionResult> Refresh()
     {
-        if (!Request.Cookies.TryGetValue("refreshToken", out var token))
-        {
-            return Unauthorized("No Refresh token");
-        }
+        if (!Request.Cookies.TryGetValue(RefreshTokenCookieName, out var token))
+            return Unauthorized("No refresh token.");
 
         var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
         var pair = await authService.RotateTokenPairAsync(token, ipAddress);
@@ -100,6 +99,7 @@ public class AuthController(
             Secure = config.GetValue<bool>("CookieSettings:Secure"),
             SameSite = config.GetValue<SameSiteMode>("CookieSettings:SameSite", SameSiteMode.Lax),
         });
+
         return Ok();
     }
 }
