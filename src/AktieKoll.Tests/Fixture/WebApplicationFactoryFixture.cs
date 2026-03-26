@@ -1,5 +1,6 @@
-﻿using System.Threading.RateLimiting;
+using System.Threading.RateLimiting;
 using AktieKoll.Data;
+using AktieKoll.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -8,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Moq;
 
 namespace AktieKoll.Tests.Fixture;
 
@@ -23,7 +25,11 @@ public class WebApplicationFactoryFixture : WebApplicationFactory<Program>
         {
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["ConnectionStrings:PostgresConnection"] = null
+                ["ConnectionStrings:PostgresConnection"] = null,
+                // Provide dummy Google credentials so the app starts in tests
+                ["Google:ClientId"]     = "test-google-client-id",
+                ["Google:ClientSecret"] = "test-google-client-secret",
+                ["Frontend:Url"]        = "http://localhost:3000",
             }!);
         });
 
@@ -38,17 +44,16 @@ public class WebApplicationFactoryFixture : WebApplicationFactory<Program>
                 .ToList();
 
             foreach (var descriptor in descriptorsToRemove)
-            {
                 services.Remove(descriptor);
-            }
 
-            // Add InMemory database - SAME NAME for all scopes
+            // In-memory database — same name across all scopes
             services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseInMemoryDatabase(_databaseName);
                 options.EnableSensitiveDataLogging();
             });
 
+            // Replace rate limiters with no-op partitions
             var rateLimiterDescriptors = services
                 .Where(d => d.ServiceType == typeof(IConfigureOptions<RateLimiterOptions>))
                 .ToList();
@@ -57,11 +62,27 @@ public class WebApplicationFactoryFixture : WebApplicationFactory<Program>
 
             services.AddRateLimiter(options =>
             {
-                options.AddPolicy("auth", _ => RateLimitPartition.GetNoLimiter("no-limit"));
-                options.AddPolicy("api", _ => RateLimitPartition.GetNoLimiter("no-limit"));
-                options.AddPolicy("sensitive", _ => RateLimitPartition.GetNoLimiter("no-limit"));
+                options.AddPolicy("auth",       _ => RateLimitPartition.GetNoLimiter("no-limit"));
+                options.AddPolicy("api",        _ => RateLimitPartition.GetNoLimiter("no-limit"));
+                options.AddPolicy("sensitive",  _ => RateLimitPartition.GetNoLimiter("no-limit"));
                 options.AddPolicy("public-api", _ => RateLimitPartition.GetNoLimiter("no-limit"));
             });
+
+            // Replace real email service with a no-op mock so tests never hit SMTP
+            var emailDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IEmailService));
+            if (emailDescriptor != null) services.Remove(emailDescriptor);
+
+            var mockEmail = new Mock<IEmailService>();
+            mockEmail.Setup(s => s.SendEmailVerificationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                     .Returns(Task.CompletedTask);
+            mockEmail.Setup(s => s.SendPasswordResetAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                     .Returns(Task.CompletedTask);
+            mockEmail.Setup(s => s.SendAccountDeletionRequestAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                     .Returns(Task.CompletedTask);
+            mockEmail.Setup(s => s.SendAccountDeletedConfirmationAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                     .Returns(Task.CompletedTask);
+
+            services.AddSingleton(mockEmail.Object);
         });
     }
 
@@ -70,10 +91,8 @@ public class WebApplicationFactoryFixture : WebApplicationFactory<Program>
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        // Ensure database exists
         db.Database.EnsureCreated();
 
-        // Clear all data
         db.RefreshTokens.RemoveRange(db.RefreshTokens);
         db.Users.RemoveRange(db.Users);
         db.InsiderTrades.RemoveRange(db.InsiderTrades);

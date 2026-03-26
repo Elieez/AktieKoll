@@ -1,4 +1,4 @@
-﻿using AktieKoll.Data;
+using AktieKoll.Data;
 using AktieKoll.Interfaces;
 using AktieKoll.Models;
 using Microsoft.AspNetCore.Identity;
@@ -16,15 +16,15 @@ public class AuthService(
     {
         var rawToken = tokenService.GenerateRefreshToken();
         var hashed = tokenService.HashToken(rawToken);
-        var refreshDays = config.GetValue<int>("Jwt:RefreshTokenDays", 7);
+        var refreshDays   = config.GetValue<int>("Jwt:RefreshTokenDays", 7);
         var accessMinutes = config.GetValue<int>("Jwt:AccessTokenMinutes", 15);
 
         var rt = new RefreshToken
         {
-            Token = hashed,
-            UserId = user.Id,
-            ExpiresAt = DateTime.UtcNow.AddDays(refreshDays),
-            CreatedByIp = ipAddress
+            Token        = hashed,
+            UserId       = user.Id,
+            ExpiresAt    = DateTime.UtcNow.AddDays(refreshDays),
+            CreatedByIp  = ipAddress
         };
 
         db.RefreshTokens.Add(rt);
@@ -50,20 +50,20 @@ public class AuthService(
         if (user == null)
             return null;
 
-        var refreshDays = config.GetValue<int>("Jwt:RefreshTokenDays", 7);
+        var refreshDays   = config.GetValue<int>("Jwt:RefreshTokenDays", 7);
         var accessMinutes = config.GetValue<int>("Jwt:AccessTokenMinutes", 15);
 
         var newRawToken = tokenService.GenerateRefreshToken();
-        var newHashed = tokenService.HashToken(newRawToken);
+        var newHashed   = tokenService.HashToken(newRawToken);
 
-        rt.IsRevoked = true;
-        rt.ReplacedByToken = newHashed;
+        rt.IsRevoked        = true;
+        rt.ReplacedByToken  = newHashed;
 
         var newRt = new RefreshToken
         {
-            Token = newHashed,
-            UserId = rt.UserId,
-            ExpiresAt = DateTime.UtcNow.AddDays(refreshDays),
+            Token       = newHashed,
+            UserId      = rt.UserId,
+            ExpiresAt   = DateTime.UtcNow.AddDays(refreshDays),
             CreatedByIp = ipAddress
         };
 
@@ -85,6 +85,18 @@ public class AuthService(
         if (rt == null) return;
 
         rt.IsRevoked = true;
+        await db.SaveChangesAsync();
+    }
+
+    public async Task RevokeAllUserTokensAsync(string userId)
+    {
+        var tokens = await db.RefreshTokens
+            .Where(r => r.UserId == userId && !r.IsRevoked)
+            .ToListAsync();
+
+        foreach (var t in tokens)
+            t.IsRevoked = true;
+
         await db.SaveChangesAsync();
     }
 }
