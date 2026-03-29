@@ -22,6 +22,8 @@ public static class ServiceTestHelpers
         return new SymbolService(ctx, cache ?? new MemoryCache(new MemoryCacheOptions()), NullLogger<SymbolService>.Instance);
     }
 
+    public static CancellationToken Ct => TestContext.Current.CancellationToken;
+
     public static InsiderTradeService CreateInsiderTradeService(ApplicationDbContext ctx, TimeProvider? timeProvider = null)
     {
         var symbolService = CreateSymbolService(ctx);

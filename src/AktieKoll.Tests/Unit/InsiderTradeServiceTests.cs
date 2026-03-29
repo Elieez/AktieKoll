@@ -35,7 +35,7 @@ public class InsiderTradeServiceTests
         var result = await service.AddInsiderTrades(trades);
 
         // Assert
-        Assert.Equal("1 new trades added.", result);
+        Assert.Equal("1 new trades added.", result.Message);
         var saved = await ctx.InsiderTrades.ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
         Assert.Single(saved);
         Assert.Equal("FOO", saved[0].Symbol);
@@ -67,7 +67,7 @@ public class InsiderTradeServiceTests
 
         var result = await service.AddInsiderTrades([trade]);
 
-        Assert.Equal("No new data was added.", result);
+        Assert.Equal("No new data was added.", result.Message);
         var count = await ctx.InsiderTrades.CountAsync(cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(1, count);
     }
@@ -109,7 +109,7 @@ public class InsiderTradeServiceTests
 
         var result = await service.AddInsiderTrades([revisedTrade]);
 
-        Assert.Equal("1 trades removed.", result);
+        Assert.Equal("1 trades removed.", result.Message);
         var count = await ctx.InsiderTrades.CountAsync(cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(0, count);
     }
@@ -150,7 +150,7 @@ public class InsiderTradeServiceTests
 
         var result = await service.AddInsiderTrades([revised]);
 
-        Assert.Equal("No new data was added.", result);
+        Assert.Equal("No new data was added.", result.Message);
         var trades = await ctx.InsiderTrades.ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
         Assert.Single(trades);
     }
