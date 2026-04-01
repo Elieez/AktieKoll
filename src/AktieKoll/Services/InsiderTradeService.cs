@@ -186,13 +186,14 @@ public class InsiderTradeService(
              .Select(g => new YtdStats
              {
                  TotalTransactions = (long)g.Count(),
-                 TotalValue = g.Sum(t => t.Price * t.Shares)
+                 TotalValue = g.Sum(t => t.Price * t.Shares),
+                 UniqueCompanies = g.Select(t => t.Symbol).Distinct().Count()
              })
              .FirstOrDefaultAsync();
 
         cache.Set(cacheKey, stats, new MemoryCacheEntryOptions()
             .SetAbsoluteExpiration(TimeSpan.FromHours(6)));
 
-        return stats ?? new YtdStats { TotalTransactions = 0, TotalValue = 0 };
+        return stats ?? new YtdStats { TotalTransactions = 0, TotalValue = 0, UniqueCompanies = 0 };
     }
 }

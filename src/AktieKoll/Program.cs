@@ -145,6 +145,7 @@ builder.Services.Configure<CookieAuthenticationOptions>(IdentityConstants.Applic
 builder.Services.Configure<FormOptions>(options =>
     options.MultipartBodyLengthLimit = 10485760);
 
+
 builder.WebHost.ConfigureKestrel(options =>
     options.Limits.MaxRequestBodySize = 10485760);
 

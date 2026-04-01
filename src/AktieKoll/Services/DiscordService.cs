@@ -17,26 +17,34 @@ public class DiscordService(HttpClient httpClient, IConfiguration config, ILogge
         if (string.IsNullOrWhiteSpace(webhookUrl))
             return false;
 
-        var fields = trades.Select(t => new
-        {
-            name = $"{t.InsiderName} ({t.Position ?? "okänd roll"})",
-            value = FormatTradeField(t),
-            inline = false,
-        }).Take(25).ToArray();
+        var stockUrl = $"{FrontendUrl}/stocks/{Uri.EscapeDataString(companyCode)}";
 
         var isBuy = trades.Any(t => t.TransactionType.Contains("förvärv", StringComparison.OrdinalIgnoreCase));
         var color = isBuy ? 5083979 : 15757389; // #4deba8 green / #f06b4d red
 
-        var stockUrl = $"{FrontendUrl}/stocks/{Uri.EscapeDataString(companyCode)}";
+        var count = trades.Count;
+        var countText = count == 1 ? "1 ny transaktion" : $"{count} nya transaktioner";
+
+        var fields = new List<object>
+        {
+            new { name = "━━━━━━━━━━━━━━━━━━━━━━", value = "** **", inline = false }
+        };
+
+        fields.AddRange(trades.Take(25).Select(t => (object)new
+        {
+            name = FormatTradeTitle(t),
+            value = FormatTradeField(t),
+            inline = false
+        }));
 
         var embed = new
         {
-            title = $"Insiderhandel: {companyName}",
+            title = $"📈 Insiderhandel · {companyName}",
             url = stockUrl,
             color,
-            description = $"{trades.Count} ny(a) transaktion(er) regristrerade.",
+            description = $"**{countText}** registrerad(e) på Stockholmsbörsen.",
             fields,
-            footer = new { text = "AktieKoll · Insiderhandel" },
+            footer = new { text = "AktieKoll · Insiderhandel · Stockholmsbörsen" },
             timestamp = DateTime.UtcNow.ToString("o"),
         };
 
@@ -62,16 +70,28 @@ public class DiscordService(HttpClient httpClient, IConfiguration config, ILogge
         }
     }
 
+    private static string FormatTradeTitle(InsiderTrade t)
+    {
+        var isBuy = t.TransactionType.Contains("förvärv", StringComparison.OrdinalIgnoreCase);
+        var icon = isBuy ? "🟢" : "🔴";
+        return $"{icon} {t.InsiderName}";
+    }
+
     private static string FormatTradeField(InsiderTrade t)
     {
         var type = t.TransactionType.ToLower() switch
         {
-            var s when s.Contains("förvärv") => "KÖP",
-            var s when s.Contains("avyttring") => "SÄLJ",
+            var s when s.Contains("förvärv") => "Köp",
+            var s when s.Contains("avyttring") => "Sälj",
             _ => t.TransactionType
         };
 
         var value = (t.Price * t.Shares).ToString("N0");
-        return $"**{type}** · {t.Shares:N0} aktier @ {t.Price:N2} {t.Currency}\nVärde: {value} {t.Currency} · {t.TransactionDate:yyyy-MM-dd}";
+
+        return $"> **Roll:** {t.Position ?? "Okänd roll"}\n" +
+               $"> **Typ:** {type}\n" +
+               $"> **Antal:** {t.Shares:N0} aktier @ {t.Price:N2} {t.Currency}\n" +
+               $"> **Värde:** {value} {t.Currency}\n" +
+               $"> 📅 {t.TransactionDate:yyyy-MM-dd}";
     }
 }

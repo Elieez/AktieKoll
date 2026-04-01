@@ -33,7 +33,7 @@ public class FollowController(IFollowService followService) : ControllerBase
     public async Task<IActionResult> Unfollow(int companyId, CancellationToken ct)
     {
         var userId = GetUserId();
-        if (userId is null) 
+        if (userId is null)
             return Unauthorized();
 
         var result = await followService.UnfollowAsync(userId, companyId, ct);
