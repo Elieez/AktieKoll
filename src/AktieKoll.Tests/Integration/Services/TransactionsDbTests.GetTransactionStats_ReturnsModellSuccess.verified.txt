@@ -1,4 +1,5 @@
 ﻿{
   TotalTransactions: 38,
-  TotalValue: 63894832.071920
+  TotalValue: 63894832.071920,
+  UniqueCompanies: 1
 }
