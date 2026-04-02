@@ -1,4 +1,5 @@
-﻿using AktieKoll.Interfaces;
+﻿using System.Text.Json.Serialization;
+using AktieKoll.Interfaces;
 using AktieKoll.Models;
 
 namespace AktieKoll.Services;
@@ -20,7 +21,7 @@ public class DiscordService(HttpClient httpClient, IConfiguration config, ILogge
         var stockUrl = $"{FrontendUrl}/stocks/{Uri.EscapeDataString(companyCode)}";
 
         var isBuy = trades.Any(t => t.TransactionType.Contains("förvärv", StringComparison.OrdinalIgnoreCase));
-        var color = isBuy ? 5083979 : 15757389; // #4deba8 green / #f06b4d red
+        var color = isBuy ? 5083979 : 15757389;
 
         var count = trades.Count;
         var countText = count == 1 ? "1 ny transaktion" : $"{count} nya transaktioner";
@@ -37,15 +38,20 @@ public class DiscordService(HttpClient httpClient, IConfiguration config, ILogge
             inline = false
         }));
 
-        var embed = new
+        var embed = new DiscordEmbed
         {
-            title = $"📈 Insiderhandel · {companyName}",
-            url = stockUrl,
-            color,
-            description = $"**{countText}** registrerad(e) på Stockholmsbörsen.",
-            fields,
-            footer = new { text = "AktieKoll · Insiderhandel · Stockholmsbörsen" },
-            timestamp = DateTime.UtcNow.ToString("o"),
+            Author = new DiscordAuthor
+            {
+                Name = "AktieKoll",
+                IconUrl = "https://raw.githubusercontent.com/Elieez/aktiekollwebb/master/public/aktiekoll_discord_avatar.png"
+            },
+            Title = $"📈 Insiderhandel · {companyName}",
+            Url = stockUrl,
+            Color = color,
+            Description = $"**{countText}** registrerad(e) på Stockholmsbörsen.",
+            Fields = fields,
+            Footer = new DiscordFooter { Text = "AktieKoll · Insiderhandel · Stockholmsbörsen" },
+            Timestamp = DateTime.UtcNow.ToString("o")
         };
 
         var payload = new { embeds = new[] { embed } };
@@ -93,5 +99,47 @@ public class DiscordService(HttpClient httpClient, IConfiguration config, ILogge
                $"> **Antal:** {t.Shares:N0} aktier @ {t.Price:N2} {t.Currency}\n" +
                $"> **Värde:** {value} {t.Currency}\n" +
                $"> 📅 {t.TransactionDate:yyyy-MM-dd}";
+    }
+
+    private class DiscordEmbed
+    {
+        [JsonPropertyName("author")]
+        public DiscordAuthor? Author { get; set; }
+
+        [JsonPropertyName("title")]
+        public string? Title { get; set; }
+
+        [JsonPropertyName("url")]
+        public string? Url { get; set; }
+
+        [JsonPropertyName("color")]
+        public int Color { get; set; }
+
+        [JsonPropertyName("description")]
+        public string? Description { get; set; }
+
+        [JsonPropertyName("fields")]
+        public List<object>? Fields { get; set; }
+
+        [JsonPropertyName("footer")]
+        public DiscordFooter? Footer { get; set; }
+
+        [JsonPropertyName("timestamp")]
+        public string? Timestamp { get; set; }
+    }
+
+    private class DiscordAuthor
+    {
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+
+        [JsonPropertyName("icon_url")]
+        public string? IconUrl { get; set; }
+    }
+
+    private class DiscordFooter
+    {
+        [JsonPropertyName("text")]
+        public string? Text { get; set; }
     }
 }
