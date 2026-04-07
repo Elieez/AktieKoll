@@ -1,4 +1,4 @@
-﻿using AktieKoll.Data;
+using AktieKoll.Data;
 using AktieKoll.Models;
 using AktieKoll.Services;
 using AktieKoll.Tests.Shared.TestHelpers;
@@ -8,9 +8,24 @@ namespace AktieKoll.Tests.Unit;
 public class FollowServiceTests
 {
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
-    private static async Task<(ApplicationDbContext ctx, Company company)> SetupWithCompany()
+
+    private static async Task<(ApplicationDbContext ctx, Company company)> SetupWithCompany(
+        bool emailConfirmed = true)
     {
         var ctx = ServiceTestHelpers.CreateContext();
+        ctx.Users.Add(new ApplicationUser
+        {
+            Id                 = "user1",
+            UserName           = "test@example.com",
+            NormalizedUserName = "TEST@EXAMPLE.COM",
+            Email              = "test@example.com",
+            NormalizedEmail    = "TEST@EXAMPLE.COM",
+            SecurityStamp      = "stamp",
+            ConcurrencyStamp   = "stamp",
+            EmailConfirmed     = emailConfirmed,
+            DisplayName        = "Test User",
+            CreatedAt          = DateTime.UtcNow
+        });
         var company = new Company { Code = "VOLV-B", Name = "Volvo B", Isin = null, Currency = "SEK", Type = "Common Stock" };
         ctx.Companies.Add(company);
         await ctx.SaveChangesAsync();
@@ -49,6 +64,14 @@ public class FollowServiceTests
     public async Task Follow_CompanyNotFound_Returns404()
     {
         var ctx = ServiceTestHelpers.CreateContext();
+        ctx.Users.Add(new ApplicationUser
+        {
+            Id = "user1", UserName = "t@t.se", NormalizedUserName = "T@T.SE",
+            Email = "t@t.se", NormalizedEmail = "T@T.SE",
+            SecurityStamp = "s", ConcurrencyStamp = "s",
+            EmailConfirmed = true, DisplayName = "T", CreatedAt = DateTime.UtcNow
+        });
+        await ctx.SaveChangesAsync(Ct);
         var service = new FollowService(ctx);
 
         var result = await service.FollowAsync("user1", 999, Ct);
@@ -61,6 +84,13 @@ public class FollowServiceTests
     public async Task Follow_MaxFollowsReached_Returns400()
     {
         var ctx = ServiceTestHelpers.CreateContext();
+        ctx.Users.Add(new ApplicationUser
+        {
+            Id = "user1", UserName = "t@t.se", NormalizedUserName = "T@T.SE",
+            Email = "t@t.se", NormalizedEmail = "T@T.SE",
+            SecurityStamp = "s", ConcurrencyStamp = "s",
+            EmailConfirmed = true, DisplayName = "T", CreatedAt = DateTime.UtcNow
+        });
 
         // Add 4 companies, follow 3 of them (max), then try to follow the 4th
         var companies = new List<Company>();
@@ -84,6 +114,18 @@ public class FollowServiceTests
 
         Assert.False(result.IsSuccess);
         Assert.Equal(400, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task Follow_UnverifiedUser_Returns403()
+    {
+        var (ctx, company) = await SetupWithCompany(emailConfirmed: false);
+        var service = new FollowService(ctx);
+
+        var result = await service.FollowAsync("user1", company.Id, Ct);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(403, result.StatusCode);
     }
 
     [Fact]
@@ -118,6 +160,13 @@ public class FollowServiceTests
     public async Task GetFollowed_ReturnsAllFollowedCompanies()
     {
         var ctx = ServiceTestHelpers.CreateContext();
+        ctx.Users.Add(new ApplicationUser
+        {
+            Id = "user1", UserName = "t@t.se", NormalizedUserName = "T@T.SE",
+            Email = "t@t.se", NormalizedEmail = "T@T.SE",
+            SecurityStamp = "s", ConcurrencyStamp = "s",
+            EmailConfirmed = true, DisplayName = "T", CreatedAt = DateTime.UtcNow
+        });
         var c1 = new Company { Code = "ERIC-B", Name = "Ericsson B", Isin = null, Currency = "SEK", Type = "Common Stock" };
         var c2 = new Company { Code = "VOLV-B", Name = "Volvo B", Isin = null, Currency = "SEK", Type = "Common Stock" };
         ctx.Companies.AddRange(c1, c2);

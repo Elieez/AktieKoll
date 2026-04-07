@@ -73,7 +73,7 @@ public class WebApplicationFactoryFixture : WebApplicationFactory<Program>
             if (emailDescriptor != null) services.Remove(emailDescriptor);
 
             var mockEmail = new Mock<IEmailService>();
-            mockEmail.Setup(s => s.SendEmailVerificationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            mockEmail.Setup(s => s.SendEmailVerificationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                      .Returns(Task.CompletedTask);
             mockEmail.Setup(s => s.SendPasswordResetAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                      .Returns(Task.CompletedTask);
@@ -94,6 +94,7 @@ public class WebApplicationFactoryFixture : WebApplicationFactory<Program>
         db.Database.EnsureCreated();
 
         db.RefreshTokens.RemoveRange(db.RefreshTokens);
+        db.VerificationCodes.RemoveRange(db.VerificationCodes);
         db.Users.RemoveRange(db.Users);
         db.InsiderTrades.RemoveRange(db.InsiderTrades);
         db.Companies.RemoveRange(db.Companies);
