@@ -49,7 +49,7 @@ public class AuthController(
 
         var result = await userManager.CreateAsync(user, dto.Password);
         if (!result.Succeeded)
-            return BadRequest(result.Errors.Select(e => e.Description));
+            return BadRequest(new { errors = result.Errors.Select(e => e.Description).ToList() });
 
         // Send verification email (fire-and-forget; don't fail registration if email fails)
         try
