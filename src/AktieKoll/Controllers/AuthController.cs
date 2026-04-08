@@ -80,14 +80,14 @@ public class AuthController(
     {
         var user = await userManager.FindByEmailAsync(dto.Email);
         if (user == null)
-            return Unauthorized("Invalid email or password.");
+            return Unauthorized("Felaktig e-post eller lösenord.");
 
         if (await userManager.IsLockedOutAsync(user))
-            return Unauthorized("Account is locked. Please try again later.");
+            return Unauthorized("Kontot är låst. Försök igen senare.");
 
         var valid = await userManager.CheckPasswordAsync(user, dto.Password);
         if (!valid)
-            return Unauthorized("Invalid email or password.");
+            return Unauthorized("Felaktig e-post eller lösenord.");
 
         var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
         var pair = await authService.IssueTokenPairAsync(user, ipAddress);
