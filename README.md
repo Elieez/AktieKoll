@@ -1,99 +1,150 @@
-# AktieKoll 📈
-**Spårning och analys av insiderhandel på den svenska aktiemarknaden**
+# AktieKoll
+**Swedish insider trading — tracked, enriched, and delivered in real time**
 
-AktieKoll är ett backend-system byggt i **.NET 10** som automatiskt hämtar, bearbetar och presenterar insiderhandelsdata från Finansinspektionen. Tanken är enkel: istället för att manuellt leta i FI:s register kan du via ett REST API direkt fråga efter trender, bolagshistorik och de senaste affärerna.
+AktieKoll is a REST API backend built with **.NET 10** that automatically collects, processes, and serves insider trading data from Finansinspektionen. Instead of manually digging through FI's public register, users get a clean API with trend analysis, company search, real-time alerts, and a full authentication system.
 
 ---
 
-## 🔄 Hur det fungerar – flödet i tre steg
+## How It Works
 
 ```
-1. HÄMTA       →   2. BERIKA       →   3. PRESENTERA
-FI:s register      Koppla ticker       REST API
-(CSV dagligen)     och ISIN via        
-                   EODHD
+1. FETCH          →   2. ENRICH         →   3. DELIVER
+FI's register         Map ticker              Secure REST API
+(CSV every 6h)        and ISIN via            + Email & Discord
+                      EODHD                   notifications
 ```
 
-1. **Hämta** – Var 6:e timme hämtas nya insideraffärer direkt från Finansinspektionens publika CSV-register.
-2. **Berika** – Varje transaktion kopplas till rätt bolag via en lokal databas med tickers och ISIN-koder (synkad månadsvis från EODHD). Bolagsnamn rensas automatiskt från suffix som "AB" och "(publ)".
-3. **Presentera** – All data görs tillgänglig via ett säkert REST API med JWT-autentisering.
+1. **Fetch** — Every 6 hours, new insider trades are pulled directly from Finansinspektionen's public CSV register via GitHub Actions.
+2. **Enrich** — Each transaction is matched to a company using a local database of tickers and ISIN codes (synced monthly from EODHD). Company names are automatically cleaned of suffixes like "AB" and "(publ)".
+3. **Deliver** — All data is exposed through a secure REST API with JWT authentication, and followers of a company receive email or Discord alerts when new trades come in.
 
 ---
 
-## 🚀 Funktioner
+## Features
 
-- **Daglig datainsamling** – Automatisk synkronisering med FI:s insiderregister.
-- **Datatvätt** – Rå CSV-data normaliseras och felaktig/irrelevant data filtreras bort.
-- **Ticker-mapping** – Transaktioner kopplas till börssymboler (tickers) och ISIN utan externa API-anrop i realtid.
-- **Trendanalys** – Endpoints för att hitta de mest köpta/sålda aktierna under en vald period.
-- **Säker inloggning** – JWT-autentisering med refresh tokens i HTTP-only cookies (skydd mot XSS).
+**Data pipeline**
+- Automated sync with Finansinspektionen's insider register every 6 hours
+- Raw CSV data normalized and cleaned — invalid/duplicate records filtered out
+- Ticker and ISIN mapping without real-time external API calls
+- Trend analysis endpoints (top trades, buy/sell counts, YTD statistics)
+
+**Authentication**
+- JWT access tokens (15-minute lifetime) + refresh tokens (7-day lifetime) stored in HTTP-only cookies (XSS protection)
+- Google OAuth — sign in with Google, auto-links to existing accounts
+- Email verification on registration, with resend support
+- Password reset via email token (1-hour expiry)
+- Account lockout after 5 failed login attempts (15-minute cooldown)
+- GDPR-compliant two-step account deletion — request, confirm via email, permanently erased
+
+**Notifications**
+- Per-company follow system — users follow the companies they care about
+- Email alerts with HTML-formatted trade details (insider name, role, type, share count, price, total value)
+- Discord webhook notifications with rich embeds — color-coded buy/sell, up to 25 trades per message
+- Per-user preferences — enable/disable email and Discord independently, set a custom Discord webhook URL
+- Deduplication via `NotificationLog` — no duplicate alerts across batch runs
 
 ---
 
-## 🛠 Teknisk stack
+## Tech Stack
 
-| Område | Teknik |
+| Area | Tech |
 | :--- | :--- |
 | **Runtime** | .NET 10 / ASP.NET Core |
-| **Databas** | PostgreSQL med Entity Framework Core |
-| **Säkerhet** | JWT, Refresh Tokens, HTTP-only Cookies |
-| **Testning** | xUnit, Moq, FluentAssertions, Verify |
-| **Externa API:er** | EODHD (börskurser & ticker-data) |
-| **DevOps** | GitHub Actions (CI & Cron-jobb), Renovate Bot |
+| **Database** | PostgreSQL with Entity Framework Core |
+| **Security** | JWT, Refresh Tokens, HTTP-only Cookies, Google OAuth |
+| **Email** | MailKit (SMTP) |
+| **Notifications** | Discord Webhooks |
+| **Testing** | xUnit, Moq, FluentAssertions, Verify |
+| **External APIs** | EODHD (tickers & market data), Finansinspektionen (insider register) |
+| **DevOps** | GitHub Actions (CI & cron jobs), Renovate Bot |
 
 ---
 
-## 🏗 Projektstruktur
+## Project Structure
 
-Projektet följer **Clean Architecture** och är uppdelat i fyra delar:
+Follows **Clean Architecture**, split into four modules:
 
-| Modul | Syfte |
+| Module | Purpose |
 | :--- | :--- |
-| `AktieKoll/` | Core API – controllers, affärslogik, databasmodeller och autentisering |
-| `FetchTrades/` | Konsolapp som körs som cron-jobb och hämtar dagliga insideraffärer från FI |
-| `FetchCompanies/` | Månatligt jobb som synkroniserar tickers och ISIN för alla svenska börsbolag |
-| `AktieKoll.Tests/` | Enhets- och integrationstester för parsing, databaslogik m.m. |
+| `AktieKoll/` | Core API — controllers, business logic, database models, auth, and notifications |
+| `FetchTrades/` | Console app run as a cron job — fetches daily insider trades from FI |
+| `FetchCompanies/` | Monthly job — syncs tickers and ISIN codes for all Swedish listed companies via EODHD |
+| `AktieKoll.Tests/` | Unit and integration tests covering parsing, database logic, and more |
 
 ---
 
-## 📡 API-översikt
+## API Overview
 
-### Autentisering – `/api/auth`
-| Metod | Endpoint | Beskrivning |
-| :--- | :--- | :--- |
-| `POST` | `/login` | Loggar in och returnerar en access token |
-| `POST` | `/refresh` | Förnyar sessionen med hjälp av refresh token-cookie |
+### Authentication — `/api/auth`
 
-### Insiderhandel – `/api/insidertrades`
-| Metod | Endpoint | Beskrivning |
-| :--- | :--- | :--- |
-| `GET` | `/top` | De 10 tyngsta transaktionerna från föregående handelsdag |
-| `GET` | `/count-buy` | Bolag med flest köptransaktioner under en vald period |
-| `GET` | `/company/{ticker}` | Alla transaktioner för ett specifikt bolag |
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/register` | — | Register a new account (sends verification email) |
+| `POST` | `/login` | — | Authenticate with email/password, returns JWT and sets refresh-token cookie |
+| `POST` | `/refresh` | Cookie | Rotate the refresh token, issue a new JWT |
+| `POST` | `/logout` | Cookie | Revoke the refresh token |
+| `GET` | `/google` | — | Initiate Google OAuth flow |
+| `GET` | `/google/handle` | — | Google OAuth callback |
+| `GET` | `/verify-email` | — | Verify email address via link from inbox |
+| `POST` | `/resend-verification` | JWT | Resend the email verification link |
+| `POST` | `/forgot-password` | — | Request a password reset email |
+| `POST` | `/reset-password` | — | Reset password using the emailed token |
+| `POST` | `/account/delete/request` | JWT | Initiate account deletion (sends confirmation email) |
+| `POST` | `/account/delete/confirm` | JWT | Confirm and permanently delete the account |
 
-### Bolagsregister – `/api/company`
-| Metod | Endpoint | Beskrivning |
+### Insider Trades — `/api/insidertrades`
+
+| Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/` | Lista alla börsnoterade bolag i databasen |
-| `GET` | `/{ticker}` | Hämta information om ett specifikt bolag (namn, ISIN, ticker) |
-| `GET` | `/search?q={query}` | Sök efter bolag på namn eller ticker |
+| `GET` | `/page` | Paginated list of all insider trades |
+| `GET` | `/top` | Top 10 largest trades from the previous trading day |
+| `GET` | `/count-buy` | Companies with the most buy transactions in a given period |
+| `GET` | `/count-sell` | Companies with the most sell transactions in a given period |
+| `GET` | `/company` | All trades for a specific company (by ticker symbol) |
+| `GET` | `/ytd-stats` | Year-to-date aggregate statistics |
+
+### Companies — `/api/company`
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/` | List all listed companies in the database |
+| `GET` | `/{code}` | Get a company by ticker/code (name, ISIN, ticker) |
+| `GET` | `/search?q={query}` | Search companies by name or ticker |
+
+### Following — `/api/follow` *(requires auth)*
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/{companyId}` | Follow a company |
+| `DELETE` | `/{companyId}` | Unfollow a company |
+| `GET` | `/` | Get all followed companies |
+| `GET` | `/{companyId}` | Check follow status for a specific company |
+
+### Notification Preferences — `/api/notification/preferences` *(requires auth)*
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/` | Get current notification preferences |
+| `PUT` | `/` | Update preferences (email on/off, Discord on/off, webhook URL) |
 
 ---
 
-## ⚙️ Automatisering
+## Automation
 
-Allt körs automatiskt via **GitHub Actions**:
+Everything runs automatically via **GitHub Actions**:
 
-| Jobb | Trigger | Vad det gör |
+| Job | Trigger | What it does |
 | :--- | :--- | :--- |
-| `ci.yml` | Varje push | Bygger projektet och kör alla tester |
-| `cron-fetch.yml` | Var 6:e timme | Hämtar och sparar nya insideraffärer från FI |
-| `update-companies.yml` | 1:a varje månad | Uppdaterar databasen med tickers och ISIN via EODHD |
+| `ci.yml` | Every push | Builds the project and runs all tests |
+| `cron-fetch.yml` | Every 6 hours | Fetches new insider trades from FI and processes notifications |
+| `update-companies.yml` | 1st of every month | Updates the company database with tickers and ISIN via EODHD |
 
-**Renovate Bot** håller automatiskt NuGet-paket uppdaterade för att minimera säkerhetsrisker.
+**Renovate Bot** automatically keeps NuGet packages up to date to minimize security exposure.
 
 ---
 
-## 💡 Syfte & lärdomar
+## Purpose
 
-Projektet skapades för att fördjupa kunskaper inom .NET och utforska hur man hanterar finansiell transaktionsdata i praktiken. Fokus har legat på säkerhet, enkel underhållbarhet och tydlig arkitektur – med hög testtäckning som grund.
+Built to deepen knowledge of .NET and explore real-world handling of financial transaction data. The focus has been on security, maintainability, and clear architecture — with a full test suite as the foundation.
+
+The frontend for this project lives at [elieez/aktiekollwebb](https://github.com/Elieez/aktiekollwebb).
