@@ -82,6 +82,7 @@ public class NotificationServiceTests
             NormalizedEmail = "INVESTOR@EXAMPLE.COM",
             SecurityStamp = "stamp",
             ConcurrencyStamp = "stamp",
+            EmailConfirmed = true,
             DisplayName = "Lars Eriksson",
             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         };
@@ -309,6 +310,7 @@ public class NotificationServiceTests
             NormalizedEmail = "INVESTOR@EXAMPLE.COM",
             SecurityStamp = "stamp",
             ConcurrencyStamp = "stamp",
+            EmailConfirmed = true,
             DisplayName = "Lars Eriksson",
             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         });
@@ -422,6 +424,58 @@ public class NotificationServiceTests
         };
 
         await svc.ProcessBatchNotificationsAsync(BatchRunId, tradesWithoutSymbol, ServiceTestHelpers.Ct);
+
+        Assert.Empty(emailCaptures);
+        Assert.Empty(await ctx.NotificationLogs.ToListAsync(ServiceTestHelpers.Ct));
+    }
+
+    /// <summary>
+    /// A follower whose email is not confirmed must be skipped entirely —
+    /// no notification sent and no log entry written.
+    /// </summary>
+    [Fact]
+    public async Task ProcessBatch_UnverifiedFollower_NoNotificationSent()
+    {
+        var ctx = ServiceTestHelpers.CreateContext();
+
+        var company = new Company
+        {
+            Code = "ATCO-A",
+            Name = "Atlas Copco AB",
+            Isin = "SE0011166610",
+            Currency = "SEK",
+            Type = "Common Stock"
+        };
+        ctx.Companies.Add(company);
+
+        ctx.Users.Add(new ApplicationUser
+        {
+            Id = "user-1",
+            UserName = "investor@example.com",
+            NormalizedUserName = "INVESTOR@EXAMPLE.COM",
+            Email = "investor@example.com",
+            NormalizedEmail = "INVESTOR@EXAMPLE.COM",
+            SecurityStamp = "stamp",
+            ConcurrencyStamp = "stamp",
+            EmailConfirmed = false,   // unverified — must be skipped
+            DisplayName = "Lars Eriksson",
+            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+        });
+        await ctx.SaveChangesAsync(ServiceTestHelpers.Ct);
+
+        ctx.UserCompanyFollows.Add(new UserCompanyFollow { UserId = "user-1", CompanyId = company.Id });
+        await ctx.SaveChangesAsync(ServiceTestHelpers.Ct);
+
+        var (emailMock, emailCaptures) = CreateEmailMock();
+        var (discordMock, _) = CreateDiscordMock();
+        var svc = new NotificationService(ctx, emailMock.Object, discordMock.Object,
+            NullLogger<NotificationService>.Instance);
+
+        var trades = AtlasTrades();
+        ctx.InsiderTrades.AddRange(trades);
+        await ctx.SaveChangesAsync(ServiceTestHelpers.Ct);
+
+        await svc.ProcessBatchNotificationsAsync(BatchRunId, trades, ServiceTestHelpers.Ct);
 
         Assert.Empty(emailCaptures);
         Assert.Empty(await ctx.NotificationLogs.ToListAsync(ServiceTestHelpers.Ct));

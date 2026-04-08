@@ -18,6 +18,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<NotificationLog> NotificationLogs { get; set; }
 
+    public DbSet<VerificationCode> VerificationCodes { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -67,6 +69,16 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                   .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(p => p.UserId).IsUnique();
+        });
+
+        builder.Entity<VerificationCode>(entity =>
+        {
+            entity.HasKey(v => v.Id);
+            entity.HasIndex(v => v.Code).IsUnique();
+            entity.HasOne<ApplicationUser>()
+                  .WithMany()
+                  .HasForeignKey(v => v.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<NotificationLog>(entity =>

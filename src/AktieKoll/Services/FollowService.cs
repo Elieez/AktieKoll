@@ -12,6 +12,10 @@ public class FollowService(ApplicationDbContext context) : IFollowService
 
     public async Task<ServiceResult<FollowStatusDto>> FollowAsync(string userId, int companyId, CancellationToken ct = default)
     {
+        var user = await context.Users.FindAsync(new object[] { userId }, ct);
+        if (user == null || !user.EmailConfirmed)
+            return ServiceResult<FollowStatusDto>.Fail("Du måste verifiera din e-postadress för att bevaka bolag.", 403);
+
         var companyExists = await context.Companies.AnyAsync(c => c.Id == companyId, ct);
         if (!companyExists)
             return ServiceResult<FollowStatusDto>.Fail("Företaget hittades inte.", 404);

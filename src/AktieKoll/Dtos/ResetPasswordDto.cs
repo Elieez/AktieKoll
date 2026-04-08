@@ -5,12 +5,8 @@ namespace AktieKoll.Dtos;
 public record ResetPasswordDto
 {
     [Required]
-    [EmailAddress]
-    [MaxLength(256)]
-    public required string Email { get; init; }
-
-    [Required]
-    public required string Token { get; init; }
+    [MaxLength(16)]
+    public required string Code { get; init; }
 
     [Required]
     [StringLength(100, MinimumLength = 8)]
