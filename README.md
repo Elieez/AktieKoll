@@ -1,6 +1,8 @@
 # AktieKoll
 **Swedish insider trading — tracked, enriched, and delivered in real time**
 
+[🌐 Live Frontend](https://aktiekoll.se) | [📖 API Documentation (Swagger)](https://api.aktiekoll.se/swagger)
+
 AktieKoll is a REST API backend built with **.NET 10** that automatically collects, processes, and serves insider trading data from Finansinspektionen. Instead of manually digging through FI's public register, users get a clean API with trend analysis, company search, real-time alerts, and a full authentication system.
 
 ---
@@ -57,6 +59,16 @@ FI's register         Map ticker              Secure REST API
 | **Testing** | xUnit, Moq, FluentAssertions, Verify |
 | **External APIs** | EODHD (tickers & market data), Finansinspektionen (insider register) |
 | **DevOps** | GitHub Actions (CI & cron jobs), Renovate Bot |
+
+---
+
+## Developer Setup
+
+This project serves as the dedicated backend for the AktieKoll frontend. While not intended for public distribution, it can be run locally for technical review:
+
+- **Prerequisites:** .NET 10 SDK, PostgreSQL
+- **Configuration:** Required environment variables (API keys, DB connection strings) are outlined in [`appsettings.Example.json`](src/AktieKoll/appsettings.Example.json)
+- **Run:** `dotnet run --project src/AktieKoll`
 
 ---
 
