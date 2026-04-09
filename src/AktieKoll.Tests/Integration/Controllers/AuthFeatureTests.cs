@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Net.Http.Json;
+using static AktieKoll.Tests.Shared.TestHelpers.ServiceTestHelpers;
 
 namespace AktieKoll.Tests.Integration.Controllers;
 
@@ -123,7 +124,7 @@ public class AuthFeatureTests(WebApplicationFactoryFixture factory) : Integratio
                 Purpose   = "email_confirmation",
                 ExpiresAt = DateTime.UtcNow.AddHours(24)
             });
-            await db.SaveChangesAsync();
+            await db.SaveChangesAsync(Ct);
         }
 
         // Act
@@ -131,7 +132,7 @@ public class AuthFeatureTests(WebApplicationFactoryFixture factory) : Integratio
 
         // Assert: 200 with access token (auto-login)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+        var body = await response.Content.ReadFromJsonAsync<AuthResponseDto>(Ct);
         body!.AccessToken.Should().NotBeNullOrEmpty();
 
         // User should now be confirmed
@@ -210,7 +211,7 @@ public class AuthFeatureTests(WebApplicationFactoryFixture factory) : Integratio
                 Purpose   = "password_reset",
                 ExpiresAt = DateTime.UtcNow.AddHours(1)
             });
-            await db.SaveChangesAsync();
+            await db.SaveChangesAsync(Ct);
         }
 
         // Verify old password works for login (also creates a refresh token)
