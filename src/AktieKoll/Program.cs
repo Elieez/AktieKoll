@@ -145,6 +145,7 @@ builder.Services.Configure<CookieAuthenticationOptions>(IdentityConstants.Applic
 builder.Services.Configure<FormOptions>(options =>
     options.MultipartBodyLengthLimit = 10485760);
 
+
 builder.WebHost.ConfigureKestrel(options =>
     options.Limits.MaxRequestBodySize = 10485760);
 
@@ -153,11 +154,15 @@ builder.Services.AddScoped<IAuthService,     AuthService>();
 builder.Services.AddScoped<IEmailService,    EmailService>();
 
 builder.Services.AddHttpClient<CsvFetchService>();
+builder.Services.AddHttpClient<IDiscordService, DiscordService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddTransient<ISymbolService, SymbolService>();
 builder.Services.AddHostedService<RefreshTokenCleanupService>();
 builder.Services.AddScoped<IInsiderTradeService, InsiderTradeService>();
-builder.Services.AddScoped<ICompanyService,      CompanyService>();
+builder.Services.AddScoped<ICompanyService, CompanyService>();
+builder.Services.AddScoped<IFollowService, FollowService>();
+builder.Services.AddScoped<INotificationPreferencesService, NotificationPreferencesService>();
 
 builder.Services.AddResponseCaching();
 builder.Services.AddMemoryCache();

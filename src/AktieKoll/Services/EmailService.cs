@@ -1,4 +1,5 @@
 using AktieKoll.Interfaces;
+using AktieKoll.Models;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
@@ -13,13 +14,13 @@ namespace AktieKoll.Services;
 /// </summary>
 public class EmailService(IConfiguration config, ILogger<EmailService> logger) : IEmailService
 {
-    private string SmtpHost     => config["Email:SmtpHost"]     ?? throw new InvalidOperationException("Email:SmtpHost missing");
-    private int    SmtpPort     => config.GetValue<int>("Email:SmtpPort", 587);
-    private string SmtpUser     => config["Email:SmtpUsername"] ?? string.Empty;
-    private string SmtpPass     => config["Email:SmtpPassword"] ?? string.Empty;
-    private string FromAddress   => config["Email:FromAddress"]  ?? throw new InvalidOperationException("Email:FromAddress missing");
-    private string FromName      => config["Email:FromName"]     ?? "AktieKoll";
-    private string FrontendUrl   => (config["Frontend:Url"]      ?? "http://localhost:3000").TrimEnd('/');
+    private string SmtpHost => config["Email:SmtpHost"] ?? throw new InvalidOperationException("Email:SmtpHost missing");
+    private int SmtpPort => config.GetValue<int>("Email:SmtpPort", 587);
+    private string SmtpUser => config["Email:SmtpUsername"] ?? string.Empty;
+    private string SmtpPass => config["Email:SmtpPassword"] ?? string.Empty;
+    private string FromAddress => config["Email:FromAddress"] ?? throw new InvalidOperationException("Email:FromAddress missing");
+    private string FromName => config["Email:FromName"] ?? "AktieKoll";
+    private string FrontendUrl => (config["Frontend:Url"] ?? "http://localhost:3000").TrimEnd('/');
 
     public Task SendEmailVerificationAsync(string toEmail, string userId, string token, CancellationToken ct = default)
     {
@@ -39,8 +40,8 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger) :
 
     public Task SendPasswordResetAsync(string toEmail, string token, CancellationToken ct = default)
     {
-        var encodedToken  = Uri.EscapeDataString(token);
-        var encodedEmail  = Uri.EscapeDataString(toEmail);
+        var encodedToken = Uri.EscapeDataString(token);
+        var encodedEmail = Uri.EscapeDataString(toEmail);
         var link = $"{FrontendUrl}/auth/reset-password?email={encodedEmail}&token={encodedToken}";
         var html = $@"<p>Hej!</p>
                <p>Vi fick en begäran om att återställa lösenordet för ditt konto.</p>
@@ -82,6 +83,148 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger) :
             "Ditt konto har raderats – AktieKoll",
             html,
             ct);
+    }
+
+    public Task SendTradeNotificationAsync(
+        string toEmail,
+        string companyName,
+        string companyCode,
+        List<InsiderTrade> trades,
+        CancellationToken ct = default)
+    {
+        var stockUrl = $"{FrontendUrl}/stocks/{Uri.EscapeDataString(companyCode)}";
+        var settingsUrl = $"{FrontendUrl}/settings";
+        var html = BuildTradeNotificationHtml(companyCode, companyCode, trades, stockUrl, settingsUrl);
+
+        return SendAsync(
+            toEmail,
+            $"Ny insiderhandel: {companyName} - AktieKoll",
+            html,
+            ct);
+    }
+
+    private static string BuildTradeNotificationHtml(
+        string companyName,
+        string companyCode,
+        List<InsiderTrade> trades,
+        string stockUrl,
+        string settingsUrl)
+    {
+        var rows = string.Concat(trades.Select(t =>
+        {
+            var isKop = t.TransactionType.ToLower().Contains("förvärv");
+            var isSalj = t.TransactionType.ToLower().Contains("avyttring");
+
+            var typeBadge = isKop
+                ? "<span style=\"display:inline-block;background:#059669;color:#ffffff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:0.04em;\">KÖP</span>"
+                : isSalj
+                    ? "<span style=\"display:inline-block;background:#dc2626;color:#ffffff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:0.04em;\">SÄLJ</span>"
+                    : $"<span style=\"font-size:12px;color:#111827;\">{System.Net.WebUtility.HtmlEncode(t.TransactionType)}</span>";
+
+            var value = (t.Price * t.Shares).ToString("N0");
+            var insiderEncoded = System.Net.WebUtility.HtmlEncode(t.InsiderName);
+            var positionEncoded = System.Net.WebUtility.HtmlEncode(t.Position ?? "–");
+
+            return $@"
+<div style=""border:1px solid #e5e7eb;border-radius:6px;margin-bottom:12px;overflow:hidden;"">
+  <table width=""100%"" cellpadding=""0"" cellspacing=""0"" style=""border-collapse:collapse;"">
+    <tr>
+      <td style=""padding:12px 14px 6px;font-weight:600;color:#111827;font-size:14px;"">{insiderEncoded}</td>
+      <td style=""padding:12px 14px 6px;text-align:right;color:#6b7280;font-size:13px;"">{positionEncoded}</td>
+    </tr>
+    <tr>
+      <td style=""padding:0 14px 10px;"">{typeBadge}</td>
+      <td style=""padding:0 14px 10px;text-align:right;color:#9ca3af;font-size:12px;"">{t.TransactionDate:yyyy-MM-dd}</td>
+    </tr>
+  </table>
+  <table width=""100%"" cellpadding=""0"" cellspacing=""0"" style=""border-collapse:collapse;border-top:1px solid #e5e7eb;"">
+    <tr>
+      <td style=""padding:10px 14px;width:33%;"">
+        <div style=""font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;"">Antal</div>
+        <div style=""font-size:13px;font-weight:600;color:#111827;"">{t.Shares:N0}</div>
+      </td>
+      <td style=""padding:10px 14px;width:33%;border-left:1px solid #e5e7eb;"">
+        <div style=""font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;"">Pris</div>
+        <div style=""font-size:13px;font-weight:600;color:#111827;"">{t.Price:N2} {System.Net.WebUtility.HtmlEncode(t.Currency)}</div>
+      </td>
+      <td style=""padding:10px 14px;width:34%;border-left:1px solid #e5e7eb;"">
+        <div style=""font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;"">V&#228;rde</div>
+        <div style=""font-size:13px;font-weight:600;color:#111827;"">{value} {System.Net.WebUtility.HtmlEncode(t.Currency)}</div>
+      </td>
+    </tr>
+  </table>
+</div>";
+        }));
+
+        var companyNameEncoded = System.Net.WebUtility.HtmlEncode(companyName);
+        var companyCodeEncoded = System.Net.WebUtility.HtmlEncode(companyCode);
+
+        return $@"<!DOCTYPE html>
+<html lang=""sv"">
+<head>
+  <meta charset=""UTF-8"">
+  <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+  <title>Ny insiderhandel &#8211; {companyNameEncoded}</title>
+</head>
+<body style=""margin:0;padding:0;background:#f5f5f5;font-family:'Segoe UI',Arial,sans-serif;"">
+  <table width=""100%"" cellpadding=""0"" cellspacing=""0"" style=""background:#f5f5f5;"">
+    <tr>
+      <td align=""center"" style=""padding:32px 16px;"">
+        <table width=""100%"" cellpadding=""0"" cellspacing=""0""
+               style=""max-width:600px;background:#ffffff;border-radius:8px;border:1px solid #e5e7eb;box-shadow:0 1px 4px rgba(0,0,0,0.06);"">
+
+          <!-- Header -->
+          <tr>
+            <td style=""background:#f9f9f9;padding:24px 24px 20px;border-bottom:1px solid #e5e7eb;border-radius:8px 8px 0 0;"">
+              <p style=""margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#9ca3af;"">AktieKoll &middot; Insiderbevakning</p>
+              <h1 style=""margin:0;font-size:20px;font-weight:700;color:#111827;"">Ny insiderhandel</h1>
+            </td>
+          </tr>
+
+          <!-- Company -->
+          <tr>
+            <td style=""padding:20px 24px 16px;"">
+              <h2 style=""margin:0;font-size:16px;font-weight:600;color:#111827;"">
+                <a href=""{stockUrl}"" style=""color:#059669;text-decoration:none;"">{companyNameEncoded}</a>
+                <span style=""font-weight:400;font-size:13px;color:#6b7280;"">&nbsp;{companyCodeEncoded}</span>
+              </h2>
+              <p style=""margin:6px 0 0;font-size:13px;color:#6b7280;"">{trades.Count} transaktion(er) registrerade</p>
+            </td>
+          </tr>
+
+          <!-- Trade cards -->
+          <tr>
+            <td style=""padding:0 24px 8px;"">
+              {rows}
+            </td>
+          </tr>
+
+          <!-- CTA -->
+          <tr>
+            <td style=""padding:16px 24px 24px;text-align:center;"">
+              <a href=""{stockUrl}""
+                 style=""display:inline-block;background:#4deba8;color:#0f0f0f;padding:11px 28px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;"">
+                Se alla transaktioner &#8594;
+              </a>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style=""background:#f9f9f9;padding:16px 24px;border-top:1px solid #e5e7eb;border-radius:0 0 8px 8px;text-align:center;"">
+              <p style=""margin:0;font-size:11px;color:#9ca3af;"">
+                Du f&#229;r detta mejl f&#246;r att du bevakar {companyNameEncoded} p&#229; AktieKoll.<br>
+                <a href=""{settingsUrl}"" style=""color:#059669;text-decoration:none;"">Hantera notifikationer</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>";
     }
 
     private async Task SendAsync(string toEmail, string subject, string htmlBody, CancellationToken ct)

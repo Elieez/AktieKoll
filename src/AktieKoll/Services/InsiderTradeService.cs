@@ -14,11 +14,11 @@ public class InsiderTradeService(
     TimeProvider timeProvider,
     ILogger<InsiderTradeService> logger) : IInsiderTradeService
 {
-    public async Task<string> AddInsiderTrades(List<InsiderTrade> insiderTrades)
+    public async Task<InsiderTradeIngestionResult> AddInsiderTrades(List<InsiderTrade> insiderTrades)
     {
         if (insiderTrades == null || insiderTrades.Count == 0)
         {
-            return "No data provided.";
+            return new InsiderTradeIngestionResult("No data provided.", []);
         }
 
         var dates = insiderTrades.Select(t => t.PublishingDate).Distinct().ToList();
@@ -29,6 +29,7 @@ public class InsiderTradeService(
 
         await symbolService.ResolveSymbolsAsync(insiderTrades);
 
+        var inserted = new List<InsiderTrade>();
         int newTradesCount = 0;
         int removedTradesCount = 0;
         foreach (var trade in insiderTrades)
@@ -50,7 +51,7 @@ public class InsiderTradeService(
                 continue;
             }
 
-            if (string.IsNullOrEmpty(trade.Symbol)) 
+            if (string.IsNullOrEmpty(trade.Symbol))
             {
                 logger.LogWarning(
                     "Trade unresolved at ingestion - CompanyName: '{Company}', ISIN: '{Isin}'",
@@ -59,6 +60,7 @@ public class InsiderTradeService(
 
             context.InsiderTrades.Add(trade);
             existingTrades.Add(trade);
+            inserted.Add(trade);
             newTradesCount++;
         }
 
@@ -68,15 +70,15 @@ public class InsiderTradeService(
 
             if (newTradesCount > 0 && removedTradesCount > 0)
             {
-                return $"{newTradesCount} new trades added. {removedTradesCount} trades removed.";
+                return new InsiderTradeIngestionResult($"{newTradesCount} new trades added. {removedTradesCount} trades removed.", inserted);
             }
             if (newTradesCount > 0)
             {
-                return $"{newTradesCount} new trades added.";
+                return new InsiderTradeIngestionResult($"{newTradesCount} new trades added.", inserted);
             }
-            return $"{removedTradesCount} trades removed.";
+            return new InsiderTradeIngestionResult($"{removedTradesCount} trades removed.", []) ;
         }
-        return "No new data was added.";
+        return new InsiderTradeIngestionResult("No new data was added.", []);
 
     }
 
@@ -184,13 +186,14 @@ public class InsiderTradeService(
              .Select(g => new YtdStats
              {
                  TotalTransactions = (long)g.Count(),
-                 TotalValue = g.Sum(t => t.Price * t.Shares)
+                 TotalValue = g.Sum(t => t.Price * t.Shares),
+                 UniqueCompanies = g.Select(t => t.Symbol).Distinct().Count()
              })
              .FirstOrDefaultAsync();
 
         cache.Set(cacheKey, stats, new MemoryCacheEntryOptions()
             .SetAbsoluteExpiration(TimeSpan.FromHours(6)));
 
-        return stats ?? new YtdStats { TotalTransactions = 0, TotalValue = 0 };
+        return stats ?? new YtdStats { TotalTransactions = 0, TotalValue = 0, UniqueCompanies = 0 };
     }
 }

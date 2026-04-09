@@ -19,6 +19,7 @@ public static class CompanyExtensions
     {
         return new CompanyDto
         {
+            Id = company.Id,
             Code = company.Code,
             Name = company.Name,
             Isin = company.Isin,

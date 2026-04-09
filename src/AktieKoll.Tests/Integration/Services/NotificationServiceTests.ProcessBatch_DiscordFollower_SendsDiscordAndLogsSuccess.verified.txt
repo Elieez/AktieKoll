@@ -1,0 +1,54 @@
+﻿{
+  DiscordSent: [
+    {
+      WebhookUrl: https://discord.com/api/webhooks/123456789/real-token-xyz,
+      CompanyName: Atlas Copco AB,
+      CompanyCode: ATCO-A,
+      Trades: [
+        {
+          Id: 1,
+          CompanyName: Atlas Copco AB,
+          InsiderName: Mats Rahmström,
+          Position: VD (CEO),
+          TransactionType: Förvärv,
+          Shares: 30000,
+          Price: 176.40,
+          Currency: SEK,
+          Isin: SE0011166610,
+          Symbol: ATCO-A,
+          Status: Aktuell,
+          PublishingDate: DateTime_1,
+          TransactionDate: DateTime_1
+        },
+        {
+          Id: 2,
+          CompanyName: Atlas Copco AB,
+          InsiderName: Peter Kinnart,
+          Position: Styrelseledamot,
+          TransactionType: Avyttring,
+          Shares: 8500,
+          Price: 178.90,
+          Currency: SEK,
+          Isin: SE0011166610,
+          Symbol: ATCO-A,
+          Status: Aktuell,
+          PublishingDate: DateTime_1,
+          TransactionDate: DateTime_1
+        }
+      ]
+    }
+  ],
+  Logs: [
+    {
+      UserId: user-1,
+      CompanyId: 1,
+      BatchRunId: 2025-06-12T06:00,
+      TransactionIds: [
+        1,
+        2
+      ],
+      Channel: discord,
+      Success: true
+    }
+  ]
+}
