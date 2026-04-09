@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AktieKoll.Migrations
 {
     /// <inheritdoc />
-    public partial class notifications : Migration
+    public partial class Notifications : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

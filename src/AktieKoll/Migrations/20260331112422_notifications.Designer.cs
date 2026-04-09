@@ -13,7 +13,7 @@ namespace AktieKoll.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("20260331112422_notifications")]
-    partial class notifications
+    partial class Notifications
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
