@@ -1,7 +1,7 @@
 # AktieKoll
 **Swedish insider trading — tracked, enriched, and delivered in real time**
 
-[🌐 Live Frontend](https://aktiekoll.se) | [📖 API Documentation (Swagger)](https://api.aktiekoll.se/swagger)
+[🌐 Live Frontend](https://aktiekoll.com)
 
 AktieKoll is a REST API backend built with **.NET 10** that automatically collects, processes, and serves insider trading data from Finansinspektionen. Instead of manually digging through FI's public register, users get a clean API with trend analysis, company search, real-time alerts, and a full authentication system.
 
