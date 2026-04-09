@@ -9,16 +9,19 @@ AktieKoll is a REST API backend built with **.NET 10** that automatically collec
 
 ## How It Works
 
+Every 6 hours, a GitHub Actions cron job runs the full pipeline end to end:
+
 ```
-1. FETCH          →   2. ENRICH         →   3. DELIVER
-FI's register         Map ticker              Secure REST API
-(CSV every 6h)        and ISIN via            + Email & Discord
-                      EODHD                   notifications
+1. FETCH        →   2. RESOLVE      →   3. PERSIST      →   4. NOTIFY
+GitHub Actions      Match each trade    Save new trades     For each new trade,
+downloads FI's      to a ticker via     to PostgreSQL       check followers →
+CSV register        local company DB    (skip duplicates)   email or Discord
 ```
 
-1. **Fetch** — Every 6 hours, new insider trades are pulled directly from Finansinspektionen's public CSV register via GitHub Actions.
-2. **Enrich** — Each transaction is matched to a company using a local database of tickers and ISIN codes (synced monthly from EODHD). Company names are automatically cleaned of suffixes like "AB" and "(publ)".
-3. **Deliver** — All data is exposed through a secure REST API with JWT authentication, and followers of a company receive email or Discord alerts when new trades come in.
+1. **Fetch** — GitHub Actions triggers `FetchTrades` every 6 hours. It downloads the latest insider trade CSV directly from Finansinspektionen's public register.
+2. **Resolve** — Each transaction is matched to a stock ticker and ISIN using a local PostgreSQL company table (populated monthly from EODHD). No real-time external API calls during the cron run. Company names are cleaned of noise like "AB" and "(publ)".
+3. **Persist** — New trades are saved to the database. Already-seen transactions are skipped, so re-runs are safe and idempotent.
+4. **Notify** — For every newly saved trade, the system checks whether any registered user follows that company. If so, it dispatches alerts via email and/or Discord based on each user's preferences. A `NotificationLog` prevents duplicate alerts if the job overlaps or is re-run.
 
 ---
 
@@ -148,7 +151,7 @@ Everything runs automatically via **GitHub Actions**:
 | Job | Trigger | What it does |
 | :--- | :--- | :--- |
 | `ci.yml` | Every push | Builds the project and runs all tests |
-| `cron-fetch.yml` | Every 6 hours | Fetches new insider trades from FI and processes notifications |
+| `cron-fetch.yml` | Every 6 hours | Downloads FI's CSV, resolves tickers, persists new trades, and fires follower notifications |
 | `update-companies.yml` | 1st of every month | Updates the company database with tickers and ISIN via EODHD |
 
 **Renovate Bot** automatically keeps NuGet packages up to date to minimize security exposure.
