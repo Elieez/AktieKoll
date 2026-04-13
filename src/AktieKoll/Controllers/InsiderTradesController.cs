@@ -105,10 +105,7 @@ public class InsiderTradesController(IInsiderTradeService tradeService, ILogger<
 
         if (!string.IsNullOrWhiteSpace(name))
         {
-            var safeName = name.Replace("\r", "", StringComparison.Ordinal)
-                               .Replace("\n", "", StringComparison.Ordinal);
-            logger.LogWarning(
-                "Deprecated ?name= parameter used on /api/InsiderTrades/company (name='{Name}').", safeName);
+            logger.LogWarning("Deprecated ?name= parameter used on /api/InsiderTrades/company.");
 
             var trades = (await tradeService.GetInsiderTradesByCompany(name, skip, take)).ToList();
 

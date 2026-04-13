@@ -252,13 +252,7 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger) :
         }
         catch (Exception ex)
         {
-            var atIdx = toEmail.IndexOf('@');
-            var maskedEmail = atIdx > 0
-                ? toEmail[0] + "***" + toEmail[atIdx..]
-                : "***";
-            var safeSubject = subject.Replace("\r", "", StringComparison.Ordinal)
-                                     .Replace("\n", "", StringComparison.Ordinal);
-            logger.LogError(ex, "Failed to send email to {Email} with subject '{Subject}'", maskedEmail, safeSubject);
+            logger.LogError(ex, "Failed to send email.");
             throw;
         }
     }
