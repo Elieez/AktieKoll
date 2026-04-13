@@ -71,7 +71,7 @@ public class DiscordService(HttpClient httpClient, IConfiguration config, ILogge
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Discord webhook failed for company {Code}", companyCode);
+            logger.LogError("Discord webhook request failed for company {Code}: {ExceptionType}", companyCode, ex.GetType().Name);
             return false;
         }
     }
