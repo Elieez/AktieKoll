@@ -252,7 +252,7 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger) :
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to send email to {Email} with subject '{Subject}'", toEmail, subject);
+            logger.LogError(ex, "Failed to send email.");
             throw;
         }
     }

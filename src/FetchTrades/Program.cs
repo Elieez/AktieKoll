@@ -20,6 +20,9 @@ if (string.IsNullOrWhiteSpace(connectionString))
 // Build host with DI
 var builder = Host.CreateApplicationBuilder(args);
 
+// Suppress HttpClient request/response URL logging to avoid leaking webhook URLs and tokens in CI logs
+builder.Logging.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
+
 // Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
