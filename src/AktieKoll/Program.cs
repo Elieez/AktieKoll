@@ -155,6 +155,9 @@ builder.Services.AddScoped<IEmailService,    EmailService>();
 
 builder.Services.AddHttpClient<CsvFetchService>();
 builder.Services.AddHttpClient<IDiscordService, DiscordService>();
+
+// Suppress HttpClient request/response URL logging to prevent Discord webhook URLs from appearing in logs
+builder.Logging.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddTransient<ISymbolService, SymbolService>();
