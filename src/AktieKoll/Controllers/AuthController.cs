@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using AktieKoll.Data;
 using AktieKoll.Dtos;
 using AktieKoll.Interfaces;
 using AktieKoll.Models;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 
 namespace AktieKoll.Controllers;
 
@@ -19,7 +21,8 @@ public class AuthController(
     UserManager<ApplicationUser> userManager,
     IAuthService authService,
     IEmailService emailService,
-    IConfiguration config) : ControllerBase
+    IConfiguration config,
+    ApplicationDbContext db) : ControllerBase
 {
     private const string RefreshTokenCookieName = "refreshToken";
 
@@ -46,13 +49,23 @@ public class AuthController(
 
         var result = await userManager.CreateAsync(user, dto.Password);
         if (!result.Succeeded)
-            return BadRequest(result.Errors.Select(e => e.Description));
+            return BadRequest(new { errors = result.Errors.Select(e => e.Description).ToList() });
 
         // Send verification email (fire-and-forget; don't fail registration if email fails)
         try
         {
             var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-            await emailService.SendEmailVerificationAsync(user.Email!, user.Id, token);
+            var code = GenerateShortCode();
+            db.VerificationCodes.Add(new VerificationCode
+            {
+                Code      = code,
+                UserId    = user.Id,
+                Token     = token,
+                Purpose   = "email_confirmation",
+                ExpiresAt = DateTime.UtcNow.AddHours(24)
+            });
+            await db.SaveChangesAsync();
+            await emailService.SendEmailVerificationAsync(user.Email!, code);
         }
         catch { /* log but don't surface */ }
 
@@ -67,14 +80,14 @@ public class AuthController(
     {
         var user = await userManager.FindByEmailAsync(dto.Email);
         if (user == null)
-            return Unauthorized("Invalid email or password.");
+            return Unauthorized("Felaktig e-post eller lösenord.");
 
         if (await userManager.IsLockedOutAsync(user))
-            return Unauthorized("Account is locked. Please try again later.");
+            return Unauthorized("Kontot är låst. Försök igen senare.");
 
         var valid = await userManager.CheckPasswordAsync(user, dto.Password);
         if (!valid)
-            return Unauthorized("Invalid email or password.");
+            return Unauthorized("Felaktig e-post eller lösenord.");
 
         var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
         var pair = await authService.IssueTokenPairAsync(user, ipAddress);
@@ -217,22 +230,37 @@ public class AuthController(
         return Redirect($"{frontendCallback}?token={Uri.EscapeDataString(pair.AccessToken)}");
     }
 
-    /// <summary>Verify email address using the token sent to the user's inbox.</summary>
+    /// <summary>Verify email address using the short code sent to the user's inbox.</summary>
     [HttpGet("verify-email")]
-    public async Task<IActionResult> VerifyEmail([FromQuery] string userId, [FromQuery] string token)
+    public async Task<IActionResult> VerifyEmail([FromQuery] string code)
     {
-        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
+        if (string.IsNullOrEmpty(code))
             return BadRequest(new { error = "Ogiltig verifieringslänk." });
 
-        var user = await userManager.FindByIdAsync(userId);
+        var record = await db.VerificationCodes
+            .FirstOrDefaultAsync(v => v.Code == code && v.Purpose == "email_confirmation");
+
+        if (record == null || record.Used || record.ExpiresAt < DateTime.UtcNow)
+            return BadRequest(new { error = "Länken är ogiltig eller har löpt ut." });
+
+        var user = await userManager.FindByIdAsync(record.UserId);
         if (user == null)
             return BadRequest(new { error = "Ogiltig verifieringslänk." });
 
-        var result = await userManager.ConfirmEmailAsync(user, token);
+        var result = await userManager.ConfirmEmailAsync(user, record.Token);
         if (!result.Succeeded)
             return BadRequest(new { error = "Länken är ogiltig eller har löpt ut." });
 
-        return Ok(new { message = "E-postadressen har verifierats." });
+        record.Used = true;
+        await db.SaveChangesAsync();
+
+        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+        var pair = await authService.IssueTokenPairAsync(user, ipAddress);
+
+        Response.Cookies.Append(RefreshTokenCookieName, pair.RawRefreshToken,
+            BuildRefreshCookieOptions(pair.RefreshTokenExpiresAt));
+
+        return Ok(new AuthResponseDto { AccessToken = pair.AccessToken, ExpiresAt = pair.AccessTokenExpiresAt });
     }
 
     /// <summary>Resend email verification link. Requires the user to be authenticated.</summary>
@@ -249,7 +277,17 @@ public class AuthController(
             return BadRequest(new { error = "E-postadressen är redan verifierad." });
 
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-        await emailService.SendEmailVerificationAsync(user.Email!, user.Id, token);
+        var code = GenerateShortCode();
+        db.VerificationCodes.Add(new VerificationCode
+        {
+            Code      = code,
+            UserId    = user.Id,
+            Token     = token,
+            Purpose   = "email_confirmation",
+            ExpiresAt = DateTime.UtcNow.AddHours(24)
+        });
+        await db.SaveChangesAsync();
+        await emailService.SendEmailVerificationAsync(user.Email!, code);
 
         return Ok(new { message = "Verifieringsmejl skickat." });
     }
@@ -267,7 +305,17 @@ public class AuthController(
             try
             {
                 var token = await userManager.GeneratePasswordResetTokenAsync(user);
-                await emailService.SendPasswordResetAsync(user.Email!, token);
+                var code = GenerateShortCode();
+                db.VerificationCodes.Add(new VerificationCode
+                {
+                    Code      = code,
+                    UserId    = user.Id,
+                    Token     = token,
+                    Purpose   = "password_reset",
+                    ExpiresAt = DateTime.UtcNow.AddHours(1)
+                });
+                await db.SaveChangesAsync();
+                await emailService.SendPasswordResetAsync(user.Email!, code);
             }
             catch { /* log but never reveal */ }
         }
@@ -276,21 +324,30 @@ public class AuthController(
         return Ok(new { message = "Om kontot finns skickas ett återställningsmejl inom kort." });
     }
 
-    /// <summary>Reset the user's password using the token from the reset email.</summary>
+    /// <summary>Reset the user's password using the short code from the reset email.</summary>
     [HttpPost("reset-password")]
     [EnableRateLimiting("auth")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
     {
-        var user = await userManager.FindByEmailAsync(dto.Email);
-        if (user == null)
-            return BadRequest(new { error = "Ogiltig återställningslänk eller lösenordet kunde inte ändras." });
+        var record = await db.VerificationCodes
+            .FirstOrDefaultAsync(v => v.Code == dto.Code && v.Purpose == "password_reset");
 
-        var result = await userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
+        if (record == null || record.Used || record.ExpiresAt < DateTime.UtcNow)
+            return BadRequest(new { error = "Länken är ogiltig eller har löpt ut." });
+
+        var user = await userManager.FindByIdAsync(record.UserId);
+        if (user == null)
+            return BadRequest(new { error = "Ogiltig återställningslänk." });
+
+        var result = await userManager.ResetPasswordAsync(user, record.Token, dto.NewPassword);
         if (!result.Succeeded)
         {
             var errors = result.Errors.Select(e => e.Description);
             return BadRequest(new { error = "Länken är ogiltig eller har löpt ut.", details = errors });
         }
+
+        record.Used = true;
+        await db.SaveChangesAsync();
 
         // Invalidate all existing refresh tokens for security
         await authService.RevokeAllUserTokensAsync(user.Id);
@@ -393,6 +450,12 @@ public class AuthController(
     {
         var bytes = Encoding.UTF8.GetBytes(raw);
         return Convert.ToBase64String(SHA256.HashData(bytes));
+    }
+
+    private static string GenerateShortCode()
+    {
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        return RandomNumberGenerator.GetString(chars, 8);
     }
 
     private string BuildFrontendErrorUrl(string code)

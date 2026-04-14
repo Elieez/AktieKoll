@@ -5,6 +5,9 @@ on:
   schedule:
     - cron: "0 */6 * * *"
 
+permissions:
+  contents: read
+
 jobs:
   fetch:
     runs-on: ubuntu-latest
@@ -22,5 +25,10 @@ jobs:
       - name: Run fetcher
         env:
           ConnectionStrings__PostgresConnection: ${{ secrets.POSTGRES_CONNECTION }}
+          Email__SmtpHost: ${{ secrets.EMAIL_SMTPHOST }}
+          Email__SmtpPort: ${{ secrets.EMAIL_SMTPPORT }}
+          Email__FromAddress: ${{ secrets.EMAIL_FROMADDRESS }}
+          Email__SmtpUsername: ${{ secrets.EMAIL_SMTPUSERNAME }}
+          Email__SmtpPassword: ${{ secrets.EMAIL_SMTPPASSWORD }}
           
         run: dotnet run --project src/FetchTrades/FetchTrades.csproj

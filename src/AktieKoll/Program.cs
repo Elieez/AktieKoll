@@ -82,7 +82,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders();
+.AddDefaultTokenProviders()
+.AddErrorDescriber<SwedishIdentityErrorDescriber>();
 
 // Token lifespan: password-reset / email-verification tokens valid 24 h by default.
 // Account-deletion tokens are short-lived (1 h) and stored hashed on the user row.
@@ -145,6 +146,7 @@ builder.Services.Configure<CookieAuthenticationOptions>(IdentityConstants.Applic
 builder.Services.Configure<FormOptions>(options =>
     options.MultipartBodyLengthLimit = 10485760);
 
+
 builder.WebHost.ConfigureKestrel(options =>
     options.Limits.MaxRequestBodySize = 10485760);
 
@@ -153,11 +155,18 @@ builder.Services.AddScoped<IAuthService,     AuthService>();
 builder.Services.AddScoped<IEmailService,    EmailService>();
 
 builder.Services.AddHttpClient<CsvFetchService>();
+builder.Services.AddHttpClient<IDiscordService, DiscordService>();
+
+// Suppress HttpClient request/response URL logging to prevent Discord webhook URLs from appearing in logs
+builder.Logging.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddTransient<ISymbolService, SymbolService>();
 builder.Services.AddHostedService<RefreshTokenCleanupService>();
 builder.Services.AddScoped<IInsiderTradeService, InsiderTradeService>();
-builder.Services.AddScoped<ICompanyService,      CompanyService>();
+builder.Services.AddScoped<ICompanyService, CompanyService>();
+builder.Services.AddScoped<IFollowService, FollowService>();
+builder.Services.AddScoped<INotificationPreferencesService, NotificationPreferencesService>();
 
 builder.Services.AddResponseCaching();
 builder.Services.AddMemoryCache();

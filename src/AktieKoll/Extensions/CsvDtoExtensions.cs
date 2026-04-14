@@ -35,14 +35,23 @@ public static class CsvDtoExtensions
             "Lån återgång minskning",
             "Utbyte minskning",
             "Utbyte ökning",
+            "Utfärdande av instrument",
             "Pantsättning",
+            "Pantsättning åter",
             "Bodelning minskning",
             "Bodelning ökning",
             "Arv mottagen",
             "Konvertering ökning",
             "Lån utlåning",
             "Interntransaktion – Avyttring",
-            "Interntransaktion – Förvärv"
+            "Interntransaktion – Förvärv",
+            "Inlösen egenutfärdat instrument",
+            "Fusion ökning",
+            "Gåva lämnad",
+            "Gåva mottagen",
+            "Koncernintern överföring ökning",
+            "Koncernintern överföring minskning",
+            "Konvertering minskning"
         };
 
         private static readonly HashSet<string> ExcludedInstrumentTypes = new(

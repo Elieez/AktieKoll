@@ -4,7 +4,7 @@ namespace AktieKoll.Interfaces;
 
 public interface IInsiderTradeService
 {
-    Task<string> AddInsiderTrades(List<InsiderTrade> insiderTrades);
+    Task<InsiderTradeIngestionResult> AddInsiderTrades(List<InsiderTrade> insiderTrades);
     Task<IEnumerable<InsiderTrade>> GetInsiderTradesPage(int page, int pageSize);
     Task<IEnumerable<InsiderTrade>> GetInsiderTradesTop();
     Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountBuy(string? symbol = null, int days = 30, int? top = 5);
