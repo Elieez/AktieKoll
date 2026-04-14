@@ -82,7 +82,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders();
+.AddDefaultTokenProviders()
+.AddErrorDescriber<SwedishIdentityErrorDescriber>();
 
 // Token lifespan: password-reset / email-verification tokens valid 24 h by default.
 // Account-deletion tokens are short-lived (1 h) and stored hashed on the user row.

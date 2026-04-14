@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Net.Http.Json;
+using static AktieKoll.Tests.Shared.TestHelpers.ServiceTestHelpers;
 
 namespace AktieKoll.Tests.Integration.Controllers;
 
@@ -99,27 +100,42 @@ public class AuthFeatureTests(WebApplicationFactoryFixture factory) : Integratio
     // ─────────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task VerifyEmail_WithValidToken_Returns200AndConfirmsEmail()
+    public async Task VerifyEmail_WithValidCode_Returns200AndConfirmsEmailAndIssuesTokens()
     {
-        // Arrange: create unverified user and get real token
-        string email, userId, token;
+        // Arrange: create unverified user, generate real ASP.Identity token, store short code
+        const string shortCode = "TESTCODE";
+        string email, userId;
         using (var scope = CreateScope())
         {
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var db          = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
             var user = new ApplicationUser { UserName = "verify@example.com", Email = "verify@example.com", EmailConfirmed = false };
             await userManager.CreateAsync(user, "Password123!");
             email  = user.Email!;
             userId = user.Id;
-            token  = await userManager.GenerateEmailConfirmationTokenAsync(user);
+
+            var identityToken = await userManager.GenerateEmailConfirmationTokenAsync(user);
+            db.VerificationCodes.Add(new VerificationCode
+            {
+                Code      = shortCode,
+                UserId    = user.Id,
+                Token     = identityToken,
+                Purpose   = "email_confirmation",
+                ExpiresAt = DateTime.UtcNow.AddHours(24)
+            });
+            await db.SaveChangesAsync(Ct);
         }
 
         // Act
-        var encodedToken = Uri.EscapeDataString(token);
-        var response = await Client.GetTestAsync($"/api/auth/verify-email?userId={userId}&token={encodedToken}");
+        var response = await Client.GetTestAsync($"/api/auth/verify-email?code={shortCode}");
 
-        // Assert
+        // Assert: 200 with access token (auto-login)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<AuthResponseDto>(Ct);
+        body!.AccessToken.Should().NotBeNullOrEmpty();
 
+        // User should now be confirmed
         using var scope2 = CreateScope();
         var um2  = scope2.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var after = await um2.FindByEmailAsync(email);
@@ -127,19 +143,9 @@ public class AuthFeatureTests(WebApplicationFactoryFixture factory) : Integratio
     }
 
     [Fact]
-    public async Task VerifyEmail_WithInvalidToken_Returns400()
+    public async Task VerifyEmail_WithInvalidCode_Returns400()
     {
-        string userId;
-        using (var scope = CreateScope())
-        {
-            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            var user = new ApplicationUser { UserName = "badtoken@example.com", Email = "badtoken@example.com" };
-            await userManager.CreateAsync(user, "Password123!");
-            userId = user.Id;
-        }
-
-        var response = await Client.GetTestAsync($"/api/auth/verify-email?userId={userId}&token=definitely-invalid-token");
-
+        var response = await Client.GetTestAsync("/api/auth/verify-email?code=BADCODE1");
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -179,28 +185,41 @@ public class AuthFeatureTests(WebApplicationFactoryFixture factory) : Integratio
     }
 
     [Fact]
-    public async Task ResetPassword_WithValidToken_ChangesPasswordAndRevokesTokens()
+    public async Task ResetPassword_WithValidCode_ChangesPasswordAndRevokesTokens()
     {
-        const string email    = "reset@example.com";
-        const string oldPass  = "OldPassword123!";
-        const string newPass  = "NewPassword456!";
+        const string email      = "reset@example.com";
+        const string oldPass    = "OldPassword123!";
+        const string newPass    = "NewPassword456!";
+        const string shortCode  = "RSTCODE1";
 
-        string userId, resetToken;
+        string userId;
         using (var scope = CreateScope())
         {
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var db          = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
             var user = new ApplicationUser { UserName = email, Email = email, EmailConfirmed = true };
             await userManager.CreateAsync(user, oldPass);
-            userId     = user.Id;
-            resetToken = await userManager.GeneratePasswordResetTokenAsync(user);
+            userId = user.Id;
+
+            var resetToken = await userManager.GeneratePasswordResetTokenAsync(user);
+            db.VerificationCodes.Add(new VerificationCode
+            {
+                Code      = shortCode,
+                UserId    = user.Id,
+                Token     = resetToken,
+                Purpose   = "password_reset",
+                ExpiresAt = DateTime.UtcNow.AddHours(1)
+            });
+            await db.SaveChangesAsync(Ct);
         }
 
         // Verify old password works for login (also creates a refresh token)
         var loginRes = await Client.PostAsJsonTestAsync("/api/auth/login", new LoginDto { Email = email, Password = oldPass });
         loginRes.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // Reset password
-        var dto = new ResetPasswordDto { Email = email, Token = resetToken, NewPassword = newPass };
+        // Reset password using short code
+        var dto = new ResetPasswordDto { Code = shortCode, NewPassword = newPass };
         var resetRes = await Client.PostAsJsonTestAsync("/api/auth/reset-password", dto);
         resetRes.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -225,22 +244,11 @@ public class AuthFeatureTests(WebApplicationFactoryFixture factory) : Integratio
     }
 
     [Fact]
-    public async Task ResetPassword_WithExpiredToken_Returns400()
+    public async Task ResetPassword_WithInvalidCode_Returns400()
     {
-        const string email = "expired-reset@example.com";
-
-        using (var scope = CreateScope())
-        {
-            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            var user = new ApplicationUser { UserName = email, Email = email, EmailConfirmed = true };
-            await userManager.CreateAsync(user, "OldPassword123!");
-        }
-
-        // Use a syntactically valid but wrong token (simulates expired / tampered)
         var dto = new ResetPasswordDto
         {
-            Email       = email,
-            Token       = "invalid-or-expired-token",
+            Code        = "BADCODE1",
             NewPassword = "NewPassword456!"
         };
 

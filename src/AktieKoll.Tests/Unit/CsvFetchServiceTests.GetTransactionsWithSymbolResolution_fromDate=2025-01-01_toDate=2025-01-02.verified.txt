@@ -1,6 +1,6 @@
 ﻿{
-  TotalTrades: 40,
-  TradesWithSymbols: 34,
+  TotalTrades: 39,
+  TradesWithSymbols: 33,
   TradesWithoutSymbols: 6,
   trades: [
     {
@@ -391,19 +391,6 @@
       TransactionDate: DateTime_6
     },
     {
-      CompanyName: AstraZeneca PLC,
-      InsiderName: Aradhana Sarin,
-      Position: CFO,
-      TransactionType: Gåva lämnad,
-      Shares: 200,
-      Currency: USD,
-      Isin: US0463531089,
-      Symbol: AZN,
-      Status: Aktuell,
-      PublishingDate: DateTime_23,
-      TransactionDate: DateTime_13
-    },
-    {
       CompanyName: Pricer,
       InsiderName: Mats Arnehall,
       Position: Ledningsgrupp,
@@ -414,7 +401,7 @@
       Isin: SE0000233934,
       Symbol: PRIC-B,
       Status: Reviderad,
-      PublishingDate: DateTime_24,
+      PublishingDate: DateTime_23,
       TransactionDate: DateTime_6
     },
     {
@@ -427,7 +414,7 @@
       Currency: SEK,
       Isin: ,
       Status: Aktuell,
-      PublishingDate: DateTime_25,
+      PublishingDate: DateTime_24,
       TransactionDate: DateTime_13
     },
     {
@@ -441,7 +428,7 @@
       Isin: SE0000233934,
       Symbol: PRIC-B,
       Status: Reviderad,
-      PublishingDate: DateTime_26,
+      PublishingDate: DateTime_25,
       TransactionDate: DateTime_6
     },
     {
@@ -454,7 +441,7 @@
       Isin: SE0000872095,
       Symbol: SOBI,
       Status: Aktuell,
-      PublishingDate: DateTime_27,
+      PublishingDate: DateTime_26,
       TransactionDate: DateTime_13
     },
     {
@@ -468,7 +455,7 @@
       Isin: SE0000872095,
       Symbol: SOBI,
       Status: Aktuell,
-      PublishingDate: DateTime_27,
+      PublishingDate: DateTime_26,
       TransactionDate: DateTime_13
     },
     {
@@ -481,7 +468,7 @@
       Currency: SEK,
       Isin: SE0023114400,
       Status: Aktuell,
-      PublishingDate: DateTime_28,
+      PublishingDate: DateTime_27,
       TransactionDate: DateTime_13
     },
     {
@@ -494,7 +481,7 @@
       Currency: SEK,
       Isin: SE0007158829,
       Status: Aktuell,
-      PublishingDate: DateTime_29,
+      PublishingDate: DateTime_28,
       TransactionDate: DateTime_13
     },
     {
@@ -507,7 +494,7 @@
       Isin: SE0000872095,
       Symbol: SOBI,
       Status: Aktuell,
-      PublishingDate: DateTime_30,
+      PublishingDate: DateTime_29,
       TransactionDate: DateTime_13
     },
     {
@@ -521,7 +508,7 @@
       Isin: SE0000872095,
       Symbol: SOBI,
       Status: Aktuell,
-      PublishingDate: DateTime_30,
+      PublishingDate: DateTime_29,
       TransactionDate: DateTime_13
     },
     {
@@ -534,7 +521,7 @@
       Currency: USD,
       Isin: US0528001094,
       Status: Aktuell,
-      PublishingDate: DateTime_31,
+      PublishingDate: DateTime_30,
       TransactionDate: DateTime_2
     },
     {
@@ -548,8 +535,8 @@
       Isin: SE0015658109,
       Symbol: EPI-A,
       Status: Aktuell,
-      PublishingDate: DateTime_32,
-      TransactionDate: DateTime_33
+      PublishingDate: DateTime_31,
+      TransactionDate: DateTime_32
     }
   ]
 }

@@ -403,6 +403,7 @@ FodyWeavers.xsd
 # **/Migrations/
 
 appsettings.Development.json
+appsettings.Production.json
 appsettings.Local.json
 appsettings.json
 
@@ -414,3 +415,5 @@ appsettings.json
 .env
 .env.*
 !.env.example
+.env.production
+/src/AktieKoll/appsettings.Development.json

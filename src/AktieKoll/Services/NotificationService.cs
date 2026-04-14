@@ -46,7 +46,7 @@ public class NotificationService(
 
             var followers = await context.UserCompanyFollows
                 .Where(f => f.CompanyId == company.Id)
-                .Join(context.Users,
+                .Join(context.Users.Where(u => u.EmailConfirmed),
                       f => f.UserId,
                       u => u.Id,
                       (f, u) => new { Follow = f, User = u })
