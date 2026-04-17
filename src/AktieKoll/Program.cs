@@ -15,7 +15,7 @@ using Microsoft.OpenApi;
 var builder = WebApplication.CreateBuilder(args);
 
 var allowedOrigins = builder.Configuration
-    .GetSection("Cors:AllowedOrigin")
+    .GetSection("Cors:AllowedOrigins")
     .Get<string[]>() ?? ["http://localhost:3000"];
 
 builder.Services.AddCors(options =>
@@ -172,6 +172,13 @@ builder.Services.AddResponseCaching();
 builder.Services.AddMemoryCache();
 
 var app = builder.Build();
+
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
+}
 
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Staging"))
 {
