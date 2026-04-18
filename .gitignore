@@ -409,3 +409,10 @@ appsettings.json
 # Verify
 *.received.*
 *.received/
+
+# env
+.env
+.env.*
+!.env.example
+.env.production
+/src/AktieKoll/appsettings.Development.json

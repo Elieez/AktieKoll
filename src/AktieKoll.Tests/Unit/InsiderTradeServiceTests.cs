@@ -1,37 +1,22 @@
-﻿using AktieKoll.Data;
-using AktieKoll.Models;
-using AktieKoll.Services;
-using AktieKoll.Tests.Fixture;
+﻿using AktieKoll.Models;
 using Microsoft.EntityFrameworkCore;
+using AktieKoll.Tests.Shared.TestHelpers;
 
 namespace AktieKoll.Tests.Unit;
 
 public class InsiderTradeServiceTests
 {
-    private ApplicationDbContext CreateContext()
-    {
-        var opts = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-        return new ApplicationDbContext(opts);
-    }
-
-    private InsiderTradeService CreateService(ApplicationDbContext ctx, OpenFigiServiceFake? figi = null)
-    {
-        var fake = figi ?? new OpenFigiServiceFake();
-        var symbolService = new SymbolService(fake);
-        return new InsiderTradeService(ctx, symbolService);
-    }
-
     [Fact]
     public async Task AddInsiderTrades_NewList_AddsTrades()
     {
         // Arrange
-        var ctx = CreateContext();
-        var service = CreateService(ctx);
+        var ctx = ServiceTestHelpers.CreateContext();
+        await ServiceTestHelpers.SeedCompanies(ctx, ("SE001", "FOO"));
+
+        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
         var trades = new List<InsiderTrade>
         {
-            new InsiderTrade {
+            new() {
                 CompanyName = "FooCorp",
                 InsiderName = "Alice",
                 Position = "CFO",
@@ -40,6 +25,7 @@ public class InsiderTradeServiceTests
                 Price = 10.5m,
                 Currency = "SEK",
                 Status = "Aktuell",
+                Isin = "SE001",
                 PublishingDate = DateTime.Today,
                 TransactionDate = DateTime.Today
             }
@@ -49,16 +35,19 @@ public class InsiderTradeServiceTests
         var result = await service.AddInsiderTrades(trades);
 
         // Assert
-        Assert.Equal("1 new trades added.", result);
+        Assert.Equal("1 new trades added.", result.Message);
         var saved = await ctx.InsiderTrades.ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
         Assert.Single(saved);
+        Assert.Equal("FOO", saved[0].Symbol);
     }
 
     [Fact]
     public async Task AddInsiderTrades_Duplicate_DoesNotAdd()
     {
-        var ctx = CreateContext();
-        var service = CreateService(ctx);
+        var ctx = ServiceTestHelpers.CreateContext();
+        await ServiceTestHelpers.SeedCompanies(ctx, ("SE001", "FOO"));
+
+        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
         var trade = new InsiderTrade
         {
             CompanyName = "FooCorp",
@@ -69,15 +58,16 @@ public class InsiderTradeServiceTests
             Price = 10.5m,
             Currency = "SEK",
             Status = "Aktuell",
+            Isin = "SE001",
             PublishingDate = DateTime.Today,
             TransactionDate = DateTime.Today
         };
         ctx.InsiderTrades.Add(trade);
         await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var result = await service.AddInsiderTrades(new List<InsiderTrade> { trade });
+        var result = await service.AddInsiderTrades([trade]);
 
-        Assert.Equal("No new data was added.", result);
+        Assert.Equal("No new data was added.", result.Message);
         var count = await ctx.InsiderTrades.CountAsync(cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(1, count);
     }
@@ -85,7 +75,7 @@ public class InsiderTradeServiceTests
     [Fact]
     public async Task AddInsiderTrades_RevisedEntry_RemovesExisting()
     {
-        var ctx = CreateContext();
+        var ctx = ServiceTestHelpers.CreateContext();
         var existing = new InsiderTrade
         {
             CompanyName = "FooCorp",
@@ -102,7 +92,7 @@ public class InsiderTradeServiceTests
         ctx.InsiderTrades.Add(existing);
         await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var service = CreateService(ctx);
+        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
         var revisedTrade = new InsiderTrade
         {
             CompanyName = existing.CompanyName,
@@ -119,7 +109,7 @@ public class InsiderTradeServiceTests
 
         var result = await service.AddInsiderTrades([revisedTrade]);
 
-        Assert.Equal("1 trades removed.", result);
+        Assert.Equal("1 trades removed.", result.Message);
         var count = await ctx.InsiderTrades.CountAsync(cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(0, count);
     }
@@ -127,7 +117,7 @@ public class InsiderTradeServiceTests
     [Fact]
     public async Task AddInsiderTrades_RevisedEntry_NoMatch_NoChange()
     {
-        var ctx = CreateContext();
+        var ctx = ServiceTestHelpers.CreateContext();
         ctx.InsiderTrades.Add(new InsiderTrade
         {
             CompanyName = "FooCorp",
@@ -143,7 +133,7 @@ public class InsiderTradeServiceTests
         });
         await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var service = CreateService(ctx);
+        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
         var revised = new InsiderTrade
         {
             CompanyName = "BarCorp",
@@ -160,7 +150,7 @@ public class InsiderTradeServiceTests
 
         var result = await service.AddInsiderTrades([revised]);
 
-        Assert.Equal("No new data was added.", result);
+        Assert.Equal("No new data was added.", result.Message);
         var trades = await ctx.InsiderTrades.ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
         Assert.Single(trades);
     }
@@ -168,7 +158,7 @@ public class InsiderTradeServiceTests
     [Fact]
     public async Task GetInsiderTrades_ReturnsAllTrades()
     {
-        var ctx = CreateContext();
+        var ctx = ServiceTestHelpers.CreateContext();
         ctx.InsiderTrades.AddRange(
             new InsiderTrade
             {
@@ -198,9 +188,9 @@ public class InsiderTradeServiceTests
             }
         );
         await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
-        var service = CreateService(ctx);
+        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
 
-        var result = await service.GetInsiderTrades();
+        var result = await service.GetInsiderTradesPage(1, 100);
 
         Assert.Equal(2, result.Count());
     }
@@ -208,13 +198,13 @@ public class InsiderTradeServiceTests
     [Fact]
     public async Task AddInsiderTrades_ResolvesIsinToSymbol()
     {
-        var ctx = CreateContext();
-        var figi = new OpenFigiServiceFake().Map("ISIN123", "TICK");
-        var service = CreateService(ctx, figi);
+        var ctx = ServiceTestHelpers.CreateContext();
+        await ServiceTestHelpers.SeedCompanies(ctx, ("ISIN123", "TICK"));
+
+        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
         var trades = new List<InsiderTrade>
         {
-            new InsiderTrade
-            {
+            new() {
                 CompanyName = "FooCorp",
                 InsiderName = "Alice",
                 Position = "CFO",

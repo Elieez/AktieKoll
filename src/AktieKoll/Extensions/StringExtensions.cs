@@ -2,11 +2,30 @@
 
 namespace AktieKoll.Extensions;
 
-public static class StringExtensions
+public static partial class StringExtensions
 {
-    private static readonly Regex PublRegex = new(@"\s*\(publ\)", RegexOptions.IgnoreCase);
-    private static readonly Regex AbRegex = new(@"\s*\bAB\b", RegexOptions.IgnoreCase);
-    private static readonly Regex InternalPrefixRegex = new(@"^Interntransaktion\s*–\s*", RegexOptions.IgnoreCase);
+    [GeneratedRegex(@"\s*\(publ\)", RegexOptions.IgnoreCase)]
+    private static partial Regex PublRegex();
+
+    [GeneratedRegex(@"\bAktiebolaget\b", RegexOptions.IgnoreCase)]
+    private static partial Regex AktiebolagetRegex();
+
+    [GeneratedRegex(@"\bgroup\b", RegexOptions.IgnoreCase)]
+    private static partial Regex GroupRegex();
+
+    [GeneratedRegex(@"\s*\bAB\b", RegexOptions.IgnoreCase)]
+    private static partial Regex AbRegex();
+
+    [GeneratedRegex(@"\s+", RegexOptions.None)]
+    private static partial Regex WhitespaceRegex();
+
+    // NEW: Regex for trailing punctuation
+    [GeneratedRegex(@"[.,;]+$", RegexOptions.None)]
+    private static partial Regex TrailingPunctuationRegex();
+
+    // NEW: Regex for " Series A/B" suffix
+    [GeneratedRegex(@"\s+Series\s+[AB]$", RegexOptions.IgnoreCase)]
+    private static partial Regex SeriesRegex();
 
     private static readonly Dictionary<string, string> PositionNameMap = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -17,28 +36,60 @@ public static class StringExtensions
     };
 
     private static readonly (Regex Pattern, string ShortName)[] PositionRegexRules =
-    {
-        (new Regex(@"\bverkst(ällande)?\s*direktör\b", RegexOptions.IgnoreCase | RegexOptions.Compiled), "VD"),
-        (new Regex(@"\b(finanschef|ekonomichef|finansdirektör)\b", RegexOptions.IgnoreCase | RegexOptions.Compiled), "CFO"),
-        (new Regex(@"\barbetstag(ar)?\b", RegexOptions.IgnoreCase | RegexOptions.Compiled), "Arbetstagarrepresentant"),
-    };
+    [
+        (VerkstAllandeRegex(), "VD"),
+        (FinansChefRegex(), "CFO"),
+        (ArbetstagRegex(), "Arbetstagarrepresentant"),
+    ];
+
+    [GeneratedRegex(@"\bverkst(ällande)?\s*direktör\b", RegexOptions.IgnoreCase)]
+    private static partial Regex VerkstAllandeRegex();
+
+    [GeneratedRegex(@"\b(finanschef|ekonomichef|finansdirektör)\b", RegexOptions.IgnoreCase)]
+    private static partial Regex FinansChefRegex();
+
+    [GeneratedRegex(@"\barbetstag(ar)?\b", RegexOptions.IgnoreCase)]
+    private static partial Regex ArbetstagRegex();
 
     public static string FilterCompanyName(this string input)
-        => string.IsNullOrEmpty(input)
-        ? input
-        : AbRegex.Replace(PublRegex.Replace(input, ""), "");
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return input ?? string.Empty;
 
-    public static string FilterTransactionType(this string input)
-        => string.IsNullOrWhiteSpace(input)
-        ? input
-        : InternalPrefixRegex.Replace(input, "");
+        var result = input;
+
+        // Remove (publ)
+        result = PublRegex().Replace(result, "");
+
+        // Expand "Aktiebolaget" → "AB" so the next step strips it
+        result = AktiebolagetRegex().Replace(result, "AB");
+
+        //Remove Group
+        result = GroupRegex().Replace(result, "");
+
+        // Remove AB
+        result = AbRegex().Replace(result, "");
+
+        // Remove " Series A/B"
+        result = SeriesRegex().Replace(result, "");
+
+        // Remove trailing punctuation (., ; ,)
+        result = TrailingPunctuationRegex().Replace(result, "");
+
+        // Normalize whitespace (multiple spaces to single space)
+        result = WhitespaceRegex().Replace(result, " ").Trim();
+
+        return result;
+    }
+
+    public static string FilterTransactionType(this string input) => input ?? string.Empty;
 
     public static string FilterPosition(this string? input)
     {
         if (string.IsNullOrWhiteSpace(input))
             return input ?? string.Empty;
 
-        var s = Regex.Replace(input!, @"\s+", " ").Trim();
+        var s = WhitespaceRegex().Replace(input!, " ").Trim();
 
         if (PositionNameMap.TryGetValue(s, out var mapped))
             return mapped;

@@ -21,7 +21,6 @@ public class CsvFetchService(HttpClient httpClient, Func<TextReader, CsvReader> 
         var url = $"https://marknadssok.fi.se/Publiceringsklient/sv-SE/Search/Search?SearchFunctionType=Insyn&Utgivare=&PersonILedandeSt%C3%A4llningNamn=&Transaktionsdatum.From=&Transaktionsdatum.To=&Publiceringsdatum.From={Uri.EscapeDataString(fromDateString)}&Publiceringsdatum.To={Uri.EscapeDataString(toDateString)}&button=export&Page=1";
 
         logger.LogInformation("Fetching insider trades from {From} to {To}", fromDateString, toDateString);
-        logger.LogDebug("Request URL: {Url}", url);
         try
         {
             using var stream = await httpClient.GetStreamAsync(url);

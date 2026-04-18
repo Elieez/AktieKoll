@@ -4,7 +4,11 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path=".env" />
+  </Folder>
   <Project Path="AktieKoll.Tests/AktieKoll.Tests.csproj" />
   <Project Path="AktieKoll/AktieKoll.csproj" />
+  <Project Path="FetchCompanies/FetchCompanies.csproj" Id="22b22e73-66fa-4141-9fd9-b23831c8f793" />
   <Project Path="FetchTrades/FetchTrades.csproj" />
 </Solution>

@@ -1,0 +1,30 @@
+﻿{
+  EmailsSent: [
+    {
+      ToEmail: investor@example.com,
+      CompanyName: Atlas Copco AB,
+      CompanyCode: ATCO-A
+    }
+  ],
+  DiscordSent: [
+    {
+      WebhookUrl: https://discord.com/api/webhooks/123456789/real-token-xyz,
+      CompanyName: Atlas Copco AB,
+      CompanyCode: ATCO-A
+    }
+  ],
+  Logs: [
+    {
+      UserId: user-1,
+      Channel: discord,
+      BatchRunId: 2025-06-12T06:00,
+      Success: true
+    },
+    {
+      UserId: user-1,
+      Channel: email,
+      BatchRunId: 2025-06-12T06:00,
+      Success: true
+    }
+  ]
+}

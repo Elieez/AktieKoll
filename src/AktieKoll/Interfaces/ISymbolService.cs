@@ -4,5 +4,7 @@ namespace AktieKoll.Interfaces;
 
 public interface ISymbolService
 {
-    Task ResolveSymbols(List<InsiderTrade> newTrades, List<InsiderTrade> existingTrades, CancellationToken ct = default);
+    Task ResolveSymbolsAsync(List<InsiderTrade> trades);
+    Task<string?> ResolveSymbolAsync(string? companyName, string? isin);
+    void InvalidateCache();
 }

@@ -1,91 +1,166 @@
-﻿using AktieKoll.Interfaces;
+﻿using AktieKoll.Data;
+using AktieKoll.Extensions;
+using AktieKoll.Interfaces;
 using AktieKoll.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace AktieKoll.Services;
 
-public class SymbolService(IOpenFigiService figiService) : ISymbolService
+public class SymbolService(
+    ApplicationDbContext context,
+    IMemoryCache cache,
+    ILogger<SymbolService> logger) : ISymbolService
 {
-    public async Task ResolveSymbols(
-        List<InsiderTrade> newTrades,
-        List<InsiderTrade> existingTrades,
-        CancellationToken ct = default)
+    private const string CacheKey = "companies:symbol-cache";
+
+    private record CachedEntry(string Code, string? Isin, string NormalizedIsin, string NormalizedName);
+
+    public void InvalidateCache() => cache.Remove(CacheKey);
+
+    public async Task<string?> ResolveSymbolAsync(string? companyName, string? isin)
     {
-        // CompanyName -> Symbol (from existing)
-        var symbolCache = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach(var t in existingTrades)
+        var companies = await GetCachedCompaniesAsync();
+        return Resolve(companyName, isin, companies);
+    }
+
+    public async Task ResolveSymbolsAsync(List<InsiderTrade> trades)
+    {
+        var pending = trades.Where(t => string.IsNullOrEmpty(t.Symbol)).ToList();
+        if (pending.Count == 0) return;
+
+        logger.LogInformation("Resolving symbols for {Count} trades", pending.Count);
+
+        var companies = await GetCachedCompaniesAsync();
+
+        int byIsin = 0, byName = 0, notFound = 0;
+
+        foreach (var trade in pending)
         {
-            var name = t.CompanyName;
-            var symbol = t.Symbol;
-            if(!string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(symbol))
+            var symbol = Resolve(trade.CompanyName, trade.Isin, companies);
+            if (symbol != null)
             {
-                symbolCache.TryAdd(name, symbol);
-            }
-        }
-
-        // ISIN -> Symbol (from existing)
-        var byIsin = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach(var t in existingTrades)
-        {
-            var isin = t.Isin;
-            var symbol = t.Symbol;
-            if(!string.IsNullOrWhiteSpace(isin) && !string.IsNullOrWhiteSpace(symbol))
-            {
-                byIsin.TryAdd(isin, symbol);
-            }
-        }
-
-        // Per-run dedupe of FIGI lookups: ISIN -> Symbol
-        var runIsin = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var trade in newTrades)
-        {
-            ct.ThrowIfCancellationRequested();
-
-            // If already has a symbol, seed caches and continue
-            if (!string.IsNullOrWhiteSpace(trade.Symbol))
-            {
-                if (!string.IsNullOrWhiteSpace(trade.Isin))
-                    byIsin.TryAdd(trade.Isin, trade.Symbol); // <-- fixed parentheses & semicolon
-
-                if (!string.IsNullOrWhiteSpace(trade.CompanyName))
-                    symbolCache.TryAdd(trade.CompanyName, trade.Symbol);
-
-                continue;
-            }
-
-            string? resolved = null;
-
-            // Try ISIN-based caches first
-            var tradeIsin = trade.Isin;
-            if (!string.IsNullOrWhiteSpace(tradeIsin))
-            {
-                if (byIsin.TryGetValue(tradeIsin, out var s) || runIsin.TryGetValue(tradeIsin, out s))
-                {
-                    resolved = s;
-                }
+                trade.Symbol = symbol;
+                // Track rough breakdown for the log summary
+                if (!string.IsNullOrWhiteSpace(trade.Isin) &&
+                    companies.Any(c => c.Isin == trade.Isin || NormalizeIsin(c.Isin) == NormalizeIsin(trade.Isin)))
+                    byIsin++;
                 else
-                {
-                    // FIGI lookup once per ISIN in this run
-                    resolved = await figiService.GetTickerByIsinAsync(tradeIsin, ct); // <-- ct now in scope
-                    if (!string.IsNullOrWhiteSpace(resolved))
-                    {
-                        runIsin[tradeIsin] = resolved;
-                        byIsin[tradeIsin] = resolved;
-                    }
-                }
+                    byName++;
             }
-
-            // Fallback: name cache
-            var tradeName = trade.CompanyName;
-            if (resolved is null && !string.IsNullOrWhiteSpace(tradeName))
-                symbolCache.TryGetValue(tradeName, out resolved);
-
-            if (!string.IsNullOrWhiteSpace(resolved))
+            else
             {
-                trade.Symbol = resolved!;
-                if (!string.IsNullOrWhiteSpace(tradeName))
-                    symbolCache.TryAdd(tradeName, resolved);
+                logger.LogWarning(
+                    "No symbol found — CompanyName: '{Company}', ISIN: '{Isin}'",
+                    trade.CompanyName, trade.Isin ?? "none");
+                notFound++;
             }
         }
+
+        logger.LogInformation(
+            "Symbol resolution complete: ~{ByIsin} by ISIN, ~{ByName} by name, {NotFound} not found",
+            byIsin, byName, notFound);
+    }
+
+    // ── Core resolution logic (single trade) ─────────────────────────────────
+
+    private string? Resolve(string? companyName, string? isin, List<CachedEntry> companies)
+    {
+        // 1. ISIN exact match
+        if (!string.IsNullOrWhiteSpace(isin))
+        {
+            var exactIsin = companies.Where(c => c.Isin == isin).ToList();
+            if (exactIsin.Count > 0)
+                return PickBestTicker(exactIsin.Select(c => c.Code));
+
+            // 2. ISIN fuzzy (strip spaces, dashes, uppercase)
+            var normIsin = NormalizeIsin(isin);
+            if (!string.IsNullOrEmpty(normIsin))
+            {
+                var fuzzyIsin = companies.Where(c => c.NormalizedIsin == normIsin).ToList();
+                if (fuzzyIsin.Count > 0)
+                    return PickBestTicker(fuzzyIsin.Select(c => c.Code));
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(companyName))
+        {
+            var normName = companyName.FilterCompanyName().ToLower();
+
+            // 3. Name normalised exact match
+            var exactName = companies.Where(c => c.NormalizedName == normName).ToList();
+            if (exactName.Count > 0)
+                return PickBestTicker(exactName.Select(c => c.Code));
+
+            // 4. Jaccard token similarity ≥ 0.8
+            var best = companies
+                .Select(c => (c, sim: JaccardTokenSimilarity(normName, c.NormalizedName)))
+                .Where(x => x.sim >= 0.8)
+                .OrderByDescending(x => x.sim)
+                .ToList();
+
+            if (best.Count > 0)
+            {
+                var topSim = best[0].sim;
+                var topCodes = best.Where(x => x.sim == topSim).Select(x => x.c.Code);
+                logger.LogDebug("Fuzzy match: '{Name}' → sim={Sim:F2}", companyName, topSim);
+                return PickBestTicker(topCodes);
+            }
+        }
+
+        return null;
+    }
+
+    // ── Cache ─────────────────────────────────────────────────────────────────
+
+    private async Task<List<CachedEntry>> GetCachedCompaniesAsync()
+    {
+        if (cache.TryGetValue(CacheKey, out List<CachedEntry>? cached) && cached != null)
+            return cached;
+
+        logger.LogInformation("Loading companies into symbol cache");
+
+        var companies = await context.Companies
+            .Select(c => new { c.Code, c.Isin, c.Name })
+            .ToListAsync();
+
+        var entries = companies.Select(c => new CachedEntry(
+            c.Code,
+            c.Isin,
+            NormalizeIsin(c.Isin),
+            (c.Name ?? string.Empty).FilterCompanyName().ToLower()
+        )).ToList();
+
+        cache.Set(CacheKey, entries);
+        return entries;
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private static string NormalizeIsin(string? isin) =>
+        isin?.Replace(" ", "").Replace("-", "").ToUpperInvariant() ?? string.Empty;
+
+    private static double JaccardTokenSimilarity(string a, string b)
+    {
+        if (string.IsNullOrEmpty(a) || string.IsNullOrEmpty(b)) return 0.0;
+
+        var tokensA = new HashSet<string>(a.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+        var tokensB = new HashSet<string>(b.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+
+        var intersection = tokensA.Intersect(tokensB).Count();
+        var union = tokensA.Union(tokensB).Count();
+
+        return union == 0 ? 0.0 : (double)intersection / union;
+    }
+
+    private static string PickBestTicker(IEnumerable<string> tickers)
+    {
+        var list = tickers.ToList();
+        if (list.Count == 1) return list[0];
+
+        return list.FirstOrDefault(t => t.EndsWith("-B"))
+            ?? list.FirstOrDefault(t => t.EndsWith("-A"))
+            ?? list.FirstOrDefault(t => !t.Contains('-'))
+            ?? list[0];
     }
 }

@@ -3,16 +3,22 @@ using AktieKoll.Extensions;
 using AktieKoll.Interfaces;
 using AktieKoll.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace AktieKoll.Services;
 
-public class InsiderTradeService(ApplicationDbContext context, ISymbolService symbolService) : IInsiderTradeService
+public class InsiderTradeService(
+    ApplicationDbContext context,
+    ISymbolService symbolService, 
+    IMemoryCache cache,
+    TimeProvider timeProvider,
+    ILogger<InsiderTradeService> logger) : IInsiderTradeService
 {
-    public async Task<string> AddInsiderTrades(List<InsiderTrade> insiderTrades)
+    public async Task<InsiderTradeIngestionResult> AddInsiderTrades(List<InsiderTrade> insiderTrades)
     {
         if (insiderTrades == null || insiderTrades.Count == 0)
         {
-            return "No data provided.";
+            return new InsiderTradeIngestionResult("No data provided.", []);
         }
 
         var dates = insiderTrades.Select(t => t.PublishingDate).Distinct().ToList();
@@ -21,8 +27,9 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
             .Where(t => dates.Contains(t.PublishingDate))
             .ToListAsync();
 
-        await symbolService.ResolveSymbols(insiderTrades, existingTrades);
+        await symbolService.ResolveSymbolsAsync(insiderTrades);
 
+        var inserted = new List<InsiderTrade>();
         int newTradesCount = 0;
         int removedTradesCount = 0;
         foreach (var trade in insiderTrades)
@@ -44,8 +51,16 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
                 continue;
             }
 
+            if (string.IsNullOrEmpty(trade.Symbol))
+            {
+                logger.LogWarning(
+                    "Trade unresolved at ingestion - CompanyName: '{Company}', ISIN: '{Isin}'",
+                    trade.CompanyName, trade.Isin ?? "none");
+            }
+
             context.InsiderTrades.Add(trade);
             existingTrades.Add(trade);
+            inserted.Add(trade);
             newTradesCount++;
         }
 
@@ -55,23 +70,16 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
 
             if (newTradesCount > 0 && removedTradesCount > 0)
             {
-                return $"{newTradesCount} new trades added. {removedTradesCount} trades removed.";
+                return new InsiderTradeIngestionResult($"{newTradesCount} new trades added. {removedTradesCount} trades removed.", inserted);
             }
             if (newTradesCount > 0)
             {
-                return $"{newTradesCount} new trades added.";
+                return new InsiderTradeIngestionResult($"{newTradesCount} new trades added.", inserted);
             }
-            return $"{removedTradesCount} trades removed.";
+            return new InsiderTradeIngestionResult($"{removedTradesCount} trades removed.", []) ;
         }
-        return "No new data was added.";
+        return new InsiderTradeIngestionResult("No new data was added.", []);
 
-    }
-
-    public async Task<IEnumerable<InsiderTrade>> GetInsiderTrades()
-    {
-        return await context.InsiderTrades
-            .OrderByDescending(t => t.PublishingDate)
-            .ToListAsync();
     }
 
     public async Task<IEnumerable<InsiderTrade>> GetInsiderTradesPage(int page, int pageSize)
@@ -86,7 +94,7 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
 
     public async Task<IEnumerable<InsiderTrade>> GetInsiderTradesTop()
     {
-        var today = DateTime.Now.Date;
+        var today = DateTime.UtcNow.Date;
         var yesterday = today.AddDays(-1);
         var tomorrow = today.AddDays(1);
 
@@ -97,22 +105,18 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
             .ToListAsync();
     }
 
-    private async Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountByType(string transactionType, string? companyName, int days, int? top)
+    private async Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountByType(string transactionType, string? symbol, int days, int? top)
     {
-        var endDate = DateTime.Now.Date.AddDays(1);
+        var endDate = DateTime.UtcNow.Date.AddDays(1);
         var startDate = endDate.AddDays(-days);
 
-        var query = context.InsiderTrades
+        var upperSymbol = symbol?.ToUpper();
+        var searchType = transactionType.ToLower();
+
+        IQueryable<CompanyTransactionStats> grouped = context.InsiderTrades
             .Where(t => t.PublishingDate >= startDate && t.PublishingDate < endDate)
-            .Where(t => t.TransactionType.ToLower() == transactionType.ToLower());
-
-        if (!string.IsNullOrWhiteSpace(companyName))
-        {
-            var filtered = companyName.FilterCompanyName();
-            query = query.Where(t => t.CompanyName.ToLower() == filtered.ToLower());
-        }
-
-        var grouped = query
+            .Where(t => t.TransactionType.ToLower() == searchType)
+            .Where(t => string.IsNullOrWhiteSpace(upperSymbol) || t.Symbol == upperSymbol)
             .GroupBy(t => t.CompanyName)
             .Select(g => new CompanyTransactionStats
             {
@@ -121,19 +125,19 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
             })
             .OrderByDescending(c => c.TransactionCount)
             .ThenBy(c => c.CompanyName);
-
+            
         if (top.HasValue)
         {
-            grouped = (IOrderedQueryable<CompanyTransactionStats>)grouped.Take(top.Value);
+            grouped = grouped.Take(top.Value);
         }
 
         return await grouped.ToListAsync();
     }
 
-    public Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountBuy(string? companyName, int days = 30, int? top = 5)
-        => GetTransactionCountByType("Förvärv", companyName, days, top);
-    public Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountSell(string? companyName, int days = 30, int? top = 5)
-        => GetTransactionCountByType("Avyttring", companyName, days, top);
+    public Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountBuy(string? symbol = null, int days = 30, int? top = 5)
+        => GetTransactionCountByType("förvärv", symbol, days, top);
+    public Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountSell(string? symbol = null, int days = 30, int? top = 5)
+        => GetTransactionCountByType("avyttring", symbol, days, top);
 
     public async Task<IEnumerable<InsiderTrade>> GetInsiderTradesByCompany(string companyName, int skip = 0, int take = 10)
     {
@@ -142,13 +146,54 @@ public class InsiderTradeService(ApplicationDbContext context, ISymbolService sy
             return [];
         }
 
-        var filteredCompanyName = companyName.FilterCompanyName();
+        var filteredCompanyName = companyName.FilterCompanyName().ToLower();
 
         return await context.InsiderTrades
-            .Where(t => t.CompanyName.ToLower() == filteredCompanyName.ToLower())
+            .Where(t => t.CompanyName.ToLower() == filteredCompanyName)
             .OrderByDescending(t => t.PublishingDate)
             .Skip(skip)
             .Take(take)
             .ToListAsync();
+    }
+
+    public async Task<IEnumerable<InsiderTrade>> GetInsiderTradesBySymbol(string symbol, int skip = 0, int take = 10)
+    {
+        if (string.IsNullOrWhiteSpace(symbol))
+        {
+            return [];
+        }
+
+        return await context.InsiderTrades
+            .Where(t => t.Symbol == symbol)
+            .OrderByDescending(t => t.PublishingDate)
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync();
+    }
+
+    public async Task<YtdStats> GetYtdTransactionStatsAsync()
+    {
+        const string cacheKey = "trades:ytd-stats";
+
+        if (cache.TryGetValue(cacheKey, out YtdStats? cachedStats) && cachedStats != null)
+            return cachedStats;
+
+        var startOfYear = new DateTime(timeProvider.GetUtcNow().Year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        var stats = await context.InsiderTrades
+             .Where(t => t.PublishingDate >= startOfYear)
+             .GroupBy(_ => 1)
+             .Select(g => new YtdStats
+             {
+                 TotalTransactions = (long)g.Count(),
+                 TotalValue = g.Sum(t => t.Price * t.Shares),
+                 UniqueCompanies = g.Select(t => t.Symbol).Distinct().Count()
+             })
+             .FirstOrDefaultAsync();
+
+        cache.Set(cacheKey, stats, new MemoryCacheEntryOptions()
+            .SetAbsoluteExpiration(TimeSpan.FromHours(6)));
+
+        return stats ?? new YtdStats { TotalTransactions = 0, TotalValue = 0, UniqueCompanies = 0 };
     }
 }

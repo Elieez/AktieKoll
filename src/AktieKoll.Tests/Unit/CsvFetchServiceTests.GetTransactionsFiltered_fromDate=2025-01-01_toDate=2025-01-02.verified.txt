@@ -1,6 +1,6 @@
 ﻿[
   {
-    CompanyName: Balco Group,
+    CompanyName: Balco,
     InsiderName: Ingalill Berglund,
     Position: Styrelseordförande,
     TransactionType: Förvärv,
@@ -13,7 +13,7 @@
     TransactionDate: DateTime_2
   },
   {
-    CompanyName: Balco Group,
+    CompanyName: Balco,
     InsiderName: Ingalill Berglund,
     Position: Styrelseordförande,
     TransactionType: Förvärv,
@@ -39,7 +39,7 @@
     TransactionDate: DateTime_4
   },
   {
-    CompanyName: Pricer.,
+    CompanyName: Pricer,
     InsiderName: Jörgen Jost Auf Der Stroth,
     Position: Ledningsgrupp,
     TransactionType: Förvärv,
@@ -52,7 +52,7 @@
     TransactionDate: DateTime_6
   },
   {
-    CompanyName: Dynavox Group,
+    CompanyName: Dynavox,
     InsiderName: Linda Tybring,
     Position: CFO,
     TransactionType: Förvärv,
@@ -64,7 +64,7 @@
     TransactionDate: DateTime_2
   },
   {
-    CompanyName: Dynavox Group,
+    CompanyName: Dynavox,
     InsiderName: Linda Tybring,
     Position: CFO,
     TransactionType: Avyttring,
@@ -116,7 +116,7 @@
     TransactionDate: DateTime_2
   },
   {
-    CompanyName: Dynavox Group,
+    CompanyName: Dynavox,
     InsiderName: Tara Ann Rudnicki,
     Position: Annan ledande befattningshavare,
     TransactionType: Förvärv,
@@ -322,7 +322,7 @@
     TransactionDate: DateTime_6
   },
   {
-    CompanyName: Nelly Group,
+    CompanyName: Nelly,
     InsiderName: Lotta Fermén,
     Position: Ledningsgrupp,
     TransactionType: Tilldelning,
@@ -361,18 +361,6 @@
     TransactionDate: DateTime_6
   },
   {
-    CompanyName: AstraZeneca PLC,
-    InsiderName: Aradhana Sarin,
-    Position: CFO,
-    TransactionType: Gåva lämnad,
-    Shares: 200,
-    Currency: USD,
-    Isin: US0463531089,
-    Status: Aktuell,
-    PublishingDate: DateTime_23,
-    TransactionDate: DateTime_13
-  },
-  {
     CompanyName: Pricer,
     InsiderName: Mats Arnehall,
     Position: Ledningsgrupp,
@@ -382,7 +370,7 @@
     Currency: SEK,
     Isin: SE0000233934,
     Status: Reviderad,
-    PublishingDate: DateTime_24,
+    PublishingDate: DateTime_23,
     TransactionDate: DateTime_6
   },
   {
@@ -395,7 +383,7 @@
     Currency: SEK,
     Isin: ,
     Status: Aktuell,
-    PublishingDate: DateTime_25,
+    PublishingDate: DateTime_24,
     TransactionDate: DateTime_13
   },
   {
@@ -408,7 +396,7 @@
     Currency: SEK,
     Isin: SE0000233934,
     Status: Reviderad,
-    PublishingDate: DateTime_26,
+    PublishingDate: DateTime_25,
     TransactionDate: DateTime_6
   },
   {
@@ -420,7 +408,7 @@
     Currency: SEK,
     Isin: SE0000872095,
     Status: Aktuell,
-    PublishingDate: DateTime_27,
+    PublishingDate: DateTime_26,
     TransactionDate: DateTime_13
   },
   {
@@ -433,7 +421,7 @@
     Currency: SEK,
     Isin: SE0000872095,
     Status: Aktuell,
-    PublishingDate: DateTime_27,
+    PublishingDate: DateTime_26,
     TransactionDate: DateTime_13
   },
   {
@@ -446,7 +434,7 @@
     Currency: SEK,
     Isin: SE0023114400,
     Status: Aktuell,
-    PublishingDate: DateTime_28,
+    PublishingDate: DateTime_27,
     TransactionDate: DateTime_13
   },
   {
@@ -459,7 +447,7 @@
     Currency: SEK,
     Isin: SE0007158829,
     Status: Aktuell,
-    PublishingDate: DateTime_29,
+    PublishingDate: DateTime_28,
     TransactionDate: DateTime_13
   },
   {
@@ -471,7 +459,7 @@
     Currency: SEK,
     Isin: SE0000872095,
     Status: Aktuell,
-    PublishingDate: DateTime_30,
+    PublishingDate: DateTime_29,
     TransactionDate: DateTime_13
   },
   {
@@ -484,11 +472,11 @@
     Currency: SEK,
     Isin: SE0000872095,
     Status: Aktuell,
-    PublishingDate: DateTime_30,
+    PublishingDate: DateTime_29,
     TransactionDate: DateTime_13
   },
   {
-    CompanyName: AUTOLIV, INC.,
+    CompanyName: AUTOLIV, INC,
     InsiderName: Jan Carlson,
     Position: Styrelseordförande,
     TransactionType: Avyttring,
@@ -497,7 +485,7 @@
     Currency: USD,
     Isin: US0528001094,
     Status: Aktuell,
-    PublishingDate: DateTime_31,
+    PublishingDate: DateTime_30,
     TransactionDate: DateTime_2
   },
   {
@@ -510,7 +498,7 @@
     Currency: SEK,
     Isin: SE0015658109,
     Status: Aktuell,
-    PublishingDate: DateTime_32,
-    TransactionDate: DateTime_33
+    PublishingDate: DateTime_31,
+    TransactionDate: DateTime_32
   }
 ]

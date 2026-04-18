@@ -1,0 +1,14 @@
+﻿[
+  {
+    CompanyName: eEducation Albert,
+    TransactionCount: 8
+  },
+  {
+    CompanyName: Lyckegård,
+    TransactionCount: 2
+  },
+  {
+    CompanyName: Scandi Standard,
+    TransactionCount: 2
+  }
+]
