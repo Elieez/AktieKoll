@@ -22,6 +22,8 @@ RUN dotnet publish "AktieKoll.csproj" -c Release -o /app/publish /p:UseAppHost=f
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y libgssapi-krb5-2 && rm -rf /var/lib/apt/lists/*
+
 # Run as non-root user (security)
 USER $APP_UID
 
