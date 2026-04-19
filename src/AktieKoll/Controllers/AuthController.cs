@@ -141,7 +141,7 @@ public class AuthController(
     public IActionResult GoogleLogin()
     {
         var frontendUrl  = (config["Frontend:Url"] ?? "http://localhost:3000").TrimEnd('/');
-        var redirectUri  = $"{Request.Scheme}://{Request.Host}/api/auth/google/handle";
+        var redirectUri = config["Google:CallbackUrl"] ?? $"{Request.Scheme}://{Request.Host}/api/auth/google/handle";
         var props        = new AuthenticationProperties
         {
             RedirectUri = redirectUri,
