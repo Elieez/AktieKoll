@@ -7,6 +7,7 @@ using AktieKoll.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -28,6 +29,15 @@ builder.Services.AddCors(options =>
           .AllowAnyMethod()
           .AllowAnyHeader();
     });
+});
+
+// Azure App Service terminates TLS at the load balancer and forwards as HTTP internally.
+// Clear the default loopback-only restriction so the proxy headers are trusted.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
 });
 
 builder.Services.AddControllers();
@@ -179,6 +189,8 @@ if (!app.Environment.IsEnvironment("Testing"))
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
 }
+
+app.UseForwardedHeaders();
 
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Staging"))
 {
