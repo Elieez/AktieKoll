@@ -217,6 +217,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseForwardedHeaders();
 app.UseCors("AllowNextApp");
 app.UseHttpsRedirection();
 app.UseStaticFiles();
