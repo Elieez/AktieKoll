@@ -138,6 +138,22 @@ builder.Services.AddAuthentication(options =>
     options.Scope.Add("profile");
     options.Scope.Add("email");
     options.SaveTokens = true;
+    // Rewrite redirect_uri to go through the Next.js proxy on aktiekoll.com.
+    // Without this, the middleware builds redirect_uri from Request.Host (the Azure backend
+    // domain), so Google sends the user back directly to the backend — bypassing the proxy
+    // and making the correlation cookie (stored first-party on aktiekoll.com) inaccessible
+    // on mobile browsers with ITP/cross-site cookie blocking.
+    options.Events.OnRedirectToAuthorizationEndpoint = ctx =>
+    {
+        var frontendUrl = (builder.Configuration["Frontend:Url"] ?? "https://www.aktiekoll.com").TrimEnd('/');
+        var proxyCallback = $"{frontendUrl}/api/auth/google/callback";
+        var ub = new UriBuilder(ctx.RedirectUri);
+        var qs = System.Web.HttpUtility.ParseQueryString(ub.Query);
+        qs["redirect_uri"] = proxyCallback;
+        ub.Query = qs.ToString();
+        ctx.Response.Redirect(ub.Uri.ToString());
+        return Task.CompletedTask;
+    };
 });
 
 // Cookie config for Identity external scheme
