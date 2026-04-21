@@ -61,6 +61,8 @@ CSV register        local company DB    (skip duplicates)   email or Discord
 | **Notifications** | Discord Webhooks |
 | **Testing** | xUnit, Moq, FluentAssertions, Verify |
 | **External APIs** | EODHD (tickers & market data), Finansinspektionen (insider register) |
+| **Containerization** | Docker, Azure Container Registry (ACR) |
+| **Hosting** | Azure App Service (API), Vercel (Frontend) |
 | **DevOps** | GitHub Actions (CI & cron jobs), Renovate Bot |
 
 ---
