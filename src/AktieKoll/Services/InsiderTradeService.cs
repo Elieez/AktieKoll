@@ -1,4 +1,4 @@
-﻿using AktieKoll.Data;
+using AktieKoll.Data;
 using AktieKoll.Extensions;
 using AktieKoll.Interfaces;
 using AktieKoll.Models;
@@ -178,9 +178,12 @@ public class InsiderTradeService(
         if (cache.TryGetValue(cacheKey, out YtdStats? cachedStats) && cachedStats != null)
             return cachedStats;
 
-        var startOfYear = new DateTime(timeProvider.GetUtcNow().Year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var now = timeProvider.GetUtcNow();
+        var startOfYear = new DateTime(now.Year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var startOfDay = now.UtcDateTime.Date;
+        var endOfDay = startOfDay.AddDays(1);
 
-        var stats = await context.InsiderTrades
+        var ytd = await context.InsiderTrades
              .Where(t => t.PublishingDate >= startOfYear)
              .GroupBy(_ => 1)
              .Select(g => new YtdStats
@@ -191,9 +194,24 @@ public class InsiderTradeService(
              })
              .FirstOrDefaultAsync();
 
-        cache.Set(cacheKey, stats, new MemoryCacheEntryOptions()
-            .SetAbsoluteExpiration(TimeSpan.FromHours(6)));
+        var todayStats = await context.InsiderTrades
+             .Where(t => t.PublishingDate >= startOfDay && t.PublishingDate < endOfDay)
+             .GroupBy(_ => 1)
+             .Select(g => new { Count = g.Count(), Value = g.Sum(t => t.Price * t.Shares) })
+             .FirstOrDefaultAsync();
 
-        return stats ?? new YtdStats { TotalTransactions = 0, TotalValue = 0, UniqueCompanies = 0 };
+        var stats = new YtdStats
+        {
+            TotalTransactions = ytd?.TotalTransactions ?? 0,
+            TotalValue = ytd?.TotalValue ?? 0,
+            UniqueCompanies = ytd?.UniqueCompanies ?? 0,
+            TodayCount = todayStats?.Count ?? 0,
+            TodayValue = todayStats?.Value ?? 0,
+        };
+
+        cache.Set(cacheKey, stats, new MemoryCacheEntryOptions()
+            .SetAbsoluteExpiration(TimeSpan.FromHours(1)));
+
+        return stats;
     }
 }
