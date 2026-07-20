@@ -416,3 +416,6 @@ appsettings.json
 !.env.example
 .env.production
 /src/AktieKoll/appsettings.Development.json
+
+# Superpowers docs (specs, plans, reports)
+docs/superpowers/

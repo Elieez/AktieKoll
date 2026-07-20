@@ -22,7 +22,8 @@ public class AuthController(
     IAuthService authService,
     IEmailService emailService,
     IConfiguration config,
-    ApplicationDbContext db) : ControllerBase
+    ApplicationDbContext db,
+    ILogger<AuthController> logger) : ControllerBase
 {
     private const string RefreshTokenCookieName = "refreshToken";
 
@@ -67,7 +68,10 @@ public class AuthController(
             await db.SaveChangesAsync();
             await emailService.SendEmailVerificationAsync(user.Email!, code);
         }
-        catch { /* log but don't surface */ }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to send verification email during registration for user {UserId}.", user.Id);
+        }
 
         return Ok(new { message = "User created successfully. Check your email to verify your account." });
     }
@@ -317,7 +321,10 @@ public class AuthController(
                 await db.SaveChangesAsync();
                 await emailService.SendPasswordResetAsync(user.Email!, code);
             }
-            catch { /* log but never reveal */ }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Failed to process password-reset email for user {UserId}.", user.Id);
+            }
         }
 
         // Always 200 — prevents email enumeration
@@ -437,7 +444,14 @@ public class AuthController(
         });
 
         // Send confirmation email (fire-and-forget)
-        try { await emailService.SendAccountDeletedConfirmationAsync(email); } catch { }
+        try
+        {
+            await emailService.SendAccountDeletedConfirmationAsync(email);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to send account-deleted confirmation email.");
+        }
 
         return Ok(new { message = "Ditt konto och all tillhörande data har raderats permanent." });
     }
