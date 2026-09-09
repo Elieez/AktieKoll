@@ -1,5 +1,5 @@
 # Stage 1: Build the application
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
 WORKDIR /src
 
 # Copy Directory.Packages.props first (required for restore)
@@ -19,7 +19,7 @@ FROM build AS publish
 RUN dotnet publish "AktieKoll.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # Stage 3: Create runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS final
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y libgssapi-krb5-2 && rm -rf /var/lib/apt/lists/*
