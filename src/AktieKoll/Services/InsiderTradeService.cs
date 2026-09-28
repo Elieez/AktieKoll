@@ -94,7 +94,7 @@ public class InsiderTradeService(
 
     public async Task<IEnumerable<InsiderTrade>> GetInsiderTradesTop()
     {
-        var today = DateTime.UtcNow.Date;
+        var today = timeProvider.GetUtcNow().UtcDateTime.Date;
         var yesterday = today.AddDays(-1);
         var tomorrow = today.AddDays(1);
 
@@ -107,7 +107,7 @@ public class InsiderTradeService(
 
     private async Task<IEnumerable<CompanyTransactionStats>> GetTransactionCountByType(string transactionType, string? symbol, int days, int? top)
     {
-        var endDate = DateTime.UtcNow.Date.AddDays(1);
+        var endDate = timeProvider.GetUtcNow().UtcDateTime.Date.AddDays(1);
         var startDate = endDate.AddDays(-days);
 
         var upperSymbol = symbol?.ToUpper();

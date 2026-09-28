@@ -3,7 +3,7 @@ name: Fetch Insider Trades
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 */6 * * *"
+    - cron: "21 */5 * * *"
 
 permissions:
   contents: read

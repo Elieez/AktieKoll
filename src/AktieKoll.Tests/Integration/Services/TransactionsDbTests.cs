@@ -335,7 +335,10 @@ public class TransactionsDbTests
         var csvDto = await csvFetchService.FetchInsiderTradesAsync(fromDate, toDate);
         var trades = InsiderTradeMapper.MapDtosToTrades(csvDto);
 
-        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
+        var fakeTime = new FakeTimeProvider();
+        fakeTime.SetUtcNow(new DateTimeOffset(2025, 12, 31, 0, 0, 0, TimeSpan.Zero));
+
+        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx, fakeTime);
         await service.AddInsiderTrades(trades);
 
         var result = await service.GetTransactionCountBuy(symbol, days, top);
@@ -363,7 +366,10 @@ public class TransactionsDbTests
         var csvDto = await csvFetchService.FetchInsiderTradesAsync(fromDate, toDate);
         var trades = InsiderTradeMapper.MapDtosToTrades(csvDto);
 
-        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
+        var fakeTime = new FakeTimeProvider();
+        fakeTime.SetUtcNow(new DateTimeOffset(2025, 12, 31, 0, 0, 0, TimeSpan.Zero));
+
+        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx, fakeTime);
         await service.AddInsiderTrades(trades);
 
         var result = await service.GetTransactionCountSell(symbol, days, top);
