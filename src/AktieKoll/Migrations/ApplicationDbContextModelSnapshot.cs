@@ -191,8 +191,8 @@ namespace AktieKoll.Migrations
                     b.Property<DateTime>("PublishingDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Shares")
-                        .HasColumnType("integer");
+                    b.Property<long>("Shares")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Status")
                         .IsRequired()

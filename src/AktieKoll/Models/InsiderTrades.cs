@@ -9,7 +9,7 @@ public class InsiderTrade
     public required string InsiderName { get; set; }
     public string? Position { get; set; }
     public required string TransactionType { get; set; }
-    public required int Shares { get; set; }
+    public required long Shares { get; set; }
     public required decimal Price { get; set; }
     public required string Currency { get; set; }
     public string? Isin { get; set; }
