@@ -186,7 +186,7 @@ public class InsiderTradeService(
              .Select(g => new YtdStats
              {
                  TotalTransactions = (long)g.Count(),
-                 TotalValue = g.Sum(t => t.Price * t.Shares),
+                 TotalValue = Math.Round(g.Sum(t => t.Price * t.Shares), 2),
                  UniqueCompanies = g.Select(t => t.Symbol).Distinct().Count()
              })
              .FirstOrDefaultAsync();
