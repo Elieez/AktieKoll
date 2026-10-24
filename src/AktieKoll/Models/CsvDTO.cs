@@ -25,8 +25,8 @@ public class CsvDTO
     public required string Instrumentnamn { get; set; }
     public string? ISIN { get; set; }
     public required DateTime Transaktionsdatum { get; set; }
-    [TypeConverter(typeof(VolumeIntConverter))]
-    public required int Volym { get; set; }
+    [TypeConverter(typeof(VolumeLongConverter))]
+    public required long Volym { get; set; }
     public required string Volymsenhet { get; set; }
     public required decimal Pris { get; set; }
     public required string Valuta { get; set; }
@@ -34,14 +34,14 @@ public class CsvDTO
     public required string Status { get; set; }
 }
 
-public class VolumeIntConverter : CsvHelper.TypeConversion.Int32Converter
+public class VolumeLongConverter : CsvHelper.TypeConversion.Int64Converter
 {
     public override object? ConvertFromString(string? text, CsvHelper.IReaderRow row, CsvHelper.Configuration.MemberMapData memberMapData)
     {
-        if (string.IsNullOrWhiteSpace(text)) return 0;
+        if (string.IsNullOrWhiteSpace(text)) return 0L;
         var normalized = text.Replace(',', '.');
         if (decimal.TryParse(normalized, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var dec))
-            return (int)dec;
+            return (long)dec;
         return base.ConvertFromString(text, row, memberMapData);
     }
 }
