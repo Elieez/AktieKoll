@@ -32,7 +32,11 @@ public static class InsiderTradeExtensions
             Currency = trade.Currency,
             Symbol = trade.Symbol,
             PublishingDate = trade.PublishingDate,
-            TransactionDate = trade.TransactionDate
+            TransactionDate = trade.TransactionDate,
+            ValueSek = trade.ValueSek,
+            InstrumentType = trade.InstrumentType,
+            IsCloselyAssociated = trade.IsCloselyAssociated,
+            IsShareProgram = trade.IsShareProgram
         };
     }
 }

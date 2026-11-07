@@ -12,4 +12,8 @@ public record InsiderTradeListDto
     public string? Symbol { get; init; }
     public required DateTime PublishingDate { get; init; }
     public required DateTime TransactionDate { get; init; }
+    public decimal? ValueSek { get; init; }
+    public string? InstrumentType { get; init; }
+    public bool? IsCloselyAssociated { get; init; }
+    public bool? IsShareProgram { get; init; }
 }
