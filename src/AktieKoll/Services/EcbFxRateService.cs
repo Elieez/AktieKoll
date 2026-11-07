@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Xml.Linq;
+using AktieKoll.Extensions;
 using AktieKoll.Interfaces;
 using AktieKoll.Models;
 
@@ -43,7 +44,7 @@ public class EcbFxRateService(HttpClient httpClient, ILogger<EcbFxRateService> l
                 missing++;
                 continue;
             }
-            trade.ValueSek = Math.Round(trade.Price * trade.Shares * rate.Value, 2);
+            trade.ValueSek = Math.Round(trade.Price * trade.Shares * rate.Value, 2).AsPlausibleSek();
         }
 
         if (missing > 0)

@@ -109,6 +109,29 @@ public class EcbFxRateServiceTests
         plain.Lei.Should().BeNull();
     }
 
+    [Fact]
+    public void ToInsiderTrade_TotalEnteredAsPrice_ValueSekLeftOut()
+    {
+        // Real filing: 634 146 shares with the total amount (1 585 365 kr) entered as price.
+        var trade = FakeDTO.MakeCsvDto(d =>
+        {
+            d.Volym = 634_146;
+            d.Pris = 1_585_365m;
+        }).ToInsiderTrade();
+
+        trade.ValueSek.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ApplyValueSek_ImplausibleForeignValue_LeftNull()
+    {
+        var trade = MakeTrade("USD", new DateTime(2026, 11, 6), price: 10_000_000m, shares: 1_000_000);
+
+        await CreateService(EcbXml).ApplyValueSekAsync([trade]);
+
+        trade.ValueSek.Should().BeNull();
+    }
+
     private sealed class StubHandler(string body, HttpStatusCode status) : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
