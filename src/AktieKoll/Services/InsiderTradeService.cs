@@ -58,6 +58,13 @@ public class InsiderTradeService(
                     trade.CompanyName, trade.Isin ?? "none");
             }
 
+            if (trade.ValueSek is null && string.Equals(trade.Currency, "SEK", StringComparison.OrdinalIgnoreCase))
+            {
+                logger.LogWarning(
+                    "Implausible trade value left out of SEK totals - Company: '{Company}', Insider: '{Insider}', Shares: {Shares}, Price: {Price}",
+                    trade.CompanyName, trade.InsiderName, trade.Shares, trade.Price);
+            }
+
             context.InsiderTrades.Add(trade);
             existingTrades.Add(trade);
             inserted.Add(trade);

@@ -23,7 +23,7 @@ public static class CsvDtoExtensions
             IsCloselyAssociated = csvDto.Närstående.IsFiYes(),
             IsShareProgram = csvDto.Aktieprogram.IsFiYes(),
             ValueSek = string.Equals(csvDto.Valuta, "SEK", StringComparison.OrdinalIgnoreCase)
-                ? Math.Round(csvDto.Pris * csvDto.Volym, 2)
+                ? Math.Round(csvDto.Pris * csvDto.Volym, 2).AsPlausibleSek()
                 : null,
             TransactionDate = csvDto.Transaktionsdatum,
             PublishingDate = DateTime.SpecifyKind(csvDto.Publiceringsdatum, DateTimeKind.Utc),
