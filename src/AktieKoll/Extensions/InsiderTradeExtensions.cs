@@ -5,6 +5,16 @@ namespace AktieKoll.Extensions;
 
 public static class InsiderTradeExtensions
 {
+    /// <summary>
+    /// No single insider trade on the Swedish market comes close to this (the largest are
+    /// ~20 Mdr). Values above it are filing errors, e.g. the total amount entered as the
+    /// per-share price, and are left out of SEK aggregates instead of skewing them.
+    /// </summary>
+    public const decimal MaxPlausibleValueSek = 50_000_000_000m;
+
+    public static decimal? AsPlausibleSek(this decimal valueSek)
+        => valueSek > MaxPlausibleValueSek ? null : valueSek;
+
     public static InsiderTrade? FindDuplicate(this IEnumerable<InsiderTrade> trades, InsiderTrade trade)
         => trades.FirstOrDefault(t =>
             t.CompanyName == trade.CompanyName &&
