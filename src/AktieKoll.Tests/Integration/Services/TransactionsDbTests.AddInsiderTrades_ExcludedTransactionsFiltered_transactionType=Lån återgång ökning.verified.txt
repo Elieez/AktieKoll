@@ -10,6 +10,9 @@
     Currency: SEK,
     Isin: SE0001,
     Status: Aktuell,
+    IsCloselyAssociated: false,
+    IsShareProgram: false,
+    ValueSek: 1050.0,
     PublishingDate: DateTime_1,
     TransactionDate: DateTime_2
   }

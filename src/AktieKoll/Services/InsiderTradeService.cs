@@ -100,7 +100,7 @@ public class InsiderTradeService(
 
         return await context.InsiderTrades
             .Where(t => t.PublishingDate >= yesterday && t.PublishingDate < tomorrow)
-            .OrderByDescending(t => t.Price * t.Shares)
+            .OrderByDescending(t => t.ValueSek ?? t.Price * t.Shares)
             .Take(10)
             .ToListAsync();
     }
@@ -171,6 +171,62 @@ public class InsiderTradeService(
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<TradedSymbol>> GetTradedSymbolsAsync()
+    {
+        const string cacheKey = "trades:traded-symbols";
+
+        if (cache.TryGetValue(cacheKey, out List<TradedSymbol>? cached) && cached != null)
+            return cached;
+
+        var symbols = await context.InsiderTrades
+            .Where(t => t.Symbol != null && t.Symbol != "")
+            .GroupBy(t => t.Symbol!)
+            .Select(g => new TradedSymbol
+            {
+                Symbol = g.Key,
+                LastTradeDate = g.Max(t => t.PublishingDate)
+            })
+            .OrderBy(s => s.Symbol)
+            .ToListAsync();
+
+        cache.Set(cacheKey, symbols, TimeSpan.FromHours(6));
+        return symbols;
+    }
+
+    public async Task<int> BackfillTradeDetailsAsync(List<InsiderTrade> freshTrades)
+    {
+        if (freshTrades.Count == 0)
+            return 0;
+
+        var dates = freshTrades.Select(t => t.PublishingDate).Distinct().ToList();
+        var existing = await context.InsiderTrades
+            .Where(t => dates.Contains(t.PublishingDate))
+            .ToListAsync();
+
+        var updated = 0;
+        foreach (var fresh in freshTrades.Where(t => !t.IsRevised()))
+        {
+            var row = existing.FindDuplicate(fresh);
+            if (row is null)
+                continue;
+
+            var changed = false;
+            if (row.Lei is null && fresh.Lei is not null) { row.Lei = fresh.Lei; changed = true; }
+            if (row.InstrumentType is null && fresh.InstrumentType is not null) { row.InstrumentType = fresh.InstrumentType; changed = true; }
+            if (row.TradingVenue is null && fresh.TradingVenue is not null) { row.TradingVenue = fresh.TradingVenue; changed = true; }
+            if (row.IsCloselyAssociated is null && fresh.IsCloselyAssociated is not null) { row.IsCloselyAssociated = fresh.IsCloselyAssociated; changed = true; }
+            if (row.IsShareProgram is null && fresh.IsShareProgram is not null) { row.IsShareProgram = fresh.IsShareProgram; changed = true; }
+            if (row.ValueSek is null && fresh.ValueSek is not null) { row.ValueSek = fresh.ValueSek; changed = true; }
+
+            if (changed) updated++;
+        }
+
+        if (updated > 0)
+            await context.SaveChangesAsync();
+
+        return updated;
+    }
+
     public async Task<YtdStats> GetYtdTransactionStatsAsync()
     {
         const string cacheKey = "trades:ytd-stats";
@@ -186,7 +242,9 @@ public class InsiderTradeService(
              .Select(g => new YtdStats
              {
                  TotalTransactions = (long)g.Count(),
-                 TotalValue = Math.Round(g.Sum(t => t.Price * t.Shares), 2),
+                 // Only SEK-denominated values are summed so foreign-currency trades
+                 // aren't counted as kronor. ValueSek is null when no FX rate exists.
+                 TotalValue = Math.Round(g.Sum(t => t.ValueSek ?? 0m), 2),
                  UniqueCompanies = g.Select(t => t.Symbol).Distinct().Count()
              })
              .FirstOrDefaultAsync();

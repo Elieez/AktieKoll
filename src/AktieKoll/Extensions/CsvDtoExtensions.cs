@@ -17,10 +17,25 @@ public static class CsvDtoExtensions
             Currency = csvDto.Valuta,
             Isin = csvDto.ISIN,
             Status = csvDto.Status,
+            Lei = csvDto.LEI.NullIfWhiteSpace(),
+            InstrumentType = csvDto.Instrumenttyp.NullIfWhiteSpace(),
+            TradingVenue = csvDto.Handelsplats.NullIfWhiteSpace(),
+            IsCloselyAssociated = csvDto.Närstående.IsFiYes(),
+            IsShareProgram = csvDto.Aktieprogram.IsFiYes(),
+            ValueSek = string.Equals(csvDto.Valuta, "SEK", StringComparison.OrdinalIgnoreCase)
+                ? Math.Round(csvDto.Pris * csvDto.Volym, 2)
+                : null,
             TransactionDate = csvDto.Transaktionsdatum,
             PublishingDate = DateTime.SpecifyKind(csvDto.Publiceringsdatum, DateTimeKind.Utc),
         };
     }
+    private static string? NullIfWhiteSpace(this string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    // FI marks these columns with "Ja" or leaves them empty.
+    private static bool IsFiYes(this string? value)
+        => string.Equals(value?.Trim(), "Ja", StringComparison.OrdinalIgnoreCase);
+
     public static class InsiderTradeMapper
     {
         private static readonly HashSet<string> ExcludedTransactionsTypes = new(

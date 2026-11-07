@@ -34,6 +34,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.HasIndex(rt => rt.Token);
         });
 
+        builder.Entity<InsiderTrade>(entity =>
+        {
+            entity.HasIndex(t => t.PublishingDate);
+            entity.HasIndex(t => new { t.Symbol, t.PublishingDate });
+        });
+
         builder.Entity<Company>(entity =>
         {
             entity.HasKey(c => c.Id);

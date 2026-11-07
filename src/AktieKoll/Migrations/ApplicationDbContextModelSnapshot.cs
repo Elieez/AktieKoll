@@ -179,8 +179,22 @@ namespace AktieKoll.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("InstrumentType")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<bool?>("IsCloselyAssociated")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("IsShareProgram")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Isin")
                         .HasColumnType("text");
+
+                    b.Property<string>("Lei")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("Position")
                         .HasColumnType("text");
@@ -201,6 +215,10 @@ namespace AktieKoll.Migrations
                     b.Property<string>("Symbol")
                         .HasColumnType("text");
 
+                    b.Property<string>("TradingVenue")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<DateTime>("TransactionDate")
                         .HasColumnType("date");
 
@@ -208,7 +226,14 @@ namespace AktieKoll.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<decimal?>("ValueSek")
+                        .HasColumnType("numeric(20,2)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("PublishingDate");
+
+                    b.HasIndex("Symbol", "PublishingDate");
 
                     b.ToTable("InsiderTrades");
                 });

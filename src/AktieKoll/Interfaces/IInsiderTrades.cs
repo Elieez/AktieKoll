@@ -12,4 +12,7 @@ public interface IInsiderTradeService
     Task<IEnumerable<InsiderTrade>> GetInsiderTradesByCompany(string companyName, int skip = 0, int take = 10);
     Task<IEnumerable<InsiderTrade>> GetInsiderTradesBySymbol(string symbol, int skip = 0, int take = 10);
     Task<YtdStats> GetYtdTransactionStatsAsync();
+    Task<IEnumerable<TradedSymbol>> GetTradedSymbolsAsync();
+    /// <summary>Fills new detail columns (LEI, venue, flags, ValueSek) on already stored trades. Returns rows updated.</summary>
+    Task<int> BackfillTradeDetailsAsync(List<InsiderTrade> freshTrades);
 }
