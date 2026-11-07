@@ -200,22 +200,32 @@ public class InsiderTradeService(
         return symbols;
     }
 
-    public async Task<int> BackfillTradeDetailsAsync(List<InsiderTrade> freshTrades)
+    public async Task<BackfillResult> BackfillTradeDetailsAsync(List<InsiderTrade> freshTrades)
     {
-        if (freshTrades.Count == 0)
-            return 0;
+        var candidates = freshTrades.Where(t => !t.IsRevised()).ToList();
+        if (candidates.Count == 0)
+            return new BackfillResult(0, 0, 0);
 
-        var dates = freshTrades.Select(t => t.PublishingDate).Distinct().ToList();
+        var dates = candidates.Select(t => t.PublishingDate).Distinct().ToList();
         var existing = await context.InsiderTrades
             .Where(t => dates.Contains(t.PublishingDate))
             .ToListAsync();
 
-        var updated = 0;
-        foreach (var fresh in freshTrades.Where(t => !t.IsRevised()))
+        // Older rows were stored before company/position cleanup changed, so match on the
+        // fields that never change (publishing time, insider, type, shares, price) instead
+        // of FindDuplicate. Each stored row is matched at most once.
+        var unmatchedRows = existing
+            .GroupBy(BackfillKey)
+            .ToDictionary(g => g.Key, g => new Queue<InsiderTrade>(g));
+
+        int matched = 0, updated = 0;
+        foreach (var fresh in candidates)
         {
-            var row = existing.FindDuplicate(fresh);
-            if (row is null)
+            if (!unmatchedRows.TryGetValue(BackfillKey(fresh), out var queue) || queue.Count == 0)
                 continue;
+
+            var row = queue.Dequeue();
+            matched++;
 
             var changed = false;
             if (row.Lei is null && fresh.Lei is not null) { row.Lei = fresh.Lei; changed = true; }
@@ -224,6 +234,8 @@ public class InsiderTradeService(
             if (row.IsCloselyAssociated is null && fresh.IsCloselyAssociated is not null) { row.IsCloselyAssociated = fresh.IsCloselyAssociated; changed = true; }
             if (row.IsShareProgram is null && fresh.IsShareProgram is not null) { row.IsShareProgram = fresh.IsShareProgram; changed = true; }
             if (row.ValueSek is null && fresh.ValueSek is not null) { row.ValueSek = fresh.ValueSek; changed = true; }
+            // Bring old raw roles (e.g. "Verkställande direktör (VD)") in line with today's mapping.
+            if (fresh.Position is not null && row.Position != fresh.Position) { row.Position = fresh.Position; changed = true; }
 
             if (changed) updated++;
         }
@@ -231,8 +243,18 @@ public class InsiderTradeService(
         if (updated > 0)
             await context.SaveChangesAsync();
 
-        return updated;
+        return new BackfillResult(candidates.Count, matched, updated);
     }
+
+    private static (DateTime, string, string, long, decimal) BackfillKey(InsiderTrade t)
+        => (t.PublishingDate,
+            NormalizeName(t.InsiderName),
+            t.TransactionType.Trim().ToLowerInvariant(),
+            t.Shares,
+            t.Price);
+
+    private static string NormalizeName(string value)
+        => string.Join(' ', value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)).ToLowerInvariant();
 
     public async Task<YtdStats> GetYtdTransactionStatsAsync()
     {

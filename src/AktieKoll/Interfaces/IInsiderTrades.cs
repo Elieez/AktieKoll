@@ -14,5 +14,5 @@ public interface IInsiderTradeService
     Task<YtdStats> GetYtdTransactionStatsAsync();
     Task<IEnumerable<TradedSymbol>> GetTradedSymbolsAsync();
     /// <summary>Fills new detail columns (LEI, venue, flags, ValueSek) on already stored trades. Returns rows updated.</summary>
-    Task<int> BackfillTradeDetailsAsync(List<InsiderTrade> freshTrades);
+    Task<BackfillResult> BackfillTradeDetailsAsync(List<InsiderTrade> freshTrades);
 }
