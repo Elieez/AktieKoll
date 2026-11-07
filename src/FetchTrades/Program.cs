@@ -22,6 +22,8 @@ var builder = Host.CreateApplicationBuilder(args);
 
 // Suppress HttpClient request/response URL logging to avoid leaking webhook URLs and tokens in CI logs
 builder.Logging.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
+// Per-query SQL logging is noise in job logs.
+builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
 
 // Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -90,24 +92,59 @@ try
             return 1;
         }
 
-        var totalUpdated = 0;
+        int totalFromFi = 0, totalMatched = 0, totalUpdated = 0;
+        var failedDays = new List<DateTime>();
         for (var day = from; day <= to; day = day.AddDays(1))
         {
             // FI's export is capped at 1000 rows, so fetch one publishing day at a time.
-            var dayRows = await csvService.FetchInsiderTradesAsync(day, day);
+            // FI occasionally resets connections: retry a few times, then skip the day.
+            List<AktieKoll.Models.CsvDTO>? dayRows = null;
+            for (var attempt = 1; attempt <= 4 && dayRows is null; attempt++)
+            {
+                try
+                {
+                    dayRows = await csvService.FetchInsiderTradesAsync(day, day);
+                }
+                catch (Exception ex) when (ex is HttpRequestException or IOException or TaskCanceledException)
+                {
+                    var wait = TimeSpan.FromSeconds(10 * attempt * attempt);
+                    logger.LogWarning("FI fetch for {Day:yyyy-MM-dd} failed (attempt {Attempt}/4), retrying in {Wait}s",
+                        day, attempt, wait.TotalSeconds);
+                    if (attempt < 4) await Task.Delay(wait);
+                }
+            }
+
+            if (dayRows is null)
+            {
+                failedDays.Add(day);
+                continue;
+            }
+
             if (dayRows.Count >= 1000)
                 logger.LogWarning("FI export for {Day:yyyy-MM-dd} hit the 1000-row cap; some rows may be missed", day);
 
             var dayTrades = InsiderTradeMapper.MapDtosToTrades(dayRows);
             await fxService.ApplyValueSekAsync(dayTrades, fullHistory: true);
-            var updated = await tradeService.BackfillTradeDetailsAsync(dayTrades);
-            totalUpdated += updated;
-            logger.LogInformation("Backfill {Day:yyyy-MM-dd}: {Rows} rows from FI, {Updated} trades updated", day, dayRows.Count, updated);
+            var r = await tradeService.BackfillTradeDetailsAsync(dayTrades);
+            totalFromFi += r.FromFi;
+            totalMatched += r.Matched;
+            totalUpdated += r.Updated;
+            logger.LogInformation("Backfill {Day:yyyy-MM-dd}: {FromFi} trades in FI, {Matched} found in DB, {Updated} updated",
+                day, r.FromFi, r.Matched, r.Updated);
 
             await Task.Delay(TimeSpan.FromMilliseconds(500)); // be polite to FI
         }
 
-        logger.LogInformation("Backfill completed: {Total} trades updated", totalUpdated);
+        logger.LogInformation(
+            "Backfill completed: {FromFi} trades in FI, {Matched} found in DB ({Missing} not stored), {Updated} updated",
+            totalFromFi, totalMatched, totalFromFi - totalMatched, totalUpdated);
+
+        if (failedDays.Count > 0)
+        {
+            logger.LogError("Backfill could not fetch {Count} day(s), re-run for these: {Days}",
+                failedDays.Count, string.Join(", ", failedDays.Select(d => d.ToString("yyyy-MM-dd"))));
+            return 1;
+        }
         return 0;
     }
 

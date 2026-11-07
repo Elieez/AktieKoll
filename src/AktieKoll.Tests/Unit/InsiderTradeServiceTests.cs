@@ -224,4 +224,79 @@ public class InsiderTradeServiceTests
         var saved = await ctx.InsiderTrades.FirstAsync(cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal("TICK", saved.Symbol);
     }
+
+    [Fact]
+    public async Task BackfillTradeDetails_OldRowWithRawPosition_IsMatchedAndUpdated()
+    {
+        var ctx = ServiceTestHelpers.CreateContext();
+        var published = new DateTime(2025, 6, 17, 22, 59, 32, DateTimeKind.Utc);
+
+        // Stored before position cleanup: raw FI role with non-breaking spaces, old company name.
+        ctx.InsiderTrades.Add(new InsiderTrade
+        {
+            CompanyName = "Eltel AB",
+            InsiderName = "Håkan Dahlström",
+            Position = "Verkställande direktör (VD)",
+            TransactionType = "Förvärv",
+            Shares = 33537,
+            Price = 8.99m,
+            Currency = "SEK",
+            Status = "Aktuell",
+            PublishingDate = published,
+            TransactionDate = published.Date
+        });
+        await ctx.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
+        var fresh = new InsiderTrade
+        {
+            CompanyName = "Eltel",
+            InsiderName = "Håkan Dahlström",
+            Position = "VD",
+            TransactionType = "Förvärv",
+            Shares = 33537,
+            Price = 8.99m,
+            Currency = "SEK",
+            Status = "Aktuell",
+            PublishingDate = published,
+            TransactionDate = published.Date,
+            InstrumentType = "Aktie",
+            IsShareProgram = false,
+            IsCloselyAssociated = false,
+            ValueSek = 301497.63m
+        };
+
+        var result = await service.BackfillTradeDetailsAsync([fresh]);
+
+        Assert.Equal(new BackfillResult(1, 1, 1), result);
+        var row = await ctx.InsiderTrades.SingleAsync(TestContext.Current.CancellationToken);
+        Assert.Equal("Aktie", row.InstrumentType);
+        Assert.False(row.IsShareProgram);
+        Assert.Equal("VD", row.Position);
+    }
+
+    [Fact]
+    public async Task BackfillTradeDetails_TradeNotInDb_IsNotInserted()
+    {
+        var ctx = ServiceTestHelpers.CreateContext();
+        var service = ServiceTestHelpers.CreateInsiderTradeService(ctx);
+        var published = new DateTime(2025, 6, 19, 17, 58, 55, DateTimeKind.Utc);
+
+        var result = await service.BackfillTradeDetailsAsync([new InsiderTrade
+        {
+            CompanyName = "Eltel",
+            InsiderName = "Håkan Dahlström",
+            Position = "VD",
+            TransactionType = "Förvärv",
+            Shares = 1837,
+            Price = 9.40m,
+            Currency = "SEK",
+            Status = "Aktuell",
+            PublishingDate = published,
+            TransactionDate = published.Date
+        }]);
+
+        Assert.Equal(new BackfillResult(1, 0, 0), result);
+        Assert.Empty(await ctx.InsiderTrades.ToListAsync(TestContext.Current.CancellationToken));
+    }
 }
