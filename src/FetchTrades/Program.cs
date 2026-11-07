@@ -29,6 +29,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // HttpClients
 builder.Services.AddHttpClient<CsvFetchService>();
+builder.Services.AddHttpClient<IFxRateService, EcbFxRateService>();
 builder.Services.AddHttpClient<IDiscordService, DiscordService>();
 
 // CSV Reader Factory
@@ -72,9 +73,47 @@ try
     var csvService = services.GetRequiredService<CsvFetchService>();
     var tradeService = services.GetRequiredService<InsiderTradeService>();
     var notificationService = services.GetRequiredService<INotificationService>();
+    var fxService = services.GetRequiredService<IFxRateService>();
+
+    // Backfill mode: dotnet run -- --backfill 2025-01-01 2026-11-07
+    // Re-downloads FI's register day by day and fills the detail columns (LEI, venue,
+    // closely-associated / share-program flags, SEK value) on trades already stored.
+    // Never inserts trades and never sends notifications.
+    if (args.Length >= 1 && args[0] == "--backfill")
+    {
+        if (args.Length < 3
+            || !DateTime.TryParseExact(args[1], "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var from)
+            || !DateTime.TryParseExact(args[2], "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var to)
+            || from > to)
+        {
+            Console.Error.WriteLine("Usage: --backfill <yyyy-MM-dd from> <yyyy-MM-dd to>");
+            return 1;
+        }
+
+        var totalUpdated = 0;
+        for (var day = from; day <= to; day = day.AddDays(1))
+        {
+            // FI's export is capped at 1000 rows, so fetch one publishing day at a time.
+            var dayRows = await csvService.FetchInsiderTradesAsync(day, day);
+            if (dayRows.Count >= 1000)
+                logger.LogWarning("FI export for {Day:yyyy-MM-dd} hit the 1000-row cap; some rows may be missed", day);
+
+            var dayTrades = InsiderTradeMapper.MapDtosToTrades(dayRows);
+            await fxService.ApplyValueSekAsync(dayTrades, fullHistory: true);
+            var updated = await tradeService.BackfillTradeDetailsAsync(dayTrades);
+            totalUpdated += updated;
+            logger.LogInformation("Backfill {Day:yyyy-MM-dd}: {Rows} rows from FI, {Updated} trades updated", day, dayRows.Count, updated);
+
+            await Task.Delay(TimeSpan.FromMilliseconds(500)); // be polite to FI
+        }
+
+        logger.LogInformation("Backfill completed: {Total} trades updated", totalUpdated);
+        return 0;
+    }
 
     var csvResults = await csvService.FetchInsiderTradesAsync();
     var trades = InsiderTradeMapper.MapDtosToTrades(csvResults);
+    await fxService.ApplyValueSekAsync(trades);
     var result = await tradeService.AddInsiderTrades(trades);
 
     logger.LogInformation("Completed: {Message}", result.Message);

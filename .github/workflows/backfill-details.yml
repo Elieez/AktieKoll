@@ -1,0 +1,39 @@
+name: Backfill Trade Details
+
+# One-off / manual: fills LEI, venue, closely-associated and share-program flags and
+# SEK value on trades stored before those columns existed. Does not insert trades or
+# send notifications. Uses only free sources (FI register + ECB reference rates).
+on:
+  workflow_dispatch:
+    inputs:
+      from:
+        description: "From publishing date (yyyy-MM-dd)"
+        required: true
+      to:
+        description: "To publishing date (yyyy-MM-dd)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore src/FetchTrades/FetchTrades.csproj
+
+      - name: Run backfill
+        env:
+          ConnectionStrings__PostgresConnection: ${{ secrets.POSTGRES_CONNECTION }}
+          FROM_DATE: ${{ inputs.from }}
+          TO_DATE: ${{ inputs.to }}
+        run: dotnet run --project src/FetchTrades/FetchTrades.csproj -- --backfill "$FROM_DATE" "$TO_DATE"

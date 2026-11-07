@@ -118,6 +118,14 @@ public class InsiderTradesController(IInsiderTradeService tradeService, ILogger<
         return BadRequest(new { error = "Either 'symbol' or 'name' query parameter is required." });
     }
 
+    [HttpGet("symbols")]
+    [ResponseCache(Duration = 21600, Location = ResponseCacheLocation.Any)]
+    public async Task<ActionResult<IEnumerable<TradedSymbol>>> GetTradedSymbols()
+    {
+        var symbols = await tradeService.GetTradedSymbolsAsync();
+        return Ok(symbols);
+    }
+
     [HttpGet("ytd-stats")]
     [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<YtdStats>> GetYtdStats()
