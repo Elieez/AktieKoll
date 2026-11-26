@@ -158,7 +158,7 @@ public class ShortPositionService(ApplicationDbContext db, TimeProvider time) : 
         if (fileKnown)
             // FI's current file is the authoritative list of open positions.
             return events.Where(e => e.InFile && !e.Below && e.Pct > 0)
-                .GroupBy(e => (e.HolderName, e.Isin))
+                .GroupBy(e => ShortTrend.HolderKey(e.HolderName))
                 .Select(g => g.OrderByDescending(e => e.Date).ThenByDescending(e => e.Id).First())
                 .OrderByDescending(e => e.Pct)
                 .ThenBy(e => e.HolderName, StringComparer.Ordinal)

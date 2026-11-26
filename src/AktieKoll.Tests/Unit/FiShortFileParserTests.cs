@@ -49,6 +49,32 @@ public class FiShortFileParserTests
     }
 
     [Fact]
+    public void ParseAggregate_ManyMalformedRows_Throws()
+    {
+        var rows = AggFile(60);
+        for (int i = 0; i < 10; i++)
+            rows.Add([$"Bad {i}", $"LEI{i:D17}", "abc", "2026-11-25"]);
+        using var ods = OdsTestBuilder.Build(rows);
+
+        var act = () => FiShortFileParser.ParseAggregate(ods);
+
+        act.Should().Throw<FiFormatException>();
+    }
+
+    [Fact]
+    public void ParseAggregate_LeiNotTwentyChars_CountsAsMalformed()
+    {
+        var rows = AggFile(60);
+        for (int i = 0; i < 10; i++)
+            rows.Add([$"Bad {i}", $"SHORT{i}", "1,25", "2026-11-25"]);
+        using var ods = OdsTestBuilder.Build(rows);
+
+        var act = () => FiShortFileParser.ParseAggregate(ods);
+
+        act.Should().Throw<FiFormatException>();
+    }
+
+    [Fact]
     public void ParseAggregate_RealLayout_ParsesRows()
     {
         using var ods = OdsTestBuilder.Build(AggFile(60));

@@ -5,8 +5,10 @@ on:
     - cron: "30 18 * * *"
 permissions:
   contents: read
+concurrency: fetch-shorts
 jobs:
   fetch:
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6

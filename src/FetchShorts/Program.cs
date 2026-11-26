@@ -22,7 +22,7 @@ builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogL
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
 
 builder.Services.AddHttpClient<FiShortDownloader>();
-builder.Services.AddHttpClient<IGleifClient, GleifClient>();
+builder.Services.AddHttpClient<IGleifClient, GleifClient>(c => c.Timeout = TimeSpan.FromSeconds(15));
 
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton(TimeProvider.System);

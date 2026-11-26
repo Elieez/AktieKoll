@@ -87,6 +87,17 @@ public class ShortIssuerResolverTests
     }
 
     [Fact]
+    public async Task Resolve_ShareClassesNoTrades_PrimaryPrefersB()
+    {
+        await SeedCompanies(_db, ("SE0000000011", "SSAB-A"), ("SE0000000012", "SSAB-B"));
+
+        await Create().ResolveAsync([Agg("SSAB AB")],
+            [Pos("SSAB AB", "SE0000000011"), Pos("SSAB AB", "SE0000000012")], Ct);
+
+        (await _db.ShortIssuers.SingleAsync(Ct)).PrimarySymbol.Should().Be("SSAB-B");
+    }
+
+    [Fact]
     public async Task Resolve_InsiderTradeLei_AddsIsinAndSymbol()
     {
         _db.InsiderTrades.Add(Trade("ABC", Lei, "SE0000000002"));

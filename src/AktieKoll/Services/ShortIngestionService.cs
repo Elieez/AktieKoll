@@ -24,6 +24,11 @@ public class ShortIngestionService(
                 "Aggregate is empty; refusing to ingest (would falsely mark every issuer as dropped out).",
                 nameof(aggregate));
 
+        var tz = TimeZoneInfo.FindSystemTimeZoneById("Europe/Stockholm");
+        var today = TimeZoneInfo.ConvertTime(time.GetUtcNow(), tz).Date;
+
+        await EnsureSaneAsync(aggregate, current, today, ct);
+
         // Union current + history, first occurrence wins.
         var positions = new List<FiPositionRow>();
         var seen = new HashSet<(string, string, DateTime)>();
@@ -32,9 +37,6 @@ public class ShortIngestionService(
                 positions.Add(p);
 
         var map = await resolver.ResolveAsync(aggregate, positions, ct);
-
-        var tz = TimeZoneInfo.FindSystemTimeZoneById("Europe/Stockholm");
-        var today = TimeZoneInfo.ConvertTime(time.GetUtcNow(), tz).Date;
 
         await using var tx = db.Database.IsRelational()
             ? await db.Database.BeginTransactionAsync(ct)
@@ -46,6 +48,17 @@ public class ShortIngestionService(
                 .ToListAsync(ct))
             .Select(p => (p.HolderName, p.Isin, p.PositionDate.Date))
             .ToHashSet();
+
+        // Issuers that left today's aggregate can still receive later exits: seed ISIN -> LEI from
+        // stored rows; today's map wins.
+        var leiByIsin = new Dictionary<string, string>(map.LeiByIsin, StringComparer.OrdinalIgnoreCase);
+        var storedLeis = await db.ShortPositions
+            .Where(p => p.Lei != null)
+            .Select(p => new { p.Isin, p.Lei })
+            .Distinct()
+            .ToListAsync(ct);
+        foreach (var sl in storedLeis) leiByIsin.TryAdd(sl.Isin, sl.Lei!);
+        map = map with { LeiByIsin = leiByIsin };
 
         var newPositions = 0;
         foreach (var p in positions)
@@ -109,15 +122,7 @@ public class ShortIngestionService(
 
         // Drop-outs: latest snapshot before today is > 0 and the issuer is absent today.
         var inToday = rows.Select(r => r.Lei).ToHashSet();
-        var prior = await db.ShortSnapshots
-            .Where(s => s.SnapshotDate < today)
-            .Select(s => new { s.Lei, s.SnapshotDate, s.PositionPercent })
-            .ToListAsync(ct);
-        var dropped = prior
-            .GroupBy(s => s.Lei)
-            .Select(g => g.OrderByDescending(s => s.SnapshotDate).First())
-            .Where(s => s.PositionPercent > 0 && !inToday.Contains(s.Lei))
-            .ToList();
+        var (dropped, _) = await FindDropOutsAsync(inToday, today, ct);
         foreach (var d in dropped)
         {
             db.ShortSnapshots.Add(new ShortSnapshot
@@ -140,6 +145,44 @@ public class ShortIngestionService(
             today, newPositions, backfilled, rows.Count, dropped.Count, unresolved);
 
         return new ShortIngestionResult(newPositions, rows.Count, dropped.Count, unresolved);
+    }
+
+    // Latest snapshot per issuer before today that is > 0: returns those absent today, plus the active count.
+    private async Task<(List<(string Lei, decimal Pct)> Dropped, int ActiveCount)> FindDropOutsAsync(
+        HashSet<string> inToday, DateTime today, CancellationToken ct)
+    {
+        var prior = await db.ShortSnapshots
+            .Where(s => s.SnapshotDate < today)
+            .Select(s => new { s.Lei, s.SnapshotDate, s.PositionPercent })
+            .ToListAsync(ct);
+        var active = prior
+            .GroupBy(s => s.Lei)
+            .Select(g => g.OrderByDescending(s => s.SnapshotDate).First())
+            .Where(s => s.PositionPercent > 0)
+            .ToList();
+        var dropped = active
+            .Where(s => !inToday.Contains(s.Lei))
+            .Select(s => (s.Lei, s.PositionPercent))
+            .ToList();
+        return (dropped, active.Count);
+    }
+
+    // Refuses a partial FI file before anything is written.
+    private async Task EnsureSaneAsync(
+        IReadOnlyList<FiAggregateRow> aggregate, IReadOnlyList<FiPositionRow> current,
+        DateTime today, CancellationToken ct)
+    {
+        var inToday = aggregate.Where(a => !string.IsNullOrWhiteSpace(a.Lei)).Select(a => a.Lei).ToHashSet();
+        var (dropped, activeCount) = await FindDropOutsAsync(inToday, today, ct);
+        var maxDrop = Math.Max(15, (int)Math.Ceiling(activeCount * 0.10));
+        if (dropped.Count > maxDrop)
+            throw new InvalidOperationException(
+                $"FI aggregate looks partial: {dropped.Count} issuers dropped out (limit {maxDrop} of {activeCount} active). Refusing to ingest.");
+
+        var marked = await db.ShortPositions.CountAsync(p => p.InCurrentFile, ct);
+        if (marked >= 1 && current.Count < marked * 0.5)
+            throw new InvalidOperationException(
+                $"FI current-positions file looks partial: {current.Count} rows vs {marked} currently open. Refusing to ingest.");
     }
 
     private static string? LookupLei(IssuerMap map, string isin, string issuerName)

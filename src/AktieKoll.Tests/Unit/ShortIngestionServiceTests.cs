@@ -177,4 +177,56 @@ public class ShortIngestionServiceTests
         (await _db.ShortPositions.Where(p => p.Lei == null).CountAsync(Ct)).Should().Be(0);
         (await _db.ShortPositions.SingleAsync(p => p.HolderName == "H1", Ct)).Lei.Should().Be("LEI_A");
     }
+
+    [Fact]
+    public async Task Ingest_IssuerLeftAggregate_ExitStillGetsLei()
+    {
+        SetNow(new DateTimeOffset(2026, 11, 24, 12, 0, 0, TimeSpan.Zero));
+        await Create().IngestAsync(
+            [Agg("X AB", "LEI_X"), Agg("A AB", "LEI_A")],
+            [Pos("H1", "X AB", "SE0000000009", 20)], [], Ct);
+
+        // X leaves the register; H1's exit is filed afterwards and must still map to LEI_X.
+        SetNow(new DateTimeOffset(2026, 11, 26, 12, 0, 0, TimeSpan.Zero));
+        var exit = new FiPositionRow("H1", "X AB", "SE0000000009", 0m, true, new DateTime(2026, 11, 25), null);
+        await Create().IngestAsync([Agg("A AB", "LEI_A")], [exit], [], Ct);
+
+        (await _db.ShortPositions.Where(p => p.Lei == null).CountAsync(Ct)).Should().Be(0);
+        (await _db.ShortPositions.SingleAsync(p => p.BelowThreshold, Ct)).Lei.Should().Be("LEI_X");
+    }
+
+    [Fact]
+    public async Task Ingest_TooManyDropOuts_ThrowsAndWritesNothing()
+    {
+        for (var i = 0; i < 20; i++)
+        {
+            _db.ShortIssuers.Add(new ShortIssuer { Lei = $"LEI_{i:D2}", Name = $"I{i} AB" });
+            _db.ShortSnapshots.Add(new ShortSnapshot { Lei = $"LEI_{i:D2}", SnapshotDate = new DateTime(2026, 11, 25), PositionPercent = 1.2m });
+        }
+        await _db.SaveChangesAsync(Ct);
+
+        var act = () => Create().IngestAsync([Agg("A AB", "LEI_A")], [Pos("H1", "A AB", "SE0000000001")], [], Ct);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        (await _db.ShortSnapshots.CountAsync(Ct)).Should().Be(20);
+        (await _db.ShortPositions.CountAsync(Ct)).Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Ingest_CurrentFileShrunkByHalf_ThrowsAndWritesNothing()
+    {
+        for (var i = 0; i < 4; i++)
+            _db.ShortPositions.Add(new ShortPosition
+            {
+                HolderName = $"H{i}", IssuerName = "A AB", Isin = "SE0000000001", Lei = "LEI_A",
+                PositionPercent = 0.6m, PositionDate = new DateTime(2026, 11, 20), InCurrentFile = true
+            });
+        await _db.SaveChangesAsync(Ct);
+
+        var act = () => Create().IngestAsync([Agg("A AB", "LEI_A")], [Pos("H0", "A AB", "SE0000000001")], [], Ct);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        (await _db.ShortSnapshots.CountAsync(Ct)).Should().Be(0);
+        (await _db.ShortPositions.CountAsync(p => p.InCurrentFile, Ct)).Should().Be(4);
+    }
 }

@@ -142,13 +142,14 @@ public class ShortIssuerResolver(
             foreach (var ticker in tickers.Where(t => !have.Contains(t)))
                 db.ShortIssuerSymbols.Add(new ShortIssuerSymbol { Lei = lei, Symbol = ticker });
 
-            // 4. Primary = most insider trades in the last 365 days, ties alphabetical.
+            // 4. Primary = most insider trades in the last 365 days, ties prefer the B class (as SymbolService), then alphabetical.
             var recent = tradesByLei[lei]
                 .Where(t => t.PublishingDate >= yearAgo && t.Symbol != null)
                 .GroupBy(t => t.Symbol!)
                 .ToDictionary(g => g.Key, g => g.Count());
             issuers[lei].PrimarySymbol = tickers
                 .OrderByDescending(t => recent.GetValueOrDefault(t))
+                .ThenByDescending(t => t.EndsWith("-B", StringComparison.Ordinal))
                 .ThenBy(t => t, StringComparer.Ordinal)
                 .FirstOrDefault();
 
