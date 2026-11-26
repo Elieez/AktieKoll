@@ -20,6 +20,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<VerificationCode> VerificationCodes { get; set; }
 
+    public DbSet<ShortIssuer> ShortIssuers { get; set; }
+
+    public DbSet<ShortIssuerSymbol> ShortIssuerSymbols { get; set; }
+
+    public DbSet<ShortSnapshot> ShortSnapshots { get; set; }
+
+    public DbSet<ShortPosition> ShortPositions { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -105,6 +113,31 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                   .HasColumnType("integer[]");
 
             entity.HasIndex(l => new { l.UserId, l.CompanyId, l.BatchRunId, l.Channel });
+        });
+
+        builder.Entity<ShortIssuerSymbol>(entity =>
+        {
+            entity.HasKey(s => new { s.Lei, s.Symbol });
+            entity.HasIndex(s => s.Symbol);
+        });
+
+        builder.Entity<ShortSnapshot>(entity =>
+        {
+            entity.HasKey(s => s.Id);
+            entity.HasIndex(s => new { s.Lei, s.SnapshotDate }).IsUnique();
+            entity.HasIndex(s => s.SnapshotDate);
+
+            entity.HasOne<ShortIssuer>()
+                  .WithMany()
+                  .HasForeignKey(s => s.Lei)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<ShortPosition>(entity =>
+        {
+            entity.HasKey(p => p.Id);
+            entity.HasIndex(p => new { p.HolderName, p.Isin, p.PositionDate }).IsUnique();
+            entity.HasIndex(p => p.Lei);
         });
     }
 }

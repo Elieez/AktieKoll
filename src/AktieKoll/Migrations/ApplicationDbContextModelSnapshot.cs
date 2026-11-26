@@ -359,6 +359,128 @@ namespace AktieKoll.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
+            modelBuilder.Entity("AktieKoll.Models.ShortIssuer", b =>
+                {
+                    b.Property<string>("Lei")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime?>("GleifCheckedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("PrimarySymbol")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Lei");
+
+                    b.ToTable("ShortIssuers");
+                });
+
+            modelBuilder.Entity("AktieKoll.Models.ShortIssuerSymbol", b =>
+                {
+                    b.Property<string>("Lei")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Symbol")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Lei", "Symbol");
+
+                    b.HasIndex("Symbol");
+
+                    b.ToTable("ShortIssuerSymbols");
+                });
+
+            modelBuilder.Entity("AktieKoll.Models.ShortPosition", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("BelowThreshold")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("HolderName")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("Isin")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)");
+
+                    b.Property<string>("IssuerName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Lei")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("PositionDate")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("PositionPercent")
+                        .HasColumnType("numeric(6,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Lei");
+
+                    b.HasIndex("HolderName", "Isin", "PositionDate")
+                        .IsUnique();
+
+                    b.ToTable("ShortPositions");
+                });
+
+            modelBuilder.Entity("AktieKoll.Models.ShortSnapshot", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("LatestPositionDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Lei")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<decimal>("PositionPercent")
+                        .HasColumnType("numeric(6,2)");
+
+                    b.Property<DateTime>("SnapshotDate")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SnapshotDate");
+
+                    b.HasIndex("Lei", "SnapshotDate")
+                        .IsUnique();
+
+                    b.ToTable("ShortSnapshots");
+                });
+
             modelBuilder.Entity("AktieKoll.Models.UserCompanyFollow", b =>
                 {
                     b.Property<int>("Id")
@@ -596,6 +718,15 @@ namespace AktieKoll.Migrations
                     b.HasOne("AktieKoll.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AktieKoll.Models.ShortSnapshot", b =>
+                {
+                    b.HasOne("AktieKoll.Models.ShortIssuer", null)
+                        .WithMany()
+                        .HasForeignKey("Lei")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
