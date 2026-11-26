@@ -31,14 +31,14 @@ public static class ShortTrend
 
     public static IReadOnlyList<SeriesPointDto> SignificantSeries(IEnumerable<ShortPosition> events, DateTime today)
     {
-        var latest = new Dictionary<string, decimal>();
+        var latest = new Dictionary<(string, string), decimal>();
         var points = new List<SeriesPointDto>();
         decimal? last = null;
 
         foreach (var day in events.OrderBy(e => e.PositionDate).ThenBy(e => e.Id).GroupBy(e => e.PositionDate))
         {
             foreach (var e in day)
-                latest[e.HolderName] = e.BelowThreshold ? 0m : e.PositionPercent;
+                latest[(e.HolderName, e.Isin)] = e.BelowThreshold ? 0m : e.PositionPercent;
 
             var sum = latest.Values.Sum();
             if (sum != last)
@@ -48,7 +48,8 @@ public static class ShortTrend
             }
         }
 
-        points.Add(new SeriesPointDto(today, last ?? 0m));
+        if (points.Count == 0 || points[^1].Date != today)
+            points.Add(new SeriesPointDto(today, last ?? 0m));
         return points;
     }
 }

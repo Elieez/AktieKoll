@@ -29,10 +29,10 @@ public class ShortPositionServiceTests
     private void Snap(string lei, DateTime date, decimal pct)
         => _db.ShortSnapshots.Add(new ShortSnapshot { Lei = lei, SnapshotDate = date, PositionPercent = pct, LatestPositionDate = date });
 
-    private void Holder(string lei, string holder, decimal pct, DateTime date, bool below = false)
+    private void Holder(string lei, string holder, decimal pct, DateTime date, bool below = false, string isin = "SE0000000001")
         => _db.ShortPositions.Add(new ShortPosition
         {
-            Lei = lei, HolderName = holder, IssuerName = "X", Isin = "SE0000000001",
+            Lei = lei, HolderName = holder, IssuerName = "X", Isin = isin,
             PositionPercent = pct, BelowThreshold = below, PositionDate = date,
         });
 
@@ -128,5 +128,57 @@ public class ShortPositionServiceTests
         company.Holders.Select(h => h.HolderName).Should().Equal("C", "B");
         var top = await Create().GetTopAsync(ShortSort.Highest, 30, 10, Ct);
         top.Items.Single().HolderCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task GetTop_Increase_OrdersByChangeDescAndExcludesDecreases()
+    {
+        Issuer("L1", "One", "ONE.ST", "ONE.ST"); Issuer("L2", "Two", "TWO.ST", "TWO.ST"); Issuer("L3", "Three", "THR.ST", "THR.ST");
+        Snap("L1", Today.AddDays(-30), 1.0m); Snap("L1", Today, 1.5m);
+        Snap("L2", Today.AddDays(-30), 1.0m); Snap("L2", Today, 3.0m);
+        Snap("L3", Today.AddDays(-30), 2.0m); Snap("L3", Today, 1.0m);
+        await _db.SaveChangesAsync(Ct);
+
+        var result = await Create().GetTopAsync(ShortSort.Increase, 30, 10, Ct);
+
+        result.Items.Select(i => (i.Lei, i.Change)).Should().Equal(("L2", 2.0m), ("L1", 0.5m));
+    }
+
+    [Fact]
+    public async Task GetTop_DropOutOlderThanWindow_KeepsBaselineAsCurrentAndIsExcluded()
+    {
+        Issuer("L1", "One", "ONE.ST", "ONE.ST"); Issuer("L2", "Two", "TWO.ST", "TWO.ST");
+        Snap("L1", Today.AddDays(-90), 2.0m); Snap("L1", Today.AddDays(-60), 0m);
+        Snap("L2", Today, 1.0m);
+        await _db.SaveChangesAsync(Ct);
+
+        var result = await Create().GetTopAsync(ShortSort.Highest, 30, 10, Ct);
+
+        result.Items.Select(i => i.Lei).Should().Equal("L2");
+    }
+
+    [Fact]
+    public async Task GetCompany_HolderOnTwoShareClasses_BothCounted()
+    {
+        Issuer("L1", "Volvo", "VOLV-B.ST", "VOLV-B.ST");
+        Snap("L1", Today, 1.0m);
+        Holder("L1", "Fund", 0.6m, new DateTime(2026, 11, 1), isin: "SE0000000001");
+        Holder("L1", "Fund", 0.7m, new DateTime(2026, 11, 2), isin: "SE0000000002");
+        await _db.SaveChangesAsync(Ct);
+
+        var company = (await Create().GetCompanyAsync("VOLV-B", Ct))!;
+
+        company.Holders.Should().HaveCount(2);
+        company.SignificantSeries.Last().Value.Should().Be(1.3m);
+        (await Create().GetTopAsync(ShortSort.Highest, 30, 10, Ct)).Items.Single().HolderCount.Should().Be(2);
+    }
+
+    [Fact]
+    public void InsiderCutoff_IsUtcKind()
+    {
+        var cutoff = ShortPositionService.InsiderCutoff(_time.Object);
+
+        cutoff.Kind.Should().Be(DateTimeKind.Utc);
+        cutoff.Should().Be(new DateTime(2026, 8, 28, 0, 0, 0, DateTimeKind.Utc));
     }
 }

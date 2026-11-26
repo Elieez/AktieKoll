@@ -54,4 +54,17 @@ public class ShortTrendTests
             (new DateTime(2026, 1, 9), 0.7m),
             (today, 0.7m));
     }
+
+    [Fact]
+    public void SignificantSeries_NoDuplicateTodayPoint()
+    {
+        var events = new[]
+        {
+            new ShortPosition { HolderName = "A", IssuerName = "X", Isin = "SE0000000001", PositionPercent = 0.6m, PositionDate = Today },
+        };
+
+        var series = ShortTrend.SignificantSeries(events, Today);
+
+        series.Should().ContainSingle().Which.Date.Should().Be(Today);
+    }
 }

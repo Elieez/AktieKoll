@@ -8,28 +8,44 @@ namespace AktieKoll.Services;
 
 public class ShortPositionService(ApplicationDbContext db, TimeProvider time) : IShortPositionService
 {
-    private const int BaselineLookbackDays = 400;
     private const int InsiderWindowDays = 90;
 
     private static readonly TimeZoneInfo Stockholm = TimeZoneInfo.FindSystemTimeZoneById("Europe/Stockholm");
 
     private DateTime Today => TimeZoneInfo.ConvertTime(time.GetUtcNow(), Stockholm).Date;
 
+    // Kind=Utc so Npgsql accepts it against timestamptz columns.
+    internal static DateTime InsiderCutoff(TimeProvider time) =>
+        time.GetUtcNow().UtcDateTime.Date.AddDays(-InsiderWindowDays);
+
     private sealed record Snap(string Lei, DateTime Date, decimal Pct, DateTime? LatestPos);
 
-    private sealed record HolderEvent(string Lei, string HolderName, decimal Pct, bool Below, DateTime Date, int Id);
+    private sealed record HolderEvent(string Lei, string HolderName, string Isin, decimal Pct, bool Below, DateTime Date, int Id);
 
     public async Task<ShortTopListDto> GetTopAsync(ShortSort sort, int days, int limit, CancellationToken ct)
     {
         var today = Today;
-        var from = today.AddDays(-days - BaselineLookbackDays);
+        var windowStart = today.AddDays(-days);
 
-        var snaps = await db.ShortSnapshots.AsNoTracking()
-            .Where(s => s.SnapshotDate >= from)
+        var updatedAt = await db.ShortSnapshots.AsNoTracking()
+            .MaxAsync(s => (DateTime?)s.SnapshotDate, ct);
+
+        var windowRows = await db.ShortSnapshots.AsNoTracking()
+            .Where(s => s.SnapshotDate > windowStart)
             .Select(s => new Snap(s.Lei, s.SnapshotDate, s.PositionPercent, s.LatestPositionDate))
             .ToListAsync(ct);
 
-        var updatedAt = snaps.Count == 0 ? (DateTime?)null : snaps.Max(s => s.Date);
+        var baselineKeys = db.ShortSnapshots
+            .Where(s => s.SnapshotDate <= windowStart)
+            .GroupBy(s => s.Lei)
+            .Select(g => new { Lei = g.Key, Date = g.Max(s => s.SnapshotDate) });
+        var baselineRows = await (
+                from s in db.ShortSnapshots.AsNoTracking()
+                join k in baselineKeys on new { s.Lei, s.SnapshotDate } equals new { k.Lei, SnapshotDate = k.Date }
+                select new Snap(s.Lei, s.SnapshotDate, s.PositionPercent, s.LatestPositionDate))
+            .ToListAsync(ct);
+
+        var snaps = baselineRows.Concat(windowRows);
 
         var candidates = snaps.GroupBy(s => s.Lei).Select(g =>
         {
@@ -37,7 +53,7 @@ public class ShortPositionService(ApplicationDbContext db, TimeProvider time) : 
             var series = asc.Select(s => new SeriesPointDto(s.Date, s.Pct)).ToList();
             var (change, since) = ShortTrend.ComputeChange(series, today, days);
             return (Current: asc[^1], Change: change, Since: since);
-        });
+        }).ToList();
 
         var ordered = sort switch
         {
@@ -62,13 +78,13 @@ public class ShortPositionService(ApplicationDbContext db, TimeProvider time) : 
 
         var holderEvents = await db.ShortPositions.AsNoTracking()
             .Where(p => p.Lei != null && leis.Contains(p.Lei))
-            .Select(p => new HolderEvent(p.Lei!, p.HolderName, p.PositionPercent, p.BelowThreshold, p.PositionDate, p.Id))
+            .Select(p => new HolderEvent(p.Lei!, p.HolderName, p.Isin, p.PositionPercent, p.BelowThreshold, p.PositionDate, p.Id))
             .ToListAsync(ct);
         var holderCounts = holderEvents.GroupBy(e => e.Lei)
             .ToDictionary(g => g.Key, g => LatestActiveHolders(g).Count);
 
         var allSymbols = symbolRows.Select(s => s.Symbol).Distinct().ToList();
-        var since90 = today.AddDays(-InsiderWindowDays);
+        var since90 = InsiderCutoff(time);
         var trades = await db.InsiderTrades.AsNoTracking()
             .Where(t => t.PublishingDate >= since90 && t.Symbol != null && allSymbols.Contains(t.Symbol))
             .Select(t => new { t.Symbol, t.TransactionType })
@@ -100,6 +116,7 @@ public class ShortPositionService(ApplicationDbContext db, TimeProvider time) : 
         var withSuffix = key + ".ST";
         var lei = await db.ShortIssuerSymbols.AsNoTracking()
             .Where(s => s.Symbol == key || s.Symbol == withSuffix)
+            .OrderBy(s => s.Lei)
             .Select(s => s.Lei)
             .FirstOrDefaultAsync(ct);
         if (lei is null) return null;
@@ -120,7 +137,7 @@ public class ShortPositionService(ApplicationDbContext db, TimeProvider time) : 
         var (change, since) = ShortTrend.ComputeChange(total, today, 30);
 
         var holders = LatestActiveHolders(events.Select(p =>
-                new HolderEvent(lei, p.HolderName, p.PositionPercent, p.BelowThreshold, p.PositionDate, p.Id)))
+                new HolderEvent(lei, p.HolderName, p.Isin, p.PositionPercent, p.BelowThreshold, p.PositionDate, p.Id)))
             .Select(h => new ShortHolderDto(h.HolderName, h.Pct, h.Date))
             .ToList();
 
@@ -131,7 +148,7 @@ public class ShortPositionService(ApplicationDbContext db, TimeProvider time) : 
     }
 
     private static List<HolderEvent> LatestActiveHolders(IEnumerable<HolderEvent> events) =>
-        events.GroupBy(e => e.HolderName)
+        events.GroupBy(e => (e.HolderName, e.Isin))
             .Select(g => g.OrderByDescending(e => e.Date).ThenByDescending(e => e.Id).First())
             .Where(e => !e.Below && e.Pct > 0)
             .OrderByDescending(e => e.Pct)
