@@ -19,6 +19,11 @@ public class ShortIngestionService(
         IReadOnlyList<FiPositionRow> history,
         CancellationToken ct)
     {
+        if (aggregate.Count == 0)
+            throw new ArgumentException(
+                "Aggregate is empty; refusing to ingest (would falsely mark every issuer as dropped out).",
+                nameof(aggregate));
+
         // Union current + history, first occurrence wins.
         var positions = new List<FiPositionRow>();
         var seen = new HashSet<(string, string, DateTime)>();
@@ -75,6 +80,7 @@ public class ShortIngestionService(
         // Snapshot for today (delete + reinsert so reruns are idempotent).
         var todays = await db.ShortSnapshots.Where(s => s.SnapshotDate == today).ToListAsync(ct);
         db.ShortSnapshots.RemoveRange(todays);
+        await db.SaveChangesAsync(ct); // keep the delete and re-insert of the same key in separate batches
 
         var rows = aggregate
             .Where(a => !string.IsNullOrWhiteSpace(a.Lei))

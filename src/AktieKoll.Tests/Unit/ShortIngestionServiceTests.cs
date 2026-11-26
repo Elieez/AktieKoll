@@ -117,6 +117,19 @@ public class ShortIngestionServiceTests
     }
 
     [Fact]
+    public async Task Ingest_EmptyAggregate_ThrowsAndWritesNothing()
+    {
+        _db.ShortIssuers.Add(new ShortIssuer { Lei = "LEI_X", Name = "X AB" });
+        _db.ShortSnapshots.Add(new ShortSnapshot { Lei = "LEI_X", SnapshotDate = new DateTime(2026, 11, 25), PositionPercent = 1.2m });
+        await _db.SaveChangesAsync(Ct);
+
+        var act = () => Create().IngestAsync([], [], [], Ct);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+        (await _db.ShortSnapshots.CountAsync(Ct)).Should().Be(1);
+    }
+
+    [Fact]
     public async Task Ingest_SnapshotDate_IsStockholmDate()
     {
         SetNow(new DateTimeOffset(2026, 11, 26, 23, 30, 0, TimeSpan.Zero));
