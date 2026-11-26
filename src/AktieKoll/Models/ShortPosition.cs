@@ -27,6 +27,9 @@ public class ShortPosition
     [Column(TypeName = "date")]
     public DateTime PositionDate { get; set; }
 
+    /// <summary>True while this row appears in FI's current-positions file (the authoritative list of open positions).</summary>
+    public bool InCurrentFile { get; set; }
+
     [MaxLength(500)]
     public string? Comment { get; set; }
 }

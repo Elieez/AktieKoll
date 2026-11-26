@@ -29,11 +29,11 @@ public class ShortPositionServiceTests
     private void Snap(string lei, DateTime date, decimal pct)
         => _db.ShortSnapshots.Add(new ShortSnapshot { Lei = lei, SnapshotDate = date, PositionPercent = pct, LatestPositionDate = date });
 
-    private void Holder(string lei, string holder, decimal pct, DateTime date, bool below = false, string isin = "SE0000000001")
+    private void Holder(string lei, string holder, decimal pct, DateTime date, bool below = false, string isin = "SE0000000001", bool current = false)
         => _db.ShortPositions.Add(new ShortPosition
         {
             Lei = lei, HolderName = holder, IssuerName = "X", Isin = isin,
-            PositionPercent = pct, BelowThreshold = below, PositionDate = date,
+            PositionPercent = pct, BelowThreshold = below, PositionDate = date, InCurrentFile = current,
         });
 
     private void Trade(string symbol, string type, int daysAgo)
@@ -175,6 +175,22 @@ public class ShortPositionServiceTests
         company.Holders.Select(h => (h.HolderName, h.PositionPercent)).Should().Equal(("Fund", 0.7m));
         company.SignificantSeries.Last().Value.Should().Be(0.7m);
         (await Create().GetTopAsync(ShortSort.Highest, 30, 10, Ct)).Items.Single().HolderCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetCompany_Holders_OnlyCurrentFileRows()
+    {
+        Issuer("L1", "Volvo", "VOLV-B.ST", "VOLV-B.ST");
+        Snap("L1", Today, 1.0m);
+        Holder("L1", "InFile", 0.9m, new DateTime(2026, 11, 2), current: true);
+        Holder("L1", "InFile2", 0.5m, new DateTime(2026, 11, 3), isin: "SE0000000002", current: true);
+        Holder("L1", "Renamed Old Name", 0.8m, new DateTime(2020, 1, 1)); // positive but not in FI's file
+        await _db.SaveChangesAsync(Ct);
+
+        var company = (await Create().GetCompanyAsync("VOLV-B", Ct))!;
+
+        company.Holders.Select(h => h.HolderName).Should().Equal("InFile", "InFile2");
+        (await Create().GetTopAsync(ShortSort.Highest, 30, 10, Ct)).Items.Single().HolderCount.Should().Be(2);
     }
 
     [Fact]

@@ -419,6 +419,9 @@ namespace AktieKoll.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)");
 
+                    b.Property<bool>("InCurrentFile")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Isin")
                         .IsRequired()
                         .HasMaxLength(12)

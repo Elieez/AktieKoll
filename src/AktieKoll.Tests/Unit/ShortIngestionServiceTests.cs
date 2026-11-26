@@ -63,6 +63,27 @@ public class ShortIngestionServiceTests
     }
 
     [Fact]
+    public async Task Ingest_MarksCurrentFileRows_AndClearsOld()
+    {
+        var agg = new[] { Agg("A AB", "LEI_A") };
+        var h1 = Pos("H1", "A AB", "SE0000000001");
+        var h2 = Pos("H2", "A AB", "SE0000000001");
+        var old = Pos("H1", "A AB", "SE0000000001", 10);
+
+        await Create().IngestAsync(agg, [h1, h2], [h1, h2, old], Ct);
+
+        (await _db.ShortPositions.Where(p => p.InCurrentFile).Select(p => p.HolderName).ToListAsync(Ct))
+            .Should().BeEquivalentTo("H1", "H2");
+        (await _db.ShortPositions.SingleAsync(p => p.PositionDate == new DateTime(2026, 11, 10), Ct)).InCurrentFile.Should().BeFalse();
+
+        // H2 leaves the current file on the next run.
+        await Create().IngestAsync(agg, [h1], [h1, h2, old], Ct);
+
+        (await _db.ShortPositions.Where(p => p.InCurrentFile).Select(p => p.HolderName).ToListAsync(Ct))
+            .Should().BeEquivalentTo("H1");
+    }
+
+    [Fact]
     public async Task Ingest_DuplicatePositionRows_InsertedOnce()
     {
         var row = Pos("H1", "A AB", "SE0000000001");

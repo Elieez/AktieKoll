@@ -66,6 +66,15 @@ public class ShortIngestionService(
         }
         await db.SaveChangesAsync(ct);
 
+        // Mark which stored rows are in FI's current-positions file (authoritative open positions).
+        var currentKeys = current.Select(p => (p.HolderName, p.Isin, p.PositionDate.Date)).ToHashSet();
+        var currentHolders = currentKeys.Select(k => k.HolderName).Distinct().ToList();
+        var toCheck = await db.ShortPositions
+            .Where(p => p.InCurrentFile || currentHolders.Contains(p.HolderName))
+            .ToListAsync(ct);
+        foreach (var row in toCheck)
+            row.InCurrentFile = currentKeys.Contains((row.HolderName, row.Isin, row.PositionDate.Date));
+
         // Backfill Lei on stored rows that were unresolved before.
         var backfilled = 0;
         var orphans = await db.ShortPositions.Where(p => p.Lei == null).ToListAsync(ct);

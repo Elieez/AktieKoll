@@ -20,7 +20,7 @@ public class ShortPositionService(ApplicationDbContext db, TimeProvider time) : 
 
     private sealed record Snap(string Lei, DateTime Date, decimal Pct, DateTime? LatestPos);
 
-    private sealed record HolderEvent(string Lei, string HolderName, string Isin, decimal Pct, bool Below, DateTime Date, int Id);
+    private sealed record HolderEvent(string Lei, string HolderName, string Isin, decimal Pct, bool Below, DateTime Date, int Id, bool InFile);
 
     public async Task<ShortTopListDto> GetTopAsync(ShortSort sort, int days, int limit, CancellationToken ct)
     {
@@ -78,10 +78,11 @@ public class ShortPositionService(ApplicationDbContext db, TimeProvider time) : 
 
         var holderEvents = await db.ShortPositions.AsNoTracking()
             .Where(p => p.Lei != null && leis.Contains(p.Lei))
-            .Select(p => new HolderEvent(p.Lei!, p.HolderName, p.Isin, p.PositionPercent, p.BelowThreshold, p.PositionDate, p.Id))
+            .Select(p => new HolderEvent(p.Lei!, p.HolderName, p.Isin, p.PositionPercent, p.BelowThreshold, p.PositionDate, p.Id, p.InCurrentFile))
             .ToListAsync(ct);
+        var fileKnown = await FileKnownAsync(ct);
         var holderCounts = holderEvents.GroupBy(e => e.Lei)
-            .ToDictionary(g => g.Key, g => LatestActiveHolders(g).Count);
+            .ToDictionary(g => g.Key, g => LatestActiveHolders(g, fileKnown).Count);
 
         var allSymbols = symbolRows.Select(s => s.Symbol).Distinct().ToList();
         var since90 = InsiderCutoff(time);
@@ -136,22 +137,38 @@ public class ShortPositionService(ApplicationDbContext db, TimeProvider time) : 
         var current = snaps[^1];
         var (change, since) = ShortTrend.ComputeChange(total, today, 30);
 
+        var fileKnown = await FileKnownAsync(ct);
         var holders = LatestActiveHolders(events.Select(p =>
-                new HolderEvent(lei, p.HolderName, p.Isin, p.PositionPercent, p.BelowThreshold, p.PositionDate, p.Id)))
+                new HolderEvent(lei, p.HolderName, p.Isin, p.PositionPercent, p.BelowThreshold, p.PositionDate, p.Id, p.InCurrentFile)), fileKnown)
             .Select(h => new ShortHolderDto(h.HolderName, h.Pct, h.Date))
             .ToList();
 
         return new ShortCompanyDto(
             issuer?.Name ?? events.FirstOrDefault()?.IssuerName ?? lei, lei, issuer?.PrimarySymbol,
             current.Pct, current.LatestPos, change, since, holders, total,
-            ShortTrend.SignificantSeries(events, today));
+            ShortTrend.SignificantSeries(events, today, fileKnown));
     }
 
-    private static List<HolderEvent> LatestActiveHolders(IEnumerable<HolderEvent> events) =>
-        events.GroupBy(e => ShortTrend.HolderKey(e.HolderName))
+    // Rows are only marked once ingestion has run with the InCurrentFile column; before that
+    // (or in a DB populated earlier) fall back to the latest-row-per-holder heuristic.
+    private Task<bool> FileKnownAsync(CancellationToken ct) => db.ShortPositions.AnyAsync(p => p.InCurrentFile, ct);
+
+    private static List<HolderEvent> LatestActiveHolders(IEnumerable<HolderEvent> events, bool fileKnown)
+    {
+        if (fileKnown)
+            // FI's current file is the authoritative list of open positions.
+            return events.Where(e => e.InFile && !e.Below && e.Pct > 0)
+                .GroupBy(e => (e.HolderName, e.Isin))
+                .Select(g => g.OrderByDescending(e => e.Date).ThenByDescending(e => e.Id).First())
+                .OrderByDescending(e => e.Pct)
+                .ThenBy(e => e.HolderName, StringComparer.Ordinal)
+                .ToList();
+
+        return events.GroupBy(e => ShortTrend.HolderKey(e.HolderName))
             .Select(g => g.OrderByDescending(e => e.Date).ThenByDescending(e => e.Id).First())
             .Where(e => !e.Below && e.Pct > 0)
             .OrderByDescending(e => e.Pct)
             .ThenBy(e => e.HolderName, StringComparer.Ordinal)
             .ToList();
+    }
 }
