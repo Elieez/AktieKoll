@@ -158,19 +158,23 @@ public class ShortPositionServiceTests
     }
 
     [Fact]
-    public async Task GetCompany_HolderOnTwoShareClasses_BothCounted()
+    public async Task GetCompany_HolderReportingUnderDifferentIsins_IsOneStream()
     {
+        // Live FI data (SSAB): one holder's position per issuer is a single stream; the ISIN
+        // on a row may be either share class, and the exit row can carry the other class.
         Issuer("L1", "Volvo", "VOLV-B.ST", "VOLV-B.ST");
         Snap("L1", Today, 1.0m);
         Holder("L1", "Fund", 0.6m, new DateTime(2026, 11, 1), isin: "SE0000000001");
         Holder("L1", "Fund", 0.7m, new DateTime(2026, 11, 2), isin: "SE0000000002");
+        Holder("L1", "Other", 0.5m, new DateTime(2026, 11, 3), isin: "SE0000000001");
+        Holder("L1", "OTHER", 0m, new DateTime(2026, 11, 4), below: true, isin: "SE0000000002");
         await _db.SaveChangesAsync(Ct);
 
         var company = (await Create().GetCompanyAsync("VOLV-B", Ct))!;
 
-        company.Holders.Should().HaveCount(2);
-        company.SignificantSeries.Last().Value.Should().Be(1.3m);
-        (await Create().GetTopAsync(ShortSort.Highest, 30, 10, Ct)).Items.Single().HolderCount.Should().Be(2);
+        company.Holders.Select(h => (h.HolderName, h.PositionPercent)).Should().Equal(("Fund", 0.7m));
+        company.SignificantSeries.Last().Value.Should().Be(0.7m);
+        (await Create().GetTopAsync(ShortSort.Highest, 30, 10, Ct)).Items.Single().HolderCount.Should().Be(1);
     }
 
     [Fact]

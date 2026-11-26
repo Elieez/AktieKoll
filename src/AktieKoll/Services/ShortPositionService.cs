@@ -148,7 +148,7 @@ public class ShortPositionService(ApplicationDbContext db, TimeProvider time) : 
     }
 
     private static List<HolderEvent> LatestActiveHolders(IEnumerable<HolderEvent> events) =>
-        events.GroupBy(e => (e.HolderName, e.Isin))
+        events.GroupBy(e => ShortTrend.HolderKey(e.HolderName))
             .Select(g => g.OrderByDescending(e => e.Date).ThenByDescending(e => e.Id).First())
             .Where(e => !e.Below && e.Pct > 0)
             .OrderByDescending(e => e.Pct)
