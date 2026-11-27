@@ -98,6 +98,10 @@ public class WebApplicationFactoryFixture : WebApplicationFactory<Program>
         db.Users.RemoveRange(db.Users);
         db.InsiderTrades.RemoveRange(db.InsiderTrades);
         db.Companies.RemoveRange(db.Companies);
+        db.ShortSnapshots.RemoveRange(db.ShortSnapshots);
+        db.ShortIssuerSymbols.RemoveRange(db.ShortIssuerSymbols);
+        db.ShortIssuers.RemoveRange(db.ShortIssuers);
+        db.ShortPositions.RemoveRange(db.ShortPositions);
         db.SaveChanges();
     }
 }
