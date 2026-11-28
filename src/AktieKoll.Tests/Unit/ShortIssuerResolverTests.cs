@@ -100,6 +100,8 @@ public class ShortIssuerResolverTests
     [Fact]
     public async Task Resolve_InsiderTradeLei_AddsIsinAndSymbol()
     {
+        // The trade's ISIN is unknown to Companies, but its symbol is a real listed ticker.
+        await SeedCompanies(_db, ("SE0000000099", "ABC"));
         _db.InsiderTrades.Add(Trade("ABC", Lei, "SE0000000002"));
         await _db.SaveChangesAsync(Ct);
 
@@ -107,6 +109,24 @@ public class ShortIssuerResolverTests
 
         map.LeiByIsin["SE0000000002"].Should().Be(Lei);
         (await _db.ShortIssuerSymbols.SingleAsync(Ct)).Symbol.Should().Be("ABC");
+        (await _db.ShortIssuers.SingleAsync(Ct)).PrimarySymbol.Should().Be("ABC");
+    }
+
+    [Fact]
+    public async Task Resolve_InsiderTradeBondSymbol_IsNotUsedAsTicker()
+    {
+        // Production has insider trades in an issuer's bonds, whose "symbol" is a bond name
+        // longer than the 20-char ticker column (e.g. "AFRYSS F 12/01/26 dmtn"). Only real
+        // listed tickers may become ShortIssuerSymbols / PrimarySymbol.
+        await SeedCompanies(_db, ("SE0000000002", "ABC"));
+        _db.InsiderTrades.Add(Trade("ABC", Lei, "SE0000000002"));
+        _db.InsiderTrades.Add(Trade("AFRYSS F 12/01/26 dmtn", Lei, "SE0000000077"));
+        _db.InsiderTrades.Add(Trade("AFRYSS F 12/01/26 dmtn", Lei, "SE0000000077"));
+        await _db.SaveChangesAsync(Ct);
+
+        await Create().ResolveAsync([Agg("Abc AB")], [], Ct);
+
+        (await _db.ShortIssuerSymbols.Select(s => s.Symbol).ToListAsync(Ct)).Should().BeEquivalentTo(["ABC"]);
         (await _db.ShortIssuers.SingleAsync(Ct)).PrimarySymbol.Should().Be("ABC");
     }
 
