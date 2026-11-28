@@ -110,6 +110,19 @@ public class ShortIssuerResolver(
                 .ToListAsync(ct))
             .ToLookup(c => c.Isin, StringComparer.OrdinalIgnoreCase);
 
+        // Insider trades also cover an issuer's bonds, whose "symbol" is a bond name
+        // (e.g. "AFRYSS F 12/01/26 dmtn"), so only accept symbols that are listed tickers.
+        var tradeSymbols = trades
+            .Where(t => !string.IsNullOrWhiteSpace(t.Symbol))
+            .Select(t => t.Symbol!)
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+        var listedTradeSymbols = (await db.Companies
+                .Where(c => tradeSymbols.Contains(c.Code))
+                .Select(c => c.Code)
+                .ToListAsync(ct))
+            .ToHashSet(StringComparer.Ordinal);
+
         var existingSymbols = (await db.ShortIssuerSymbols.Where(s => leis.Contains(s.Lei)).ToListAsync(ct))
             .ToLookup(s => s.Lei);
 
@@ -127,7 +140,7 @@ public class ShortIssuerResolver(
                 foreach (var c in companyCodes[isin])
                     tickers.Add(c.Code);
             foreach (var t in tradesByLei[lei])
-                if (!string.IsNullOrWhiteSpace(t.Symbol)) tickers.Add(t.Symbol);
+                if (t.Symbol is not null && listedTradeSymbols.Contains(t.Symbol)) tickers.Add(t.Symbol);
 
             if (tickers.Count == 0)
             {
